@@ -1,6 +1,6 @@
 use std::borrow::Borrow;
 
-use base64::{Engine as _, engine::general_purpose};
+use base64::{engine::general_purpose, Engine as _};
 
 use crate::core::sizage::Sizage;
 use crate::error::Error;
@@ -268,7 +268,7 @@ fn sizage(s: &str) -> Result<Sizage, Error> {
 
 #[cfg(test)]
 mod matter_codex_tests {
-    use crate::core::matter::{hardage, Matter, MatterCodex, sizage};
+    use crate::core::matter::{hardage, sizage, Matter, MatterCodex};
 
     #[test]
     fn test_codes() {

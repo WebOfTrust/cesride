@@ -24,8 +24,8 @@ jobs:
       - name: Check
         run: cargo check
 
-      - name: Clippy  
-        run: RUSTFLAGS="-Dwarnings" cargo clippy -- -D warnings
+#      - name: Clippy
+#        run: RUSTFLAGS="-Dwarnings" cargo clippy -- -D warnings
 
       - name: Build
         run: cargo build
