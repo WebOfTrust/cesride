@@ -1,37 +1,109 @@
-use std::borrow::Borrow;
-
-use base64::{engine::general_purpose, Engine as _};
+use base64::Engine;
 
 use crate::core::sizage::Sizage;
-use crate::error::Error;
+use crate::core::util;
+use crate::error;
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum MatterCodex {
-    Ed25519Seed,
+    Ed25519_Seed,
     Ed25519N,
     X25519,
     Ed25519,
     Blake3_256,
-    X25519Private,
-    X25519CipherSeed,
-    X25519CipherSalt,
-    Salt128,
-    Ed25519Sig,
+    Blake2b_256,
+    Blake2s_256,
+    SHA3_256,
+    SHA2_256,
+    ECDSA_256k1_Seed,
+    Ed448_Seed,
+    X448,
+    Short,
+    Big,
+    X25519_Private,
+    X25519_Cipher_Seed,
+    Salt_128,
+    Ed25519_Sig,
+    ECDSA_256k1_Sig,
+    Blake3_512,
+    Blake2b_512,
+    SHA3_512,
+    SHA2_512,
+    Long,
+    ECDSA_256k1N,
+    ECDSA_256k1,
+    Ed448N,
+    Ed448,
+    Ed448_Sig,
+    Tern,
+    DateTime,
+    X25519_Cipher_Salt,
+    TBD1,
+    TBD2,
+    StrB64_L0,
+    StrB64_L1,
+    StrB64_L2,
+    StrB64_Big_L0,
+    StrB64_Big_L1,
+    StrB64_Big_L2,
+    Bytes_L0,
+    Bytes_L1,
+    Bytes_L2,
+    Bytes_Big_L0,
+    Bytes_Big_L1,
+    Bytes_Big_L2,
 }
 
 impl MatterCodex {
     pub(crate) fn code(&self) -> &'static str {
         match self {
-            MatterCodex::Ed25519Seed => "A",
+            MatterCodex::Ed25519_Seed => "A", // Ed25519 256 bit random seed for private key
             MatterCodex::Ed25519N => "B", // Ed25519 verification key non-transferable, basic derivation.
             MatterCodex::X25519 => "C", // X25519 public encryption key, converted from Ed25519 or Ed25519N.
             MatterCodex::Ed25519 => "D", // Ed25519 verification key basic derivation
             MatterCodex::Blake3_256 => "E", // Blake3 256 bit digest self-addressing derivation.
-            MatterCodex::X25519Private => "O", // X25519 private decryption key converted from Ed25519
-            MatterCodex::X25519CipherSeed => "P", // X25519 124 char b64 Cipher of 44 char qb64 Seed
-            MatterCodex::X25519CipherSalt => "1AAH", // X25519 100 char b64 Cipher of 24 char qb64 Salt
-            MatterCodex::Salt128 => "0A", // 128 bit random salt or 128 bit number (see Huge)
-            MatterCodex::Ed25519Sig => "0B", // Ed25519 signature.
+            MatterCodex::Blake2b_256 => "F", // Blake2b 256 bit digest self-addressing derivation.
+            MatterCodex::Blake2s_256 => "G", // Blake2s 256 bit digest self-addressing derivation.
+            MatterCodex::SHA3_256 => "H", // SHA3 256 bit digest self-addressing derivation.
+            MatterCodex::SHA2_256 => "I", // SHA2 256 bit digest self-addressing derivation.
+            MatterCodex::ECDSA_256k1_Seed => "J", // ECDSA secp256k1 256 bit random Seed for private key
+            MatterCodex::Ed448_Seed => "K",       // Ed448 448 bit random Seed for private key
+            MatterCodex::X448 => "L", // X448 public encryption key, converted from Ed448
+            MatterCodex::Short => "M", // Short 2 byte b2 number
+            MatterCodex::Big => "N",  // Big 8 byte b2 number
+            MatterCodex::X25519_Private => "O", // X25519 private decryption key converted from Ed25519
+            MatterCodex::X25519_Cipher_Seed => "P", // X25519 124 char b64 Cipher of 44 char qb64 Seed
+            MatterCodex::Salt_128 => "0A", // 128 bit random salt or 128 bit number (see Huge)
+            MatterCodex::Ed25519_Sig => "0B", // Ed25519 signature.
+            MatterCodex::ECDSA_256k1_Sig => "0C", // ECDSA secp256k1 signature.
+            MatterCodex::Blake3_512 => "0D", // Blake3 512 bit digest self-addressing derivation.
+            MatterCodex::Blake2b_512 => "0E", // Blake2b 512 bit digest self-addressing derivation.
+            MatterCodex::SHA3_512 => "0F", // SHA3 512 bit digest self-addressing derivation.
+            MatterCodex::SHA2_512 => "0G", // SHA2 512 bit digest self-addressing derivation.
+            MatterCodex::Long => "0H",     // Long 4 byte b2 number
+            MatterCodex::ECDSA_256k1N => "1AAA", // ECDSA secp256k1 verification key non-transferable, basic derivation.
+            MatterCodex::ECDSA_256k1 => "1AAB", // Ed25519 public verification or encryption key, basic derivation
+            MatterCodex::Ed448N => "1AAC", // Ed448 non-transferable prefix public signing verification key. Basic derivation.
+            MatterCodex::Ed448 => "1AAD", // Ed448 public signing verification key. Basic derivation.
+            MatterCodex::Ed448_Sig => "1AAE", // Ed448 signature. Self-signing derivation.
+            MatterCodex::Tern => "1AAF",  // 3 byte b2 number or 4 char B64 str.
+            MatterCodex::DateTime => "1AAG", // Base64 custom encoded 32 char ISO-8601 DateTime
+            MatterCodex::X25519_Cipher_Salt => "1AAH", // X25519 100 char b64 Cipher of 24 char qb64 Salt
+            MatterCodex::TBD1 => "2AAA", // Testing purposes only fixed with lead size 1
+            MatterCodex::TBD2 => "3AAA", // Testing purposes only of fixed with lead size 2
+            MatterCodex::StrB64_L0 => "4A", // String Base64 Only Lead Size 0 (4095 * 3 | 4)
+            MatterCodex::StrB64_L1 => "5A", // String Base64 Only Lead Size 1
+            MatterCodex::StrB64_L2 => "6A", // String Base64 Only Lead Size 2
+            MatterCodex::StrB64_Big_L0 => "7AAA", // String Base64 Only Big Lead Size 0 (16777215 * 3 | 4)
+            MatterCodex::StrB64_Big_L1 => "8AAA", // String Base64 Only Big Lead Size 1
+            MatterCodex::StrB64_Big_L2 => "9AAA", // String Base64 Only Big Lead Size 2
+            MatterCodex::Bytes_L0 => "4B",        // Byte String Leader Size 0
+            MatterCodex::Bytes_L1 => "5B",        // Byte String Leader Size 1
+            MatterCodex::Bytes_L2 => "6B",        // Byte String Leader Size 2
+            MatterCodex::Bytes_Big_L0 => "7AAB",  // Byte String Big Leader Size 0
+            MatterCodex::Bytes_Big_L1 => "8AAB",  // Byte String Big Leader Size 1
+            MatterCodex::Bytes_Big_L2 => "9AAB",  // Byte String Big Leader Size 2
         }
     }
 }
@@ -40,192 +112,506 @@ impl MatterCodex {
 pub struct Matter {
     raw: Vec<u8>,
     code: String,
-    size: u8,
-    qb64: String,
-    qb64b: Vec<u8>,
+    size: u32,
 }
 
 impl Matter {
-    pub fn new_with_raw_and_code(raw: Vec<u8>, code: String) -> Result<Matter, Error> {
-        // if (code.length === 0) {
-        //     throw new Error("Improper initialization need either (raw and code) or qb64b or qb64 or qb2.")
-        // }
-        //
-        // // Add support for variable size codes here if needed, this code only works for stable size codes
-        // let sizage = Matter.Sizes.get(code)
-        // if (sizage!.fs === -1) {  // invalid
-        //     throw new Error(`Unsupported variable size code=${code}`)
-        // }
-        //
-        // let rize = Matter._rawSize(code)
-        // raw = raw.slice(0, rize)  // copy only exact size from raw stream
-        // if (raw.length != rize) { // forbids shorter
-        //     throw new Error(`Not enough raw bytes for code=${code} expected ${rize} got ${raw.length}.`)
-        // }
-        //
-        // this._code = code  // hard value part of code
-        // this._size = size  // soft value part of code in int
-        // this._raw = raw    // crypto ops require bytes not bytearray
-        Ok(Matter {
-            ..Default::default()
-        })
-    }
+    pub fn new_with_code_and_raw(
+        code: String,
+        raw: Vec<u8>,
+        raw_length: usize,
+    ) -> error::Result<Matter> {
+        let mut m = Matter::default();
 
-    pub fn new_with_qb64(qb64: String) -> Result<Matter, Error> {
-        let mut m: Matter = Default::default();
-        match m.exfil(qb64) {
-            Ok(_) => {}
-            Err(e) => return Err(e),
+        if code.is_empty() {
+            return Err(Box::new(error::Error::EmptyMaterial(
+                "empty code".to_owned(),
+            )));
         }
 
-        let out = m;
-        Ok(out)
-    }
+        let mut size: u32 = 0;
+        let mut rize = raw_length as u32;
+        // this unwrap can stay since we have validated that code is not empty, above
+        let first = code.chars().next().unwrap();
 
-    pub fn new_with_qb64b(qb64b: Vec<u8>) -> Result<Matter, Error> {
-        let qb64 = match String::from_utf8(qb64b) {
-            Ok(v) => v,
-            Err(e) => return Err(Error::ParseQb64Error(e.to_string())),
-        };
+        const SMALL_VRZ_DEX: [char; 3] = ['4', '5', '6'];
+        const LARGE_VRZ_DEX: [char; 3] = ['7', '8', '9'];
 
-        let mut m: Matter = Default::default();
-        match m.exfil(qb64) {
-            Ok(_) => {}
-            Err(e) => return Err(e),
+        if SMALL_VRZ_DEX.contains(&first) || LARGE_VRZ_DEX.contains(&first) {
+            if rize == 0 {
+                rize = raw.len() as u32;
+            }
+
+            let ls = (3 - (rize % 3)) % 3;
+            size = (rize + ls) / 3;
+            let mut code = code.clone();
+
+            const SIXTY_FOUR: u32 = 64;
+            if SMALL_VRZ_DEX.contains(&first) {
+                if size < SIXTY_FOUR.pow(2) {
+                    let hs = 2;
+                    let s = SMALL_VRZ_DEX[ls as usize];
+                    code = format!("{}{}", s, &code[1..hs as usize]);
+                } else if size < SIXTY_FOUR.pow(4) {
+                    let hs = 4;
+                    let s = LARGE_VRZ_DEX[ls as usize];
+
+                    code = format!("{}{}{}", s, &"AAAA"[0..hs as usize - 2], &code[1..2]);
+                } else {
+                    return Err(Box::new(error::Error::InvalidVarRawSize(format!(
+                        "unsupported raw size: code = [{}]",
+                        code
+                    ))));
+                }
+            } else if LARGE_VRZ_DEX.contains(&first) {
+                if size < SIXTY_FOUR.pow(4) {
+                    let hs = 4;
+                    let s = LARGE_VRZ_DEX[ls as usize];
+                    code = format!("{}{}", s, &code[1..hs as usize]);
+                } else {
+                    return Err(Box::new(error::Error::InvalidVarRawSize(format!(
+                        "unsupported raw size: code = [{}]",
+                        code
+                    ))));
+                }
+            } else {
+                return Err(Box::new(error::Error::InvalidVarRawSize(format!(
+                    "unsupported variable raw size: code = [{}]",
+                    code
+                ))));
+            }
+        } else {
+            let sizage_ = sizage(&code)?;
+            if sizage_.fs == 0 {
+                return Err(Box::new(error::Error::InvalidVarRawSize(format!(
+                    "unsupported variable size: code = [{}]",
+                    code
+                ))));
+            }
+            rize = raw_size(sizage_);
         }
 
-        let out = m;
-        Ok(out)
+        m.code = code;
+        m.size = size;
+        m.raw = raw[..rize as usize].to_owned();
+
+        Ok(m)
     }
 
-    pub fn new_with_qb2(qb2: Vec<u8>) -> Result<Matter, Error> {
+    pub fn new_with_qb64(qb64: String) -> error::Result<Matter> {
         let mut m: Matter = Default::default();
-        let out = m;
-        Ok(out)
+        m.exfil(qb64)?;
+        Ok(m)
+    }
+
+    pub fn new_with_qb64b(qb64b: Vec<u8>) -> error::Result<Matter> {
+        let qb64 = String::from_utf8(qb64b)?;
+
+        let mut m: Matter = Default::default();
+        m.exfil(qb64)?;
+        Ok(m)
+    }
+
+    pub fn new_with_qb2(qb2: Vec<u8>) -> error::Result<Matter> {
+        let mut m: Matter = Default::default();
+        m.bexfil(qb2)?;
+        Ok(m)
     }
 
     pub fn code(&self) -> &str {
         self.code.as_str()
     }
-    pub fn size(&self) -> u8 {
+
+    pub fn size(&self) -> u32 {
         self.size
     }
+
     pub fn raw(&self) -> Vec<u8> {
         self.raw.clone()
     }
-    pub fn qb64(&self) {
+
+    pub fn qb64(&self) -> error::Result<String> {
         self.infil()
     }
-    pub fn qb64b(&self) -> Vec<u8> {
-        Vec::from(self.qb64.as_bytes())
+
+    pub fn qb64b(&self) -> error::Result<Vec<u8>> {
+        Ok(Vec::from(self.qb64()?.as_bytes()))
     }
+
+    pub fn qb2(&self) -> error::Result<Vec<u8>> {
+        self.binfil()
+    }
+
     pub fn transferable() {}
 
-    fn exfil(&mut self, qb64: String) -> Result<(), Error> {
-        if qb64.len() == 0 {
-            return Err(Error::EmptyMaterialError());
-        }
+    fn infil(&self) -> error::Result<String> {
+        let code = &self.code;
+        let size = self.size;
+        let mut raw = self.raw.clone();
 
-        let first: char;
-        match qb64.chars().next() {
-            None => return Err(Error::EmptyQb64Error()),
-            Some(c) => first = c,
-        }
+        let ps = (3 - raw.len() % 3) % 3;
+        let sizage_ = sizage(code)?;
 
-        let hs: usize;
-        match hardage(first) {
-            Ok(h) => hs = h as usize,
-            Err(e) => {
-                return Err(e);
+        if sizage_.fs == 0 {
+            let cs = sizage_.hs + sizage_.ss;
+            if cs % 4 != 0 {
+                return Err(Box::new(error::Error::InvalidCodeSize(format!(
+                    "whole code size not multiple of 4 for variable length material: cs = [{}]",
+                    cs
+                ))));
+            };
+
+            const SIXTY_FOUR: u32 = 64;
+            if SIXTY_FOUR.pow(sizage_.ss) - 1 < size {
+                return Err(Box::new(error::Error::InvalidVarSize(format!(
+                    "invalid size for code: size = [{}], code = [{}]",
+                    size, code
+                ))));
             }
+
+            let both = format!("{}{}", code, util::u32_to_b64(size, sizage_.ss as usize));
+
+            if both.len() % 4 != ps - sizage_.ls as usize {
+                return Err(Box::new(error::Error::InvalidCodeSize(format!(
+                    "invalid code for converted raw pad size: code = [{}], pad size = [{}]",
+                    both, ps
+                ))));
+            }
+
+            for _ in 0..sizage_.ls {
+                raw.insert(0, 0);
+            }
+
+            let b64 = base64::engine::general_purpose::URL_SAFE.encode(raw);
+
+            Ok(format!("{}{}", both, b64))
+        } else {
+            let both = code;
+            let cs = both.len();
+
+            if (cs % 4) as u32 != ps as u32 - sizage_.ls {
+                return Err(Box::new(error::Error::InvalidCodeSize(format!(
+                    "invalid code for converted raw pad size: code = [{}], pad size = [{}]",
+                    both, ps
+                ))));
+            }
+
+            for _ in 0..ps {
+                raw.insert(0, 0);
+            }
+
+            let b64 = base64::engine::general_purpose::URL_SAFE.encode(raw);
+
+            Ok(format!("{}{}", both, &b64[cs % 4..]))
+        }
+    }
+
+    fn binfil(&self) -> error::Result<Vec<u8>> {
+        let code = &self.code;
+        let size = self.size;
+        let mut raw = self.raw.clone();
+
+        let mut sizage_ = sizage(code)?;
+        let cs = sizage_.hs + sizage_.ss;
+
+        let both: &String;
+        let temp: String;
+        if sizage_.fs == 0 {
+            if cs % 4 != 0 {
+                return Err(Box::new(error::Error::InvalidCodeSize(format!(
+                    "whole code size not multiple of 4 for variable length material: cs = [{}]",
+                    cs
+                ))));
+            }
+
+            // ? check python code for a < 0 comparison
+            const SIXTY_FOUR: u32 = 64;
+            if SIXTY_FOUR.pow(sizage_.ss) - 1 < size {
+                return Err(Box::new(error::Error::InvalidVarSize(format!(
+                    "invalid size for code: size = [{}], code = [{}]",
+                    size, code
+                ))));
+            }
+
+            temp = format!("{}{}", code, util::u32_to_b64(size, sizage_.ss as usize));
+            both = &temp;
+            sizage_.fs = cs + (size * 4)
+        } else {
+            both = code;
         }
 
+        if both.len() != cs as usize {
+            return Err(Box::new(error::Error::InvalidCodeSize(format!(
+                "mismatched code size with table: code size = [{}], table size = [{}]",
+                cs,
+                both.len()
+            ))));
+        }
+
+        let n = ((cs + 1) * 3) / 4;
+
+        const SMALL_VRZ_BYTES: u32 = 3;
+        const LARGE_VRZ_BYTES: u32 = 6;
+
+        // bcode
+        let mut full: Vec<u8>;
+        if n <= SMALL_VRZ_BYTES {
+            full = (util::b64_to_u32(both) << (2 * (cs % 4)))
+                .to_be_bytes()
+                .to_vec();
+        } else if n <= LARGE_VRZ_BYTES {
+            full = (util::b64_to_u64(both) << (2 * (cs % 4)))
+                .to_be_bytes()
+                .to_vec();
+        } else {
+            return Err(Box::new(error::Error::InvalidCodeSize(format!(
+                "unsupported code size: cs = [{}]",
+                cs
+            ))));
+        }
+        // unpad code
+        full.drain(0..full.len() - n as usize);
+        // pad lead
+        full.resize(full.len() + sizage_.ls as usize, 0);
+        full.append(&mut raw);
+
+        let bfs = full.len();
+        if bfs % 3 != 0 || (bfs * 4 / 3) != sizage_.fs as usize {
+            return Err(Box::new(error::Error::InvalidCodeSize(format!(
+                "invalid code for raw size: code = [{}], raw size = [{}]",
+                both,
+                raw.len()
+            ))));
+        }
+
+        Ok(full)
+    }
+
+    fn exfil(&mut self, qb64: String) -> error::Result<()> {
+        if qb64.is_empty() {
+            return Err(Box::new(error::Error::EmptyMaterial(
+                "empty qb64".to_owned(),
+            )));
+        }
+
+        // we validated there will be a char here, above.
+        let first = qb64.chars().next().unwrap();
+
+        let hs = hardage(first)? as usize;
         if qb64.len() < hs {
-            return Err(Error::ShortageError());
+            return Err(Box::new(error::Error::Shortage(format!(
+                "insufficient material for hard part of code: qb64 size = [{}], hs = [{}]",
+                qb64.len(),
+                hs
+            ))));
         }
 
         // bounds already checked
-        let size;
-        let mut hard = String::new();
-        hard.push_str(&qb64[..hs]);
+        let hard = qb64[..hs].to_owned();
+        let mut sizage_ = sizage(&hard)?;
+        let cs = sizage_.hs + sizage_.ss;
 
-        match sizage(hard.as_str()) {
-            Ok(s) => size = s,
-            Err(e) => {
-                return Err(e);
+        let mut size: u32 = 0;
+        if sizage_.fs == 0 {
+            if cs % 4 != 0 {
+                return Err(Box::new(error::Error::InvalidCodeSize(format!(
+                    "code size not multiple of 4 for variable length material: cs = [{}]",
+                    cs
+                ))));
             }
+
+            if qb64.len() < cs as usize {
+                return Err(Box::new(error::Error::Shortage(format!(
+                    "insufficient material for code: qb64 size = [{}], cs = [{}]",
+                    qb64.len(),
+                    cs
+                ))));
+            }
+            let soft = &qb64[sizage_.hs as usize..cs as usize];
+            size = util::b64_to_u32(soft);
+            sizage_.fs = (size * 4) + cs;
         }
 
-        let cs = size.hs + size.ss;
-        if size.fs == u16::MAX {
-            return Err(Error::UnsupportedSizeError());
+        if qb64.len() < sizage_.fs as usize {
+            return Err(Box::new(error::Error::Shortage(format!(
+                "insufficient material: qb64 size = [{}], fs = [{}]",
+                qb64.len(),
+                sizage_.fs
+            ))));
         }
 
-        let full_size = size.fs as usize;
-        if qb64.len() < full_size as usize {
-            let s = full_size - qb64.len();
-            return Err(Error::TooSmallError(s));
-        }
-
-        let trim = &qb64[..full_size];
+        let trim = &qb64[..sizage_.fs as usize];
         let ps = cs % 4;
-        let pbs = (2 * (if ps == 0 { size.ls } else { ps })) as i32;
+        let pbs = 2 * if ps != 0 { ps } else { sizage_.ls };
+
         let raw: Vec<u8>;
         if ps != 0 {
-            let mut base = "A".repeat((ps + 1) as usize);
-            base.push_str(&trim[0..(cs as usize)]);
+            let mut buf = "A".repeat(ps as usize);
+            buf.push_str(&trim[(cs as usize)..]);
 
-            println!("{:?}", base);
             // decode base to leave pre-padded raw
-            let mut buf = Vec::<u8>::new();
-            general_purpose::URL_SAFE
-                .decode_vec(base, &mut buf)
+            let mut paw = Vec::<u8>::new();
+            base64::engine::general_purpose::URL_SAFE
+                .decode_vec(buf, &mut paw)
                 .unwrap();
 
             let mut pi: i32 = 0;
             // readInt
-            for b in &buf[..(ps as usize)] {
+            for b in &paw[..ps as usize] {
                 pi = (pi * 256) + (*b as i32)
             }
 
-            if (pi & pbs.pow(2) - 1) == 1 {
-                return Err(Error::PrepadError());
+            const TWO: i32 = 2;
+            if (pi & (TWO.pow(pbs) - 1)) != 0 {
+                return Err(Box::new(error::Error::Prepad()));
             }
 
-            raw = buf[0..(ps as usize)].to_owned();
-            buf.clear();
+            raw = paw[ps as usize..].to_owned();
+            paw.clear();
         } else {
-            let base = &trim[..(cs as usize)];
-            let mut buf = Vec::<u8>::new();
-            general_purpose::URL_SAFE
-                .decode_vec(base, &mut buf)
+            let buf = &trim[cs as usize..];
+            let mut paw = Vec::<u8>::new();
+            base64::engine::general_purpose::URL_SAFE
+                .decode_vec(buf, &mut paw)
                 .unwrap();
 
             let mut li: u32 = 0;
-            for b in &buf[..(size.ls as usize)] {
+            for b in &paw[..sizage_.ls as usize] {
                 li = (li * 256) + (*b as u32);
             }
 
             if li != 0 {
-                return if li == 1 {
-                    Err(Error::NonZeroedLeadByte())
+                return if sizage_.ls == 1 {
+                    Err(Box::new(error::Error::NonZeroedLeadByte()))
                 } else {
-                    Err(Error::NonZeroedLeadByte())
+                    Err(Box::new(error::Error::NonZeroedLeadBytes()))
                 };
             }
-            raw = buf[0..(size.ls as usize)].to_owned();
-            buf.clear();
+            raw = paw[sizage_.ls as usize..].to_owned();
+            paw.clear();
         }
 
         self.code = hard;
-        self.size = full_size as u8;
-        self.raw = raw.clone();
+        self.size = size;
+        self.raw.clone_from(&raw);
 
         Ok(())
     }
 
-    fn infil(&self) {
-        todo!()
+    fn bexfil(&mut self, qb2: Vec<u8>) -> error::Result<()> {
+        if qb2.is_empty() {
+            return Err(Box::new(error::Error::EmptyMaterial(
+                "empty qualified base2".to_owned(),
+            )));
+        }
+
+        let first_byte = (qb2[0] & 0xfc) >> 2;
+        if first_byte > 0x3d {
+            if first_byte == 0x3e {
+                return Err(Box::new(error::Error::UnexpectedCountCode(
+                    "unexpected start during extraction".to_owned(),
+                )));
+            } else if first_byte == 0x3f {
+                return Err(Box::new(error::Error::UnexpectedOpCode(
+                    "unexpected start during extraction".to_owned(),
+                )));
+            } else {
+                return Err(Box::new(error::Error::UnexpectedCode(format!(
+                    "unexpected code start: sextet = [{}]",
+                    first_byte
+                ))));
+            }
+        }
+
+        let first = util::b64_index_to_char(first_byte);
+        let hs = hardage(first)? as usize;
+        let bhs = (hs * 3 + 3) / 4;
+        if qb2.len() < bhs {
+            return Err(Box::new(error::Error::Shortage(format!(
+                "insufficient material for hard part of code: qb2 size = [{}], bhs = [{}]",
+                qb2.len(),
+                bhs
+            ))));
+        }
+
+        let hard = util::code_b2_to_b64(&qb2, hs)?;
+        let mut sizage_ = sizage(&hard)?;
+        let cs = sizage_.hs + sizage_.ss;
+        let bcs = ((cs + 1) * 3) / 4;
+        let mut size: u32 = 0;
+        if sizage_.fs == 0 {
+            if cs % 4 != 0 {
+                return Err(Box::new(error::Error::ParseQb2(format!(
+                    "code size not multiple of 4 for variable length material: cs = [{}]",
+                    cs
+                ))));
+            }
+
+            if qb2.len() < bcs as usize {
+                return Err(Box::new(error::Error::Shortage(format!(
+                    "insufficient material for code: qb2 size = [{}], bcs = [{}]",
+                    qb2.len(),
+                    bcs
+                ))));
+            }
+
+            let both = util::code_b2_to_b64(&qb2, cs as usize)?;
+            size = util::b64_to_u32(&both[sizage_.hs as usize..cs as usize]);
+            sizage_.fs = (size * 4) + cs
+        }
+
+        let bfs = ((sizage_.fs + 1) * 3) / 4;
+        if qb2.len() < bfs as usize {
+            return Err(Box::new(error::Error::Shortage(format!(
+                "insufficient material: qb2 size = [{}], bfs = [{}]",
+                qb2.len(),
+                bfs
+            ))));
+        }
+
+        let trim = qb2[..bfs as usize].to_vec();
+        let ps = cs % 4;
+        let pbs = 2 * if ps != 0 { ps } else { sizage_.ls };
+        if ps != 0 {
+            let mut bytes: [u8; 1] = [0];
+            bytes[0] = trim[bcs as usize - 1];
+            let pi = u8::from_be_bytes(bytes);
+            const TWO: u8 = 2;
+            if pi & (TWO.pow(pbs) - 1) != 0 {
+                return Err(Box::new(error::Error::NonZeroedPadBits()));
+            }
+        } else {
+            for value in trim
+                .iter()
+                .take((bcs + sizage_.ls) as usize)
+                .skip(bcs as usize)
+            {
+                if *value != 0 {
+                    match sizage_.ls {
+                        1 => {
+                            return Err(Box::new(error::Error::NonZeroedLeadByte()));
+                        }
+                        _ => {
+                            return Err(Box::new(error::Error::NonZeroedLeadBytes()));
+                        }
+                    }
+                }
+            }
+        }
+
+        let raw = trim[(bcs + sizage_.ls) as usize..].to_vec();
+        if raw.len() != (trim.len() - bcs as usize) - sizage_.ls as usize {
+            return Err(Box::new(error::Error::Conversion(format!(
+                "improperly qualified material: qb2 = {:?}",
+                qb2
+            ))));
+        }
+
+        self.code = hard;
+        self.size = size;
+        self.raw = raw;
+
+        Ok(())
     }
 }
 
@@ -233,60 +619,144 @@ impl Default for Matter {
     fn default() -> Self {
         Matter {
             raw: vec![],
-            code: "".to_string(),
+            code: "".to_owned(),
             size: 0,
-            qb64: "".to_string(),
-            qb64b: vec![],
         }
     }
 }
 
-fn hardage(c: char) -> Result<i32, Error> {
+fn hardage(c: char) -> error::Result<i32> {
     match c {
         'A'..='Z' | 'a'..='z' => Ok(1),
         '0' | '4' | '5' | '6' => Ok(2),
         '1' | '2' | '3' | '7' | '8' | '9' => Ok(4),
-        _ => Err(Error::UnknownHardage(c.to_string())),
+        '-' => Err(Box::new(error::Error::UnexpectedCode(
+            "count code start".to_owned(),
+        ))),
+        '_' => Err(Box::new(error::Error::UnexpectedCode(
+            "op code start".to_owned(),
+        ))),
+        _ => Err(Box::new(error::Error::UnknownHardage(c.to_string()))),
     }
 }
 
-fn sizage(s: &str) -> Result<Sizage, Error> {
+fn sizage(s: &str) -> error::Result<Sizage> {
     match s {
         "A" => Ok(Sizage::new(1, 0, 44, 0)),
         "B" => Ok(Sizage::new(1, 0, 44, 0)),
         "C" => Ok(Sizage::new(1, 0, 44, 0)),
         "D" => Ok(Sizage::new(1, 0, 44, 0)),
         "E" => Ok(Sizage::new(1, 0, 44, 0)),
+        "F" => Ok(Sizage::new(1, 0, 44, 0)),
+        "G" => Ok(Sizage::new(1, 0, 44, 0)),
+        "H" => Ok(Sizage::new(1, 0, 44, 0)),
+        "I" => Ok(Sizage::new(1, 0, 44, 0)),
+        "J" => Ok(Sizage::new(1, 0, 44, 0)),
+        "K" => Ok(Sizage::new(1, 0, 76, 0)),
+        "L" => Ok(Sizage::new(1, 0, 76, 0)),
+        "M" => Ok(Sizage::new(1, 0, 4, 0)),
+        "N" => Ok(Sizage::new(1, 0, 12, 0)),
         "O" => Ok(Sizage::new(1, 0, 44, 0)),
         "P" => Ok(Sizage::new(1, 0, 124, 0)),
-        "1AAH" => Ok(Sizage::new(2, 0, 24, 0)),
-        "0A" => Ok(Sizage::new(1, 0, 88, 0)),
-        "0B" => Ok(Sizage::new(4, 0, 100, 0)),
-        _ => Err(Error::UnknownSizage(s.to_string())),
+        "0A" => Ok(Sizage::new(2, 0, 24, 0)),
+        "0B" => Ok(Sizage::new(2, 0, 88, 0)),
+        "0C" => Ok(Sizage::new(2, 0, 88, 0)),
+        "0D" => Ok(Sizage::new(2, 0, 88, 0)),
+        "0E" => Ok(Sizage::new(2, 0, 88, 0)),
+        "0F" => Ok(Sizage::new(2, 0, 88, 0)),
+        "0G" => Ok(Sizage::new(2, 0, 88, 0)),
+        "0H" => Ok(Sizage::new(2, 0, 8, 0)),
+        "1AAA" => Ok(Sizage::new(4, 0, 48, 0)),
+        "1AAB" => Ok(Sizage::new(4, 0, 48, 0)),
+        "1AAC" => Ok(Sizage::new(4, 0, 80, 0)),
+        "1AAD" => Ok(Sizage::new(4, 0, 80, 0)),
+        "1AAE" => Ok(Sizage::new(4, 0, 56, 0)),
+        "1AAF" => Ok(Sizage::new(4, 0, 8, 0)),
+        "1AAG" => Ok(Sizage::new(4, 0, 36, 0)),
+        "1AAH" => Ok(Sizage::new(4, 0, 100, 0)),
+        "2AAA" => Ok(Sizage::new(4, 0, 8, 1)),
+        "3AAA" => Ok(Sizage::new(4, 0, 8, 2)),
+        "4A" => Ok(Sizage::new(2, 2, 0, 0)),
+        "5A" => Ok(Sizage::new(2, 2, 0, 1)),
+        "6A" => Ok(Sizage::new(2, 2, 0, 2)),
+        "7AAA" => Ok(Sizage::new(4, 4, 0, 0)),
+        "8AAA" => Ok(Sizage::new(4, 4, 0, 1)),
+        "9AAA" => Ok(Sizage::new(4, 4, 0, 2)),
+        "4B" => Ok(Sizage::new(2, 2, 0, 0)),
+        "5B" => Ok(Sizage::new(2, 2, 0, 1)),
+        "6B" => Ok(Sizage::new(2, 2, 0, 2)),
+        "7AAB" => Ok(Sizage::new(4, 4, 0, 0)),
+        "8AAB" => Ok(Sizage::new(4, 4, 0, 1)),
+        "9AAB" => Ok(Sizage::new(4, 4, 0, 2)),
+        _ => Err(Box::new(error::Error::UnknownSizage(s.to_owned()))),
     }
+}
+
+fn raw_size(sizage: Sizage) -> u32 {
+    let cs = sizage.hs + sizage.ss;
+    ((sizage.fs - cs) * 3 / 4) - sizage.ls
 }
 
 #[cfg(test)]
 mod matter_codex_tests {
+    use super::Sizage;
     use crate::core::matter::{hardage, sizage, Matter, MatterCodex};
 
     #[test]
     fn test_codes() {
-        assert_eq!(MatterCodex::Ed25519Seed.code(), "A");
+        assert_eq!(MatterCodex::Ed25519_Seed.code(), "A");
         assert_eq!(MatterCodex::Ed25519N.code(), "B");
         assert_eq!(MatterCodex::X25519.code(), "C");
         assert_eq!(MatterCodex::Ed25519.code(), "D");
         assert_eq!(MatterCodex::Blake3_256.code(), "E");
-        assert_eq!(MatterCodex::X25519Private.code(), "O");
-        assert_eq!(MatterCodex::X25519CipherSeed.code(), "P");
-        assert_eq!(MatterCodex::X25519CipherSalt.code(), "1AAH");
-        assert_eq!(MatterCodex::Salt128.code(), "0A");
-        assert_eq!(MatterCodex::Ed25519Sig.code(), "0B");
+        assert_eq!(MatterCodex::Blake2b_256.code(), "F");
+        assert_eq!(MatterCodex::Blake2s_256.code(), "G");
+        assert_eq!(MatterCodex::SHA3_256.code(), "H");
+        assert_eq!(MatterCodex::SHA2_256.code(), "I");
+        assert_eq!(MatterCodex::ECDSA_256k1_Seed.code(), "J");
+        assert_eq!(MatterCodex::Ed448_Seed.code(), "K");
+        assert_eq!(MatterCodex::X448.code(), "L");
+        assert_eq!(MatterCodex::Short.code(), "M");
+        assert_eq!(MatterCodex::Big.code(), "N");
+        assert_eq!(MatterCodex::X25519_Private.code(), "O");
+        assert_eq!(MatterCodex::X25519_Cipher_Seed.code(), "P");
+        assert_eq!(MatterCodex::Salt_128.code(), "0A");
+        assert_eq!(MatterCodex::Ed25519_Sig.code(), "0B");
+        assert_eq!(MatterCodex::ECDSA_256k1_Sig.code(), "0C");
+        assert_eq!(MatterCodex::Blake3_512.code(), "0D");
+        assert_eq!(MatterCodex::Blake2b_512.code(), "0E");
+        assert_eq!(MatterCodex::SHA3_512.code(), "0F");
+        assert_eq!(MatterCodex::SHA2_512.code(), "0G");
+        assert_eq!(MatterCodex::Long.code(), "0H");
+        assert_eq!(MatterCodex::ECDSA_256k1N.code(), "1AAA");
+        assert_eq!(MatterCodex::ECDSA_256k1.code(), "1AAB");
+        assert_eq!(MatterCodex::Ed448N.code(), "1AAC");
+        assert_eq!(MatterCodex::Ed448.code(), "1AAD");
+        assert_eq!(MatterCodex::Ed448_Sig.code(), "1AAE");
+        assert_eq!(MatterCodex::Tern.code(), "1AAF");
+        assert_eq!(MatterCodex::DateTime.code(), "1AAG");
+        assert_eq!(MatterCodex::X25519_Cipher_Salt.code(), "1AAH");
+        assert_eq!(MatterCodex::TBD1.code(), "2AAA");
+        assert_eq!(MatterCodex::TBD2.code(), "3AAA");
+        assert_eq!(MatterCodex::StrB64_L0.code(), "4A");
+        assert_eq!(MatterCodex::StrB64_L1.code(), "5A");
+        assert_eq!(MatterCodex::StrB64_L2.code(), "6A");
+        assert_eq!(MatterCodex::StrB64_Big_L0.code(), "7AAA");
+        assert_eq!(MatterCodex::StrB64_Big_L1.code(), "8AAA");
+        assert_eq!(MatterCodex::StrB64_Big_L2.code(), "9AAA");
+        assert_eq!(MatterCodex::Bytes_L0.code(), "4B");
+        assert_eq!(MatterCodex::Bytes_L1.code(), "5B");
+        assert_eq!(MatterCodex::Bytes_L2.code(), "6B");
+        assert_eq!(MatterCodex::Bytes_Big_L0.code(), "7AAB");
+        assert_eq!(MatterCodex::Bytes_Big_L1.code(), "8AAB");
+        assert_eq!(MatterCodex::Bytes_Big_L2.code(), "9AAB");
     }
 
     #[test]
     fn test_sizage() {
-        let mut s = sizage(MatterCodex::Ed25519Seed.code()).unwrap();
+        let mut s: Sizage;
+
+        s = sizage(MatterCodex::Ed25519_Seed.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 44);
@@ -316,35 +786,251 @@ mod matter_codex_tests {
         assert_eq!(s.fs, 44);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::X25519Private.code()).unwrap();
+        s = sizage(MatterCodex::Blake2b_256.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 44);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::X25519CipherSeed.code()).unwrap();
+        s = sizage(MatterCodex::Blake2s_256.code()).unwrap();
+        assert_eq!(s.hs, 1);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 44);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::SHA3_256.code()).unwrap();
+        assert_eq!(s.hs, 1);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 44);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::SHA2_256.code()).unwrap();
+        assert_eq!(s.hs, 1);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 44);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::ECDSA_256k1_Seed.code()).unwrap();
+        assert_eq!(s.hs, 1);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 44);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::Ed448_Seed.code()).unwrap();
+        assert_eq!(s.hs, 1);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 76);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::X448.code()).unwrap();
+        assert_eq!(s.hs, 1);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 76);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::Short.code()).unwrap();
+        assert_eq!(s.hs, 1);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 4);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::Big.code()).unwrap();
+        assert_eq!(s.hs, 1);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 12);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::X25519_Private.code()).unwrap();
+        assert_eq!(s.hs, 1);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 44);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::X25519_Cipher_Seed.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 124);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::X25519CipherSalt.code()).unwrap();
+        s = sizage(MatterCodex::Salt_128.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 24);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Salt128.code()).unwrap();
-        assert_eq!(s.hs, 1);
+        s = sizage(MatterCodex::Ed25519_Sig.code()).unwrap();
+        assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 88);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Ed25519Sig.code()).unwrap();
+        s = sizage(MatterCodex::ECDSA_256k1_Sig.code()).unwrap();
+        assert_eq!(s.hs, 2);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 88);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::Blake3_512.code()).unwrap();
+        assert_eq!(s.hs, 2);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 88);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::Blake2b_512.code()).unwrap();
+        assert_eq!(s.hs, 2);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 88);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::SHA3_512.code()).unwrap();
+        assert_eq!(s.hs, 2);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 88);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::SHA2_512.code()).unwrap();
+        assert_eq!(s.hs, 2);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 88);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::Long.code()).unwrap();
+        assert_eq!(s.hs, 2);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 8);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::ECDSA_256k1N.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 48);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::ECDSA_256k1.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 48);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::Ed448N.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 80);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::Ed448.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 80);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::Ed448_Sig.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 56);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::Tern.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 8);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::DateTime.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 36);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::X25519_Cipher_Salt.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 100);
         assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::TBD1.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 8);
+        assert_eq!(s.ls, 1);
+
+        s = sizage(MatterCodex::TBD2.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 0);
+        assert_eq!(s.fs, 8);
+        assert_eq!(s.ls, 2);
+
+        s = sizage(MatterCodex::StrB64_L0.code()).unwrap();
+        assert_eq!(s.hs, 2);
+        assert_eq!(s.ss, 2);
+        assert_eq!(s.fs, 0);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::StrB64_L1.code()).unwrap();
+        assert_eq!(s.hs, 2);
+        assert_eq!(s.ss, 2);
+        assert_eq!(s.fs, 0);
+        assert_eq!(s.ls, 1);
+
+        s = sizage(MatterCodex::StrB64_L2.code()).unwrap();
+        assert_eq!(s.hs, 2);
+        assert_eq!(s.ss, 2);
+        assert_eq!(s.fs, 0);
+        assert_eq!(s.ls, 2);
+
+        s = sizage(MatterCodex::StrB64_Big_L0.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 4);
+        assert_eq!(s.fs, 0);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::StrB64_Big_L1.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 4);
+        assert_eq!(s.fs, 0);
+        assert_eq!(s.ls, 1);
+
+        s = sizage(MatterCodex::StrB64_Big_L2.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 4);
+        assert_eq!(s.fs, 0);
+        assert_eq!(s.ls, 2);
+
+        s = sizage(MatterCodex::Bytes_L0.code()).unwrap();
+        assert_eq!(s.hs, 2);
+        assert_eq!(s.ss, 2);
+        assert_eq!(s.fs, 0);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::Bytes_L1.code()).unwrap();
+        assert_eq!(s.hs, 2);
+        assert_eq!(s.ss, 2);
+        assert_eq!(s.fs, 0);
+        assert_eq!(s.ls, 1);
+
+        s = sizage(MatterCodex::Bytes_L2.code()).unwrap();
+        assert_eq!(s.hs, 2);
+        assert_eq!(s.ss, 2);
+        assert_eq!(s.fs, 0);
+        assert_eq!(s.ls, 2);
+
+        s = sizage(MatterCodex::Bytes_Big_L0.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 4);
+        assert_eq!(s.fs, 0);
+        assert_eq!(s.ls, 0);
+
+        s = sizage(MatterCodex::Bytes_Big_L1.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 4);
+        assert_eq!(s.fs, 0);
+        assert_eq!(s.ls, 1);
+
+        s = sizage(MatterCodex::Bytes_Big_L2.code()).unwrap();
+        assert_eq!(s.hs, 4);
+        assert_eq!(s.ss, 4);
+        assert_eq!(s.fs, 0);
+        assert_eq!(s.ls, 2);
     }
 
     #[test]
@@ -359,36 +1045,136 @@ mod matter_codex_tests {
 
     #[test]
     fn test_matter_new() {
-        // let m = Matter::new_with_qb64(
-        //     "BGlOiUdp5sMmfotHfCWQKEzWR91C72AH0lT84c0um-Qj".to_string()).unwrap();
-        // assert_eq!(m.code(), MatterCodex::Ed25519N.code())
+        let qb64 = "BGlOiUdp5sMmfotHfCWQKEzWR91C72AH0lT84c0um-Qj";
 
-        // let mut m: Matter = Default::default();
-        // assert_eq!(m.code.unwrap(), MatterCodex::Ed25519N.code());
-        // assert_eq!(m.qb64.unwrap(), "");
-        //
-        // // partial override
-        // m = Matter {
-        //     qb64: Some("qb64".into()),
-        //     ..Default::default()
-        // };
-        // assert_eq!(m.qb64.unwrap(), "qb64");
-        //
-        // // full override
-        // m = Matter {
-        //     raw: Some(b"a".to_vec()),
-        //     code: Some(MatterCodex::X25519CipherSeed.code()),
-        //     qb64b: Some(b"b".to_vec()),
-        //     qb64: Some("qb64".into()),
-        //     qb2: Some(b"c".to_vec()),
-        //     strip: Some(true),
-        // };
-        //
-        // assert_eq!(m.raw.unwrap(), b"a".to_vec());
-        // assert_eq!(m.code.unwrap(), MatterCodex::X25519CipherSeed.code());
-        // assert_eq!(m.qb64b.unwrap(), b"b".to_vec());
-        // assert_eq!(m.qb64.unwrap(), "qb64");
-        // assert_eq!(m.qb2.unwrap(), b"c".to_vec());
-        // assert_eq!(m.strip.unwrap(), true);
+        // basic
+        let mut m = Matter::new_with_qb64(qb64.to_owned()).unwrap();
+        assert_eq!(m.code, MatterCodex::Ed25519N.code());
+
+        // qb64
+        let mut m2 =
+            Matter::new_with_code_and_raw(m.code.clone(), m.raw.clone(), m.raw.len()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+        assert_eq!(qb64, m2.qb64().unwrap());
+
+        // qb64b
+        m2 = Matter::new_with_qb64b(m.qb64b().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+        assert_eq!(qb64, m2.qb64().unwrap());
+
+        // qb2
+        m2 = Matter::new_with_qb2(m.qb2().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+        assert_eq!(qb64, m2.qb64().unwrap());
+
+        // small variable b64(), ls = 0
+        let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
+        m = Matter::new_with_code_and_raw(MatterCodex::StrB64_L0.code().to_owned(), raw, 9)
+            .unwrap();
+        m2 = Matter::new_with_qb64(m.qb64().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+        m2 = Matter::new_with_qb2(m.qb2().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+
+        // small variable b64(), ls = 1
+        let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7];
+        m = Matter::new_with_code_and_raw(MatterCodex::StrB64_L1.code().to_owned(), raw, 8)
+            .unwrap();
+        m2 = Matter::new_with_qb64(m.qb64().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+        m2 = Matter::new_with_qb2(m.qb2().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+
+        // small variable b64(), ls = 2
+        let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6];
+        m = Matter::new_with_code_and_raw(MatterCodex::StrB64_L2.code().to_owned(), raw, 7)
+            .unwrap();
+        m2 = Matter::new_with_qb64(m.qb64().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+        m2 = Matter::new_with_qb2(m.qb2().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+
+        // small variable bytes is essentially the same as the above
+
+        // large variable b64 is essentially the same as below
+
+        // large variable bytes, ls = 0
+        let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
+        m = Matter::new_with_code_and_raw(MatterCodex::Bytes_Big_L0.code().to_owned(), raw, 9)
+            .unwrap();
+        m2 = Matter::new_with_qb64(m.qb64().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+        m2 = Matter::new_with_qb2(m.qb2().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+
+        // large variable bytes, ls = 1
+        let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7];
+        m = Matter::new_with_code_and_raw(MatterCodex::Bytes_Big_L1.code().to_owned(), raw, 8)
+            .unwrap();
+        m2 = Matter::new_with_qb64(m.qb64().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+        m2 = Matter::new_with_qb2(m.qb2().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+
+        // large variable bytes, ls = 0
+        let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6];
+        m = Matter::new_with_code_and_raw(MatterCodex::Bytes_Big_L2.code().to_owned(), raw, 7)
+            .unwrap();
+        m2 = Matter::new_with_qb64(m.qb64().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+        m2 = Matter::new_with_qb2(m.qb2().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+
+        // default
+        m = Default::default();
+        assert_eq!(m.code, "");
+
+        // partial override
+        m = Matter {
+            size: 3,
+            ..Default::default()
+        };
+        assert_eq!(m.size, 3);
+
+        // full override
+        m = Matter {
+            raw: b"a".to_vec(),
+            code: MatterCodex::X25519_Cipher_Seed.code().into(),
+            size: 1,
+        };
+
+        assert_eq!(m.raw, b"a".to_vec());
+        assert_eq!(m.code, MatterCodex::X25519_Cipher_Seed.code());
+        assert_eq!(m.size, 1);
     }
 }
