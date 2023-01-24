@@ -1,6 +1,6 @@
 use base64::Engine;
 
-use crate::core::sizage::{Sizage, sizage};
+use crate::core::sizage::{sizage, Sizage};
 use crate::core::util;
 use crate::error;
 
