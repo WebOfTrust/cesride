@@ -1,3 +1,5 @@
+pub(crate) mod codex;
+
 use base64::Engine;
 
 use crate::core::sizage::{sizage, Sizage};
@@ -531,7 +533,7 @@ fn raw_size(sizage: Sizage) -> u32 {
 #[cfg(test)]
 mod matter_codex_tests {
 
-    use crate::core::{matter::Matter, matter_codex::MatterCodex};
+    use crate::core::matter::{codex::Codex, Matter};
 
     #[test]
     fn test_matter_new() {
@@ -539,7 +541,7 @@ mod matter_codex_tests {
 
         // basic
         let mut m = Matter::new_with_qb64(qb64.to_owned()).unwrap();
-        assert_eq!(m.code, MatterCodex::Ed25519N.code());
+        assert_eq!(m.code, Codex::Ed25519N.code());
 
         // qb64
         let mut m2 =
@@ -565,8 +567,7 @@ mod matter_codex_tests {
 
         // small variable b64(), ls = 0
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
-        m = Matter::new_with_code_and_raw(MatterCodex::StrB64_L0.code().to_owned(), raw, 9)
-            .unwrap();
+        m = Matter::new_with_code_and_raw(Codex::StrB64_L0.code().to_owned(), raw, 9).unwrap();
         m2 = Matter::new_with_qb64(m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -578,8 +579,7 @@ mod matter_codex_tests {
 
         // small variable b64(), ls = 1
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7];
-        m = Matter::new_with_code_and_raw(MatterCodex::StrB64_L1.code().to_owned(), raw, 8)
-            .unwrap();
+        m = Matter::new_with_code_and_raw(Codex::StrB64_L1.code().to_owned(), raw, 8).unwrap();
         m2 = Matter::new_with_qb64(m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -591,8 +591,7 @@ mod matter_codex_tests {
 
         // small variable b64(), ls = 2
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6];
-        m = Matter::new_with_code_and_raw(MatterCodex::StrB64_L2.code().to_owned(), raw, 7)
-            .unwrap();
+        m = Matter::new_with_code_and_raw(Codex::StrB64_L2.code().to_owned(), raw, 7).unwrap();
         m2 = Matter::new_with_qb64(m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -608,8 +607,7 @@ mod matter_codex_tests {
 
         // large variable bytes, ls = 0
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
-        m = Matter::new_with_code_and_raw(MatterCodex::Bytes_Big_L0.code().to_owned(), raw, 9)
-            .unwrap();
+        m = Matter::new_with_code_and_raw(Codex::Bytes_Big_L0.code().to_owned(), raw, 9).unwrap();
         m2 = Matter::new_with_qb64(m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -621,8 +619,7 @@ mod matter_codex_tests {
 
         // large variable bytes, ls = 1
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7];
-        m = Matter::new_with_code_and_raw(MatterCodex::Bytes_Big_L1.code().to_owned(), raw, 8)
-            .unwrap();
+        m = Matter::new_with_code_and_raw(Codex::Bytes_Big_L1.code().to_owned(), raw, 8).unwrap();
         m2 = Matter::new_with_qb64(m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -634,8 +631,7 @@ mod matter_codex_tests {
 
         // large variable bytes, ls = 0
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6];
-        m = Matter::new_with_code_and_raw(MatterCodex::Bytes_Big_L2.code().to_owned(), raw, 7)
-            .unwrap();
+        m = Matter::new_with_code_and_raw(Codex::Bytes_Big_L2.code().to_owned(), raw, 7).unwrap();
         m2 = Matter::new_with_qb64(m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -659,12 +655,12 @@ mod matter_codex_tests {
         // full override
         m = Matter {
             raw: b"a".to_vec(),
-            code: MatterCodex::X25519_Cipher_Seed.code().into(),
+            code: Codex::X25519_Cipher_Seed.code().into(),
             size: 1,
         };
 
         assert_eq!(m.raw, b"a".to_vec());
-        assert_eq!(m.code, MatterCodex::X25519_Cipher_Seed.code());
+        assert_eq!(m.code, Codex::X25519_Cipher_Seed.code());
         assert_eq!(m.size, 1);
     }
 }

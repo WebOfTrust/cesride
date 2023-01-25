@@ -68,286 +68,284 @@ pub(crate) fn sizage(s: &str) -> error::Result<Sizage> {
 
 #[cfg(test)]
 mod sizage_tests {
-    use crate::core::{
-        matter_codex::MatterCodex,
-        sizage::{sizage, Sizage},
-    };
+    use crate::core::matter::codex::Codex;
+    use crate::core::sizage::{sizage, Sizage};
 
     #[test]
     fn test_sizage() {
         let mut s: Sizage;
 
-        s = sizage(MatterCodex::Ed25519_Seed.code()).unwrap();
+        s = sizage(Codex::Ed25519_Seed.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 44);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Ed25519N.code()).unwrap();
+        s = sizage(Codex::Ed25519N.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 44);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::X25519.code()).unwrap();
+        s = sizage(Codex::X25519.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 44);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Ed25519.code()).unwrap();
+        s = sizage(Codex::Ed25519.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 44);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Blake3_256.code()).unwrap();
+        s = sizage(Codex::Blake3_256.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 44);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Blake2b_256.code()).unwrap();
+        s = sizage(Codex::Blake2b_256.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 44);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Blake2s_256.code()).unwrap();
+        s = sizage(Codex::Blake2s_256.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 44);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::SHA3_256.code()).unwrap();
+        s = sizage(Codex::SHA3_256.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 44);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::SHA2_256.code()).unwrap();
+        s = sizage(Codex::SHA2_256.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 44);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::ECDSA_256k1_Seed.code()).unwrap();
+        s = sizage(Codex::ECDSA_256k1_Seed.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 44);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Ed448_Seed.code()).unwrap();
+        s = sizage(Codex::Ed448_Seed.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 76);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::X448.code()).unwrap();
+        s = sizage(Codex::X448.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 76);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Short.code()).unwrap();
+        s = sizage(Codex::Short.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 4);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Big.code()).unwrap();
+        s = sizage(Codex::Big.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 12);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::X25519_Private.code()).unwrap();
+        s = sizage(Codex::X25519_Private.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 44);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::X25519_Cipher_Seed.code()).unwrap();
+        s = sizage(Codex::X25519_Cipher_Seed.code()).unwrap();
         assert_eq!(s.hs, 1);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 124);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Salt_128.code()).unwrap();
+        s = sizage(Codex::Salt_128.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 24);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Ed25519_Sig.code()).unwrap();
+        s = sizage(Codex::Ed25519_Sig.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 88);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::ECDSA_256k1_Sig.code()).unwrap();
+        s = sizage(Codex::ECDSA_256k1_Sig.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 88);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Blake3_512.code()).unwrap();
+        s = sizage(Codex::Blake3_512.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 88);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Blake2b_512.code()).unwrap();
+        s = sizage(Codex::Blake2b_512.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 88);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::SHA3_512.code()).unwrap();
+        s = sizage(Codex::SHA3_512.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 88);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::SHA2_512.code()).unwrap();
+        s = sizage(Codex::SHA2_512.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 88);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Long.code()).unwrap();
+        s = sizage(Codex::Long.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 8);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::ECDSA_256k1N.code()).unwrap();
+        s = sizage(Codex::ECDSA_256k1N.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 48);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::ECDSA_256k1.code()).unwrap();
+        s = sizage(Codex::ECDSA_256k1.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 48);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Ed448N.code()).unwrap();
+        s = sizage(Codex::Ed448N.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 80);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Ed448.code()).unwrap();
+        s = sizage(Codex::Ed448.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 80);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Ed448_Sig.code()).unwrap();
+        s = sizage(Codex::Ed448_Sig.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 56);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Tern.code()).unwrap();
+        s = sizage(Codex::Tern.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 8);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::DateTime.code()).unwrap();
+        s = sizage(Codex::DateTime.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 36);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::X25519_Cipher_Salt.code()).unwrap();
+        s = sizage(Codex::X25519_Cipher_Salt.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 100);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::TBD1.code()).unwrap();
+        s = sizage(Codex::TBD1.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 8);
         assert_eq!(s.ls, 1);
 
-        s = sizage(MatterCodex::TBD2.code()).unwrap();
+        s = sizage(Codex::TBD2.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 0);
         assert_eq!(s.fs, 8);
         assert_eq!(s.ls, 2);
 
-        s = sizage(MatterCodex::StrB64_L0.code()).unwrap();
+        s = sizage(Codex::StrB64_L0.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 2);
         assert_eq!(s.fs, 0);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::StrB64_L1.code()).unwrap();
+        s = sizage(Codex::StrB64_L1.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 2);
         assert_eq!(s.fs, 0);
         assert_eq!(s.ls, 1);
 
-        s = sizage(MatterCodex::StrB64_L2.code()).unwrap();
+        s = sizage(Codex::StrB64_L2.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 2);
         assert_eq!(s.fs, 0);
         assert_eq!(s.ls, 2);
 
-        s = sizage(MatterCodex::StrB64_Big_L0.code()).unwrap();
+        s = sizage(Codex::StrB64_Big_L0.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 4);
         assert_eq!(s.fs, 0);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::StrB64_Big_L1.code()).unwrap();
+        s = sizage(Codex::StrB64_Big_L1.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 4);
         assert_eq!(s.fs, 0);
         assert_eq!(s.ls, 1);
 
-        s = sizage(MatterCodex::StrB64_Big_L2.code()).unwrap();
+        s = sizage(Codex::StrB64_Big_L2.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 4);
         assert_eq!(s.fs, 0);
         assert_eq!(s.ls, 2);
 
-        s = sizage(MatterCodex::Bytes_L0.code()).unwrap();
+        s = sizage(Codex::Bytes_L0.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 2);
         assert_eq!(s.fs, 0);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Bytes_L1.code()).unwrap();
+        s = sizage(Codex::Bytes_L1.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 2);
         assert_eq!(s.fs, 0);
         assert_eq!(s.ls, 1);
 
-        s = sizage(MatterCodex::Bytes_L2.code()).unwrap();
+        s = sizage(Codex::Bytes_L2.code()).unwrap();
         assert_eq!(s.hs, 2);
         assert_eq!(s.ss, 2);
         assert_eq!(s.fs, 0);
         assert_eq!(s.ls, 2);
 
-        s = sizage(MatterCodex::Bytes_Big_L0.code()).unwrap();
+        s = sizage(Codex::Bytes_Big_L0.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 4);
         assert_eq!(s.fs, 0);
         assert_eq!(s.ls, 0);
 
-        s = sizage(MatterCodex::Bytes_Big_L1.code()).unwrap();
+        s = sizage(Codex::Bytes_Big_L1.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 4);
         assert_eq!(s.fs, 0);
         assert_eq!(s.ls, 1);
 
-        s = sizage(MatterCodex::Bytes_Big_L2.code()).unwrap();
+        s = sizage(Codex::Bytes_Big_L2.code()).unwrap();
         assert_eq!(s.hs, 4);
         assert_eq!(s.ss, 4);
         assert_eq!(s.fs, 0);
