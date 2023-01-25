@@ -1,12 +1,10 @@
-pub(crate) mod codex;
+mod tables;
 
 use base64::Engine;
 
-use crate::core::sizage::{sizage, Sizage};
+use crate::core::matter::tables::{hardage, sizage, Sizage};
 use crate::core::util;
 use crate::error;
-
-use super::hardage::hardage;
 
 #[derive(Debug)]
 pub struct Matter {
@@ -533,7 +531,7 @@ fn raw_size(sizage: Sizage) -> u32 {
 #[cfg(test)]
 mod matter_codex_tests {
 
-    use crate::core::matter::{codex::Codex, Matter};
+    use crate::core::matter::{tables::Codex, Matter};
 
     #[test]
     fn test_matter_new() {
