@@ -4,6 +4,8 @@ use crate::core::sizage::{sizage, Sizage};
 use crate::core::util;
 use crate::error;
 
+use super::hardage::hardage;
+
 #[allow(non_camel_case_types)]
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum MatterCodex {
@@ -625,21 +627,6 @@ impl Default for Matter {
     }
 }
 
-fn hardage(c: char) -> error::Result<i32> {
-    match c {
-        'A'..='Z' | 'a'..='z' => Ok(1),
-        '0' | '4' | '5' | '6' => Ok(2),
-        '1' | '2' | '3' | '7' | '8' | '9' => Ok(4),
-        '-' => Err(Box::new(error::Error::UnexpectedCode(
-            "count code start".to_owned(),
-        ))),
-        '_' => Err(Box::new(error::Error::UnexpectedCode(
-            "op code start".to_owned(),
-        ))),
-        _ => Err(Box::new(error::Error::UnknownHardage(c.to_string()))),
-    }
-}
-
 fn raw_size(sizage: Sizage) -> u32 {
     let cs = sizage.hs + sizage.ss;
     ((sizage.fs - cs) * 3 / 4) - sizage.ls
@@ -648,7 +635,7 @@ fn raw_size(sizage: Sizage) -> u32 {
 #[cfg(test)]
 mod matter_codex_tests {
     use super::Sizage;
-    use crate::core::matter::{hardage, sizage, Matter, MatterCodex};
+    use crate::core::matter::{sizage, Matter, MatterCodex};
 
     #[test]
     fn test_codes() {
@@ -698,16 +685,6 @@ mod matter_codex_tests {
         assert_eq!(MatterCodex::Bytes_Big_L0.code(), "7AAB");
         assert_eq!(MatterCodex::Bytes_Big_L1.code(), "8AAB");
         assert_eq!(MatterCodex::Bytes_Big_L2.code(), "9AAB");
-    }
-
-    #[test]
-    fn test_hardage() {
-        assert_eq!(hardage('A').unwrap(), 1);
-        assert_eq!(hardage('G').unwrap(), 1);
-        assert_eq!(hardage('b').unwrap(), 1);
-        assert_eq!(hardage('z').unwrap(), 1);
-        assert_eq!(hardage('1').unwrap(), 4);
-        assert_eq!(hardage('0').unwrap(), 2);
     }
 
     #[test]
