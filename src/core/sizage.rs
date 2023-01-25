@@ -69,7 +69,7 @@ pub(crate) fn sizage(s: &str) -> error::Result<Sizage> {
 #[cfg(test)]
 mod sizage_tests {
     use crate::core::{
-        matter::MatterCodex,
+        matter_codex::MatterCodex,
         sizage::{sizage, Sizage},
     };
 
