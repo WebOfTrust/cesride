@@ -1,4 +1,4 @@
-use crate::error;
+use crate::error::{Error, Result};
 
 #[derive(Debug, PartialEq)]
 pub struct Sizage {
@@ -14,7 +14,7 @@ impl Sizage {
     }
 }
 
-pub(crate) fn sizage(s: &str) -> error::Result<Sizage> {
+pub(crate) fn sizage(s: &str) -> Result<Sizage> {
     match s {
         "A" => Ok(Sizage::new(1, 0, 44, 0)),
         "B" => Ok(Sizage::new(1, 0, 44, 0)),
@@ -62,22 +62,20 @@ pub(crate) fn sizage(s: &str) -> error::Result<Sizage> {
         "7AAB" => Ok(Sizage::new(4, 4, 0, 0)),
         "8AAB" => Ok(Sizage::new(4, 4, 0, 1)),
         "9AAB" => Ok(Sizage::new(4, 4, 0, 2)),
-        _ => Err(Box::new(error::Error::UnknownSizage(s.to_string()))),
+        _ => Err(Box::new(Error::UnknownSizage(s.to_string()))),
     }
 }
 
-pub(crate) fn hardage(c: char) -> error::Result<i32> {
+pub(crate) fn hardage(c: char) -> Result<i32> {
     match c {
         'A'..='Z' | 'a'..='z' => Ok(1),
         '0' | '4' | '5' | '6' => Ok(2),
         '1' | '2' | '3' | '7' | '8' | '9' => Ok(4),
-        '-' => Err(Box::new(error::Error::UnexpectedCode(
+        '-' => Err(Box::new(Error::UnexpectedCode(
             "count code start".to_string(),
         ))),
-        '_' => Err(Box::new(error::Error::UnexpectedCode(
-            "op code start".to_string(),
-        ))),
-        _ => Err(Box::new(error::Error::UnknownHardage(c.to_string()))),
+        '_' => Err(Box::new(Error::UnexpectedCode("op code start".to_string()))),
+        _ => Err(Box::new(Error::UnknownHardage(c.to_string()))),
     }
 }
 
@@ -184,7 +182,7 @@ impl Codex {
         }
     }
 
-    pub(crate) fn from_code(code: &str) -> error::Result<Self> {
+    pub(crate) fn from_code(code: &str) -> Result<Self> {
         Ok(match code {
             "A" => Codex::Ed25519_Seed,
             "B" => Codex::Ed25519N,
@@ -232,14 +230,14 @@ impl Codex {
             "7AAB" => Codex::Bytes_Big_L0,
             "8AAB" => Codex::Bytes_Big_L1,
             "9AAB" => Codex::Bytes_Big_L2,
-            _ => return Err(Box::new(error::Error::UnexpectedCode(code.to_string()))),
+            _ => return Err(Box::new(Error::UnexpectedCode(code.to_string()))),
         })
     }
 }
 
 #[cfg(test)]
 mod tables_tests {
-    use crate::core::matter::tables::{hardage, sizage, Codex, Sizage};
+    use super::{hardage, sizage, Codex, Sizage};
 
     #[test]
     fn test_sizage() {
