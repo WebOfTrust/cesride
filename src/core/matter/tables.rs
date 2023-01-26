@@ -183,6 +183,58 @@ impl Codex {
             Codex::Bytes_Big_L2 => "9AAB", // Byte String Big Leader Size 2
         }
     }
+
+    pub(crate) fn from_code(code: &str) -> error::Result<Self> {
+        Ok(match code {
+            "A" => Codex::Ed25519_Seed,
+            "B" => Codex::Ed25519N,
+            "C" => Codex::X25519,
+            "D" => Codex::Ed25519,
+            "E" => Codex::Blake3_256,
+            "F" => Codex::Blake2b_256,
+            "G" => Codex::Blake2s_256,
+            "H" => Codex::SHA3_256,
+            "I" => Codex::SHA2_256,
+            "J" => Codex::ECDSA_256k1_Seed,
+            "K" => Codex::Ed448_Seed,
+            "L" => Codex::X448,
+            "M" => Codex::Short,
+            "N" => Codex::Big,
+            "O" => Codex::X25519_Private,
+            "P" => Codex::X25519_Cipher_Seed,
+            "0A" => Codex::Salt_128,
+            "0B" => Codex::Ed25519_Sig,
+            "0C" => Codex::ECDSA_256k1_Sig,
+            "0D" => Codex::Blake3_512,
+            "0E" => Codex::Blake2b_512,
+            "0F" => Codex::SHA3_512,
+            "0G" => Codex::SHA2_512,
+            "0H" => Codex::Long,
+            "1AAA" => Codex::ECDSA_256k1N,
+            "1AAB" => Codex::ECDSA_256k1,
+            "1AAC" => Codex::Ed448N,
+            "1AAD" => Codex::Ed448,
+            "1AAE" => Codex::Ed448_Sig,
+            "1AAF" => Codex::Tern,
+            "1AAG" => Codex::DateTime,
+            "1AAH" => Codex::X25519_Cipher_Salt,
+            "2AAA" => Codex::TBD1,
+            "3AAA" => Codex::TBD2,
+            "4A" => Codex::StrB64_L0,
+            "5A" => Codex::StrB64_L1,
+            "6A" => Codex::StrB64_L2,
+            "7AAA" => Codex::StrB64_Big_L0,
+            "8AAA" => Codex::StrB64_Big_L1,
+            "9AAA" => Codex::StrB64_Big_L2,
+            "4B" => Codex::Bytes_L0,
+            "5B" => Codex::Bytes_L1,
+            "6B" => Codex::Bytes_L2,
+            "7AAB" => Codex::Bytes_Big_L0,
+            "8AAB" => Codex::Bytes_Big_L1,
+            "9AAB" => Codex::Bytes_Big_L2,
+            _ => return Err(Box::new(error::Error::UnexpectedCode(code.to_owned()))),
+        })
+    }
 }
 
 #[cfg(test)]

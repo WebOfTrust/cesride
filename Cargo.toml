@@ -10,5 +10,13 @@ keywords = ["cesr", "keri", "acdc"]
 
 [dependencies]
 base64 = "0.21.0"
+blake2 = "0.10.6"
+blake3 = "1.3.3"
 lazy_static = "1.4.0"
+sha2 = "0.10.6"
+sha3 = "0.10.6"
 thiserror = "1.0.38"
+
+[dev-dependencies]
+hex-literal = "0.3.4"
+hex = "0.3.1"
