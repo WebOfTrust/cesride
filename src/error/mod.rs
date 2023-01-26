@@ -49,4 +49,6 @@ pub enum Error {
     ParseQb2(String),
     #[error("conversion error: {0}")]
     Conversion(String),
+    #[error("{0}")]
+    InvalidVarIndex(String),
 }

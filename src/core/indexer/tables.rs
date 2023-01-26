@@ -1,4 +1,4 @@
-use crate::error::{self, Error};
+use crate::error;
 /// Codex is codex hard (stable) part of all indexer derivation codes.
 ///
 /// Codes indicate which list of keys, current and/or prior next, index is for:
@@ -114,6 +114,18 @@ impl CurrentSigCodex {
             CurrentSigCodex::ECDSA_256k1_Big_Crt_Sig => "2D", // ECDSA secp256k1 sig appears in current list only.
             CurrentSigCodex::Ed448_Big_Crt_Sig => "3B", // Ed448 signature appears in current list only.
         }
+    }
+
+    pub(crate) fn from_code(code: &str) -> error::Result<Self> {
+        Ok(match code {
+            "B" => CurrentSigCodex::Ed25519_Crt_Sig,
+            "D" => CurrentSigCodex::ECDSA_256k1_Crt_Sig,
+            "0B" => CurrentSigCodex::Ed448_Crt_Sig,
+            "2B" => CurrentSigCodex::Ed25519_Big_Crt_Sig,
+            "2D" => CurrentSigCodex::ECDSA_256k1_Big_Crt_Sig,
+            "3B" => CurrentSigCodex::Ed448_Big_Crt_Sig,
+            _ => return Err(Box::new(error::Error::UnexpectedCode(code.to_string()))),
+        })
     }
 }
 

@@ -13,7 +13,12 @@ pub struct Matter {
 }
 
 impl Matter {
-    pub fn new_with_code_and_raw(code: &str, raw: &[u8], raw_size: usize) -> Result<Matter> {
+    pub fn new_with_code_and_raw(
+        code: &str,
+        raw: &[u8],
+        raw_size: usize,
+        index: u32,
+    ) -> Result<Matter> {
         if code.is_empty() {
             return Err(Box::new(Error::EmptyMaterial("empty code".to_string())));
         }
