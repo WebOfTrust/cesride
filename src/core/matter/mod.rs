@@ -15,7 +15,7 @@ pub struct Matter {
 impl Matter {
     pub fn new_with_code_and_raw(code: &str, raw: &[u8], raw_size: usize) -> Result<Matter> {
         if code.is_empty() {
-            return Err(Box::new(Error::EmptyMaterial("empty code".to_owned())));
+            return Err(Box::new(Error::EmptyMaterial("empty code".to_string())));
         }
 
         let mut size: u32 = 0;
@@ -128,7 +128,7 @@ impl Matter {
     }
 
     pub fn qb64b(&self) -> Result<Vec<u8>> {
-        Ok(Vec::from(self.qb64()?.as_bytes()))
+        Ok(self.qb64()?.as_bytes().to_vec())
     }
 
     pub fn qb2(&self) -> Result<Vec<u8>> {
@@ -282,7 +282,7 @@ impl Matter {
 
     fn exfil(&mut self, qb64: &str) -> Result<()> {
         if qb64.is_empty() {
-            return Err(Box::new(Error::EmptyMaterial("empty qb64".to_owned())));
+            return Err(Box::new(Error::EmptyMaterial("empty qb64".to_string())));
         }
 
         // we validated there will be a char here, above.
@@ -388,7 +388,7 @@ impl Matter {
     fn bexfil(&mut self, qb2: &[u8]) -> Result<()> {
         if qb2.is_empty() {
             return Err(Box::new(Error::EmptyMaterial(
-                "empty qualified base2".to_owned(),
+                "empty qualified base2".to_string(),
             )));
         }
 
@@ -396,11 +396,11 @@ impl Matter {
         if first_byte > 0x3d {
             if first_byte == 0x3e {
                 return Err(Box::new(Error::UnexpectedCountCode(
-                    "unexpected start during extraction".to_owned(),
+                    "unexpected start during extraction".to_string(),
                 )));
             } else if first_byte == 0x3f {
                 return Err(Box::new(Error::UnexpectedOpCode(
-                    "unexpected start during extraction".to_owned(),
+                    "unexpected start during extraction".to_string(),
                 )));
             } else {
                 return Err(Box::new(Error::UnexpectedCode(format!(

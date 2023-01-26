@@ -197,7 +197,7 @@ pub fn code_b2_to_b64(b2: &Vec<u8>, length: usize) -> error::Result<String> {
 
     if n > b2.len() {
         return Err(Box::new(error::Error::Matter(
-            "not enough bytes".to_owned(),
+            "not enough bytes".to_string(),
         )));
     }
 
@@ -217,7 +217,7 @@ pub fn code_b2_to_b64(b2: &Vec<u8>, length: usize) -> error::Result<String> {
         Ok(u64_to_b64(i >> tbs, length))
     } else {
         return Err(Box::new(error::Error::Matter(
-            "unexpected length".to_owned(),
+            "unexpected length".to_string(),
         )));
     }
 }
