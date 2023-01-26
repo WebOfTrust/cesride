@@ -201,7 +201,7 @@ pub(crate) fn hardage(c: char) -> error::Result<i32> {
         'A'..='Z' | 'a'..='z' => Ok(1),
         '0'..='4' => Ok(2),
         '-' => Err(Box::new(error::Error::UnexpectedCode(
-            "count code start".to_owned(),
+            "count code start".to_string(),
         ))),
         '_' => Err(Box::new(error::Error::UnexpectedCode(
             "op code start".to_owned(),
