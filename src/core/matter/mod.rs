@@ -515,7 +515,7 @@ impl Default for Matter {
 
 #[cfg(test)]
 mod matter_tests {
-    use crate::core::matter::{tables::Codex, Matter};
+    use crate::core::matter::{tables as matter, Matter};
 
     #[test]
     fn test_matter_new() {
@@ -523,7 +523,7 @@ mod matter_tests {
 
         // basic
         let mut m = Matter::new_with_qb64(qb64).unwrap();
-        assert_eq!(m.code, Codex::Ed25519N.code());
+        assert_eq!(m.code, matter::Codex::Ed25519N.code());
 
         // qb64
         let mut m2 = Matter::new_with_code_and_raw(&m.code, &m.raw, m.raw.len()).unwrap();
@@ -548,7 +548,7 @@ mod matter_tests {
 
         // small variable b64(), ls = 0
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
-        m = Matter::new_with_code_and_raw(Codex::StrB64_L0.code(), &raw, 9).unwrap();
+        m = Matter::new_with_code_and_raw(matter::Codex::StrB64_L0.code(), &raw, 9).unwrap();
         m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -560,7 +560,7 @@ mod matter_tests {
 
         // small variable b64(), ls = 1
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7];
-        m = Matter::new_with_code_and_raw(Codex::StrB64_L1.code(), &raw, 8).unwrap();
+        m = Matter::new_with_code_and_raw(matter::Codex::StrB64_L1.code(), &raw, 8).unwrap();
         m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -572,7 +572,7 @@ mod matter_tests {
 
         // small variable b64(), ls = 2
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6];
-        m = Matter::new_with_code_and_raw(Codex::StrB64_L2.code(), &raw, 7).unwrap();
+        m = Matter::new_with_code_and_raw(matter::Codex::StrB64_L2.code(), &raw, 7).unwrap();
         m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -588,7 +588,7 @@ mod matter_tests {
 
         // large variable bytes, ls = 0
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
-        m = Matter::new_with_code_and_raw(Codex::Bytes_Big_L0.code(), &raw, 9).unwrap();
+        m = Matter::new_with_code_and_raw(matter::Codex::Bytes_Big_L0.code(), &raw, 9).unwrap();
         m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -600,7 +600,7 @@ mod matter_tests {
 
         // large variable bytes, ls = 1
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7];
-        m = Matter::new_with_code_and_raw(Codex::Bytes_Big_L1.code(), &raw, 8).unwrap();
+        m = Matter::new_with_code_and_raw(matter::Codex::Bytes_Big_L1.code(), &raw, 8).unwrap();
         m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -612,7 +612,7 @@ mod matter_tests {
 
         // large variable bytes, ls = 0
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6];
-        m = Matter::new_with_code_and_raw(Codex::Bytes_Big_L2.code(), &raw, 7).unwrap();
+        m = Matter::new_with_code_and_raw(matter::Codex::Bytes_Big_L2.code(), &raw, 7).unwrap();
         m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -624,7 +624,7 @@ mod matter_tests {
 
         // default
         m = Default::default();
-        assert_eq!(m.code, Codex::Blake3_256.code());
+        assert_eq!(m.code, matter::Codex::Blake3_256.code());
 
         // partial override
         m = Matter {
@@ -636,12 +636,12 @@ mod matter_tests {
         // full override
         m = Matter {
             raw: b"a".to_vec(),
-            code: Codex::X25519_Cipher_Seed.code().to_string(),
+            code: matter::Codex::X25519_Cipher_Seed.code().to_string(),
             size: 1,
         };
 
         assert_eq!(m.raw, b"a".to_vec());
-        assert_eq!(m.code, Codex::X25519_Cipher_Seed.code());
+        assert_eq!(m.code, matter::Codex::X25519_Cipher_Seed.code());
         assert_eq!(m.size, 1);
     }
 }
