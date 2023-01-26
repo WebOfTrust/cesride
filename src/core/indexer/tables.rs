@@ -173,7 +173,7 @@ impl Sizage {
     }
 }
 
-pub(crate) fn sizage(s: &str) -> error::Result<Sizage> {
+pub(crate) fn sizage(s: &str) -> Result<Sizage> {
     match s {
         "A" => Ok(Sizage::new(1, 1, 0, 88, 0)),
         "B" => Ok(Sizage::new(1, 1, 0, 88, 0)),
