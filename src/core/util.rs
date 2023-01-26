@@ -1,4 +1,4 @@
-use crate::error;
+use crate::error::{Error, Result};
 
 fn b64_char_to_index(c: char) -> u8 {
     match c {
@@ -192,13 +192,11 @@ pub fn u64_to_b64(n: u64, length: usize) -> String {
     out
 }
 
-pub fn code_b2_to_b64(b2: &Vec<u8>, length: usize) -> error::Result<String> {
+pub fn code_b2_to_b64(b2: &Vec<u8>, length: usize) -> Result<String> {
     let n = ((length + 1) * 3) / 4;
 
     if n > b2.len() {
-        return Err(Box::new(error::Error::Matter(
-            "not enough bytes".to_string(),
-        )));
+        return Err(Box::new(Error::Matter("not enough bytes".to_string())));
     }
 
     if length <= 4 {
@@ -216,9 +214,7 @@ pub fn code_b2_to_b64(b2: &Vec<u8>, length: usize) -> error::Result<String> {
         let tbs = 2 * (length % 4) + (8 - n) * 8;
         Ok(u64_to_b64(i >> tbs, length))
     } else {
-        return Err(Box::new(error::Error::Matter(
-            "unexpected length".to_string(),
-        )));
+        return Err(Box::new(Error::Matter("unexpected length".to_string())));
     }
 }
 

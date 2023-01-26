@@ -1,23 +1,23 @@
 use blake2::Digest;
 
 use crate::core::matter::{tables as matter, Matter};
-use crate::error;
+use crate::error::{Error, Result};
 
 type Blake2b256 = blake2::Blake2b<blake2::digest::consts::U32>;
 
 trait Diger {
-    fn new_with_code_and_raw(code: &str, raw: &[u8]) -> error::Result<Matter>
+    fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Matter>
     where
         Self: Sized;
-    fn new_with_code_and_ser(code: &str, ser: &[u8]) -> error::Result<Matter>
+    fn new_with_code_and_ser(code: &str, ser: &[u8]) -> Result<Matter>
     where
         Self: Sized;
-    fn verify(&self, ser: &[u8]) -> error::Result<bool>;
-    fn compare_dig(&self, ser: &[u8], dig: &[u8]) -> error::Result<bool>;
-    fn compare_diger(&self, ser: &[u8], diger: &Matter) -> error::Result<bool>;
+    fn verify(&self, ser: &[u8]) -> Result<bool>;
+    fn compare_dig(&self, ser: &[u8], dig: &[u8]) -> Result<bool>;
+    fn compare_diger(&self, ser: &[u8], diger: &Matter) -> Result<bool>;
 }
 
-fn derive_digest(ev: matter::Codex, ser: &[u8]) -> error::Result<Vec<u8>> {
+fn derive_digest(ev: matter::Codex, ser: &[u8]) -> Result<Vec<u8>> {
     let out = match ev {
         matter::Codex::Blake3_256 => blake3::hash(ser).as_bytes().to_vec(),
         matter::Codex::Blake3_512 => {
@@ -63,7 +63,7 @@ fn derive_digest(ev: matter::Codex, ser: &[u8]) -> error::Result<Vec<u8>> {
             hasher.finalize().to_vec()
         }
         _ => {
-            return Err(Box::new(error::Error::UnexpectedCode(format!(
+            return Err(Box::new(Error::UnexpectedCode(format!(
                 "unexpected digest code: code = [{}]",
                 ev.code()
             ))))
@@ -74,23 +74,23 @@ fn derive_digest(ev: matter::Codex, ser: &[u8]) -> error::Result<Vec<u8>> {
 }
 
 impl Diger for Matter {
-    fn new_with_code_and_raw(code: &str, raw: &[u8]) -> error::Result<Matter> {
+    fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Matter> {
         Matter::new_with_code_and_raw(code, raw, 0)
     }
 
-    fn new_with_code_and_ser(code: &str, ser: &[u8]) -> error::Result<Matter> {
+    fn new_with_code_and_ser(code: &str, ser: &[u8]) -> Result<Matter> {
         let ev = matter::Codex::from_code(code)?;
         let dig = derive_digest(ev, ser)?;
         Matter::new_with_code_and_raw(code, &dig, 0)
     }
 
-    fn verify(&self, ser: &[u8]) -> error::Result<bool> {
+    fn verify(&self, ser: &[u8]) -> Result<bool> {
         let ev = matter::Codex::from_code(&self.code)?;
         let dig = derive_digest(ev, ser)?;
         Ok(dig == self.raw())
     }
 
-    fn compare_dig(&self, ser: &[u8], dig: &[u8]) -> error::Result<bool> {
+    fn compare_dig(&self, ser: &[u8], dig: &[u8]) -> Result<bool> {
         if dig == self.qb64b()? {
             return Ok(true);
         }
@@ -108,7 +108,7 @@ impl Diger for Matter {
         Ok(false)
     }
 
-    fn compare_diger(&self, ser: &[u8], diger: &Matter) -> error::Result<bool> {
+    fn compare_diger(&self, ser: &[u8], diger: &Matter) -> Result<bool> {
         // reference implementation uses qb64b() but that's an extra conversion here
         if diger.qb64()? == self.qb64()? {
             return Ok(true);
