@@ -196,7 +196,7 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
     }
 }
 
-pub(crate) fn hardage(c: char) -> error::Result<i32> {
+pub(crate) fn hardage(c: char) -> Result<i32> {
     match c {
         'A'..='Z' | 'a'..='z' => Ok(1),
         '0'..='4' => Ok(2),
