@@ -62,7 +62,7 @@ pub(crate) fn sizage(s: &str) -> error::Result<Sizage> {
         "7AAB" => Ok(Sizage::new(4, 4, 0, 0)),
         "8AAB" => Ok(Sizage::new(4, 4, 0, 1)),
         "9AAB" => Ok(Sizage::new(4, 4, 0, 2)),
-        _ => Err(Box::new(error::Error::UnknownSizage(s.to_owned()))),
+        _ => Err(Box::new(error::Error::UnknownSizage(s.to_string()))),
     }
 }
 
@@ -72,10 +72,10 @@ pub(crate) fn hardage(c: char) -> error::Result<i32> {
         '0' | '4' | '5' | '6' => Ok(2),
         '1' | '2' | '3' | '7' | '8' | '9' => Ok(4),
         '-' => Err(Box::new(error::Error::UnexpectedCode(
-            "count code start".to_owned(),
+            "count code start".to_string(),
         ))),
         '_' => Err(Box::new(error::Error::UnexpectedCode(
-            "op code start".to_owned(),
+            "op code start".to_string(),
         ))),
         _ => Err(Box::new(error::Error::UnknownHardage(c.to_string()))),
     }
@@ -232,7 +232,7 @@ impl Codex {
             "7AAB" => Codex::Bytes_Big_L0,
             "8AAB" => Codex::Bytes_Big_L1,
             "9AAB" => Codex::Bytes_Big_L2,
-            _ => return Err(Box::new(error::Error::UnexpectedCode(code.to_owned()))),
+            _ => return Err(Box::new(error::Error::UnexpectedCode(code.to_string()))),
         })
     }
 }

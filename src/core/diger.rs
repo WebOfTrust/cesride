@@ -160,7 +160,7 @@ mod test_diger {
         let ser = vec![0, 1, 2];
         let code = Codex::Blake3_512.code();
 
-        let m = <Matter as super::Diger>::new_with_code_and_ser(code, &ser).unwrap();
+        let m = <Matter as Diger>::new_with_code_and_ser(code, &ser).unwrap();
         println!(
             "blake3_512: {} [{}]",
             hex::encode(m.raw()),
@@ -176,7 +176,7 @@ mod test_diger {
         let ser = b"abc";
         let code = Codex::Blake2b_256.code();
 
-        let m = <Matter as super::Diger>::new_with_code_and_ser(code, ser).unwrap();
+        let m = <Matter as Diger>::new_with_code_and_ser(code, ser).unwrap();
         println!(
             "blake2b_256: {} [{}]",
             hex::encode(m.raw()),
@@ -191,7 +191,7 @@ mod test_diger {
         let ser = b"The quick brown fox jumps over the lazy dog";
         let code = Codex::Blake2b_512.code();
 
-        let m = <Matter as super::Diger>::new_with_code_and_ser(code, ser).unwrap();
+        let m = <Matter as Diger>::new_with_code_and_ser(code, ser).unwrap();
         println!(
             "blake2b_512: {} [{}]",
             hex::encode(m.raw()),
@@ -207,7 +207,7 @@ mod test_diger {
         let ser = vec![0, 1, 2];
         let code = Codex::Blake2s_256.code();
 
-        let m = <Matter as super::Diger>::new_with_code_and_ser(code, &ser).unwrap();
+        let m = <Matter as Diger>::new_with_code_and_ser(code, &ser).unwrap();
         println!(
             "blake2s_256: {} [{}]",
             hex::encode(m.raw()),
@@ -222,7 +222,7 @@ mod test_diger {
         let ser = b"abc";
         let code = Codex::SHA3_256.code();
 
-        let m = <Matter as super::Diger>::new_with_code_and_ser(code, ser).unwrap();
+        let m = <Matter as Diger>::new_with_code_and_ser(code, ser).unwrap();
         println!("sha3_256: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
         assert_eq!(
             m.raw(),
@@ -233,7 +233,7 @@ mod test_diger {
         let ser = b"abc";
         let code = Codex::SHA3_512.code();
 
-        let m = <Matter as super::Diger>::new_with_code_and_ser(code, ser).unwrap();
+        let m = <Matter as Diger>::new_with_code_and_ser(code, ser).unwrap();
         println!("sha3_512: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
         assert_eq!(
             m.raw(),
@@ -245,7 +245,7 @@ mod test_diger {
         let ser = b"abc";
         let code = Codex::SHA2_256.code();
 
-        let m = <Matter as super::Diger>::new_with_code_and_ser(code, ser).unwrap();
+        let m = <Matter as Diger>::new_with_code_and_ser(code, ser).unwrap();
         println!("sha2_256: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
         assert_eq!(
             m.raw(),
@@ -256,7 +256,7 @@ mod test_diger {
         let ser = b"abc";
         let code = Codex::SHA2_512.code();
 
-        let m = <Matter as super::Diger>::new_with_code_and_ser(code, ser).unwrap();
+        let m = <Matter as Diger>::new_with_code_and_ser(code, ser).unwrap();
         println!("sha2_512: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
         assert_eq!(
             m.raw(),
@@ -271,8 +271,7 @@ mod test_diger {
         let raw = hex!("e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f"
                                  "5b49b82f805a538c68915c1ae8035c900fd1d4b13902920fd05e1450822f36de");
 
-        let m = <Matter as super::Diger>::new_with_code_and_raw(Codex::Blake3_512.code(), &raw)
-            .unwrap();
+        let m = <Matter as Diger>::new_with_code_and_raw(Codex::Blake3_512.code(), &raw).unwrap();
         assert!(m.verify(&vec![0, 1, 2]).unwrap());
     }
 
