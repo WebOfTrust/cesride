@@ -203,7 +203,7 @@ pub(crate) fn hardage(c: char) -> Result<i32> {
         '-' => Err(Box::new(Error::UnexpectedCode(
             "count code start".to_string(),
         ))),
-        '_' => Err(Box::new(error::Error::UnexpectedCode(
+        '_' => Err(Box::new(Error::UnexpectedCode(
             "op code start".to_string(),
         ))),
         _ => Err(Box::new(error::Error::UnknownHardage(c.to_string()))),
