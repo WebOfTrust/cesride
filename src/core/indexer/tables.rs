@@ -200,7 +200,7 @@ pub(crate) fn hardage(c: char) -> Result<i32> {
     match c {
         'A'..='Z' | 'a'..='z' => Ok(1),
         '0'..='4' => Ok(2),
-        '-' => Err(Box::new(error::Error::UnexpectedCode(
+        '-' => Err(Box::new(Error::UnexpectedCode(
             "count code start".to_string(),
         ))),
         '_' => Err(Box::new(error::Error::UnexpectedCode(
