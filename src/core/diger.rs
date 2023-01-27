@@ -392,6 +392,7 @@ mod test_diger {
         assert!(!m.compare_diger(&ser, &m2).unwrap());
     }
 
+    #[test]
     fn test_python_parity() {
         // compare() will exercise the most code
         let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
@@ -437,7 +438,7 @@ mod test_diger {
         let invalid_diger =
             Matter::new_with_code_and_raw(matter::Codex::Ed25519.code(), raw, 0).unwrap();
 
-        assert!(!<Matter as Diger>::new_with_qb64(&valid_diger.qb64().unwrap()).is_err());
+        assert!(<Matter as Diger>::new_with_qb64(&valid_diger.qb64().unwrap()).is_ok());
         assert!(<Matter as Diger>::new_with_qb64(&invalid_diger.qb64().unwrap()).is_err());
     }
 
@@ -450,7 +451,7 @@ mod test_diger {
         let invalid_diger =
             Matter::new_with_code_and_raw(matter::Codex::Ed25519.code(), raw, 0).unwrap();
 
-        assert!(!<Matter as Diger>::new_with_qb64b(&valid_diger.qb64b().unwrap()).is_err());
+        assert!(<Matter as Diger>::new_with_qb64b(&valid_diger.qb64b().unwrap()).is_ok());
         assert!(<Matter as Diger>::new_with_qb64b(&invalid_diger.qb64b().unwrap()).is_err());
     }
 
@@ -463,7 +464,7 @@ mod test_diger {
         let invalid_diger =
             Matter::new_with_code_and_raw(matter::Codex::Ed25519.code(), raw, 0).unwrap();
 
-        assert!(!<Matter as Diger>::new_with_qb2(&valid_diger.qb2().unwrap()).is_err());
+        assert!(<Matter as Diger>::new_with_qb2(&valid_diger.qb2().unwrap()).is_ok());
         assert!(<Matter as Diger>::new_with_qb2(&invalid_diger.qb2().unwrap()).is_err());
     }
 }
