@@ -241,4 +241,34 @@ mod util_tests {
         assert_eq!(util::b64_to_u32("__"), 4095);
         assert_eq!(util::b64_to_u32("____"), 16777215);
     }
+
+    #[test]
+    fn test_b64_to_u64() {
+        assert_eq!(util::b64_to_u64("A"), 0);
+        assert_eq!(util::b64_to_u64("B"), 1);
+        assert_eq!(util::b64_to_u64("AA"), 0);
+        assert_eq!(util::b64_to_u64("AB"), 1);
+        assert_eq!(util::b64_to_u64("__"), 4095);
+        assert_eq!(util::b64_to_u64("____"), 16777215);
+        assert_eq!(util::b64_to_u64("________"), 281474976710655);
+    }
+
+    #[test]
+    fn test_b64_char_to_index() {
+        let s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+        let mut i = 0;
+        for c in s.chars() {
+            assert_eq!(util::b64_char_to_index(c), i);
+            i += 1;
+        }
+    }
+
+    #[test]
+    fn test_b64_index_to_char() {
+        let mut chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".chars();
+        for i in 0..63 {
+            assert_eq!(util::b64_index_to_char(i), chars.next().unwrap());
+        }
+    }
 }
