@@ -12,6 +12,15 @@ trait Diger {
     fn new_with_code_and_ser(code: &str, ser: &[u8]) -> Result<Matter>
     where
         Self: Sized;
+    fn new_with_qb64(qb64: &str) -> Result<Matter>
+    where
+        Self: Sized;
+    fn new_with_qb64b(qb64b: &[u8]) -> Result<Matter>
+    where
+        Self: Sized;
+    fn new_with_qb2(qb2: &[u8]) -> Result<Matter>
+    where
+        Self: Sized;
     fn verify(&self, ser: &[u8]) -> Result<bool>;
     fn compare_dig(&self, ser: &[u8], dig: &[u8]) -> Result<bool>;
     fn compare_diger(&self, ser: &[u8], diger: &Matter) -> Result<bool>;
@@ -73,15 +82,60 @@ fn derive_digest(ev: matter::Codex, ser: &[u8]) -> Result<Vec<u8>> {
     Ok(out)
 }
 
+fn validate_code(code: &str) -> bool {
+    vec![
+        matter::Codex::Blake3_256.code(),
+        matter::Codex::Blake3_512.code(),
+        matter::Codex::Blake2b_256.code(),
+        matter::Codex::Blake2b_512.code(),
+        matter::Codex::Blake2s_256.code(),
+        matter::Codex::SHA3_256.code(),
+        matter::Codex::SHA3_512.code(),
+        matter::Codex::SHA2_256.code(),
+        matter::Codex::SHA2_512.code(),
+    ]
+    .contains(&code)
+}
+
 impl Diger for Matter {
     fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Matter> {
+        if !validate_code(code) {
+            return Err(Box::new(Error::UnexpectedCode(code.to_string())));
+        }
         Matter::new_with_code_and_raw(code, raw, 0)
     }
 
     fn new_with_code_and_ser(code: &str, ser: &[u8]) -> Result<Matter> {
+        if !validate_code(code) {
+            return Err(Box::new(Error::UnexpectedCode(code.to_string())));
+        }
         let ev = matter::Codex::from_code(code)?;
         let dig = derive_digest(ev, ser)?;
         Matter::new_with_code_and_raw(code, &dig, 0)
+    }
+
+    fn new_with_qb64(qb64: &str) -> Result<Matter> {
+        let m = Matter::new_with_qb64(qb64)?;
+        if !validate_code(&m.code) {
+            return Err(Box::new(Error::UnexpectedCode(m.code)));
+        }
+        Ok(m)
+    }
+
+    fn new_with_qb64b(qb64b: &[u8]) -> Result<Matter> {
+        let m = Matter::new_with_qb64b(qb64b)?;
+        if !validate_code(&m.code) {
+            return Err(Box::new(Error::UnexpectedCode(m.code)));
+        }
+        Ok(m)
+    }
+
+    fn new_with_qb2(qb2: &[u8]) -> Result<Matter> {
+        let m = Matter::new_with_qb2(qb2)?;
+        if !validate_code(&m.code) {
+            return Err(Box::new(Error::UnexpectedCode(m.code)));
+        }
+        Ok(m)
     }
 
     fn verify(&self, ser: &[u8]) -> Result<bool> {
@@ -372,5 +426,44 @@ mod test_diger {
 
         assert!(!diger0.compare_diger(ser, &diger).unwrap()); // codes match
         assert!(!diger0.compare_dig(ser, &diger.qb64b().unwrap()).unwrap()); // codes match
+    }
+
+    #[test]
+    fn test_new_with_qb64() {
+        let raw = b"abcdefghijklmnopqrstuvwxyz012345";
+
+        let valid_diger =
+            Matter::new_with_code_and_raw(matter::Codex::Blake3_256.code(), raw, 0).unwrap();
+        let invalid_diger =
+            Matter::new_with_code_and_raw(matter::Codex::Ed25519.code(), raw, 0).unwrap();
+
+        assert!(!<Matter as Diger>::new_with_qb64(&valid_diger.qb64().unwrap()).is_err());
+        assert!(<Matter as Diger>::new_with_qb64(&invalid_diger.qb64().unwrap()).is_err());
+    }
+
+    #[test]
+    fn test_new_with_qb64b() {
+        let raw = b"abcdefghijklmnopqrstuvwxyz012345";
+
+        let valid_diger =
+            Matter::new_with_code_and_raw(matter::Codex::Blake3_256.code(), raw, 0).unwrap();
+        let invalid_diger =
+            Matter::new_with_code_and_raw(matter::Codex::Ed25519.code(), raw, 0).unwrap();
+
+        assert!(!<Matter as Diger>::new_with_qb64b(&valid_diger.qb64b().unwrap()).is_err());
+        assert!(<Matter as Diger>::new_with_qb64b(&invalid_diger.qb64b().unwrap()).is_err());
+    }
+
+    #[test]
+    fn test_new_with_qb2() {
+        let raw = b"abcdefghijklmnopqrstuvwxyz012345";
+
+        let valid_diger =
+            Matter::new_with_code_and_raw(matter::Codex::Blake3_256.code(), raw, 0).unwrap();
+        let invalid_diger =
+            Matter::new_with_code_and_raw(matter::Codex::Ed25519.code(), raw, 0).unwrap();
+
+        assert!(!<Matter as Diger>::new_with_qb2(&valid_diger.qb2().unwrap()).is_err());
+        assert!(<Matter as Diger>::new_with_qb2(&invalid_diger.qb2().unwrap()).is_err());
     }
 }
