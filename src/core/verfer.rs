@@ -1,7 +1,7 @@
 use crate::core::matter::{tables as matter, Matter};
 use crate::error::{Error, Result};
 
-trait Verfer {
+pub trait Verfer {
     fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Matter>
     where
         Self: Sized;
@@ -17,8 +17,8 @@ trait Verfer {
     fn verify(&self, sig: &[u8], ser: &[u8]) -> Result<bool>;
 }
 
-fn validate_code(code: &str) -> bool {
-    vec![
+fn validate_code(code: &str) -> Result<()> {
+    if !vec![
         matter::Codex::Ed25519N.code(),
         matter::Codex::Ed25519.code(),
         matter::Codex::ECDSA_256k1N.code(),
@@ -27,6 +27,11 @@ fn validate_code(code: &str) -> bool {
         // matter::Codex::Ed448.code(),
     ]
     .contains(&code)
+    {
+        return Err(Box::new(Error::UnexpectedCode(code.to_string())));
+    }
+
+    Ok(())
 }
 
 fn verify_signature(verfer: &Matter, ev: matter::Codex, sig: &[u8], ser: &[u8]) -> Result<bool> {
@@ -81,34 +86,26 @@ fn verify_ecdsa_256k1_signature(verfer: &Matter, sig: &[u8], ser: &[u8]) -> Resu
 
 impl Verfer for Matter {
     fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Matter> {
-        if !validate_code(code) {
-            return Err(Box::new(Error::UnexpectedCode(code.to_string())));
-        }
+        validate_code(code)?;
         Matter::new_with_code_and_raw(code, raw, 0)
     }
 
     fn new_with_qb64(qb64: &str) -> Result<Matter> {
-        let m = Matter::new_with_qb64(qb64)?;
-        if !validate_code(&m.code) {
-            return Err(Box::new(Error::UnexpectedCode(m.code)));
-        }
-        Ok(m)
+        let verfer = Matter::new_with_qb64(qb64)?;
+        validate_code(&verfer.code)?;
+        Ok(verfer)
     }
 
     fn new_with_qb64b(qb64b: &[u8]) -> Result<Matter> {
-        let m = Matter::new_with_qb64b(qb64b)?;
-        if !validate_code(&m.code) {
-            return Err(Box::new(Error::UnexpectedCode(m.code)));
-        }
-        Ok(m)
+        let verfer = Matter::new_with_qb64b(qb64b)?;
+        validate_code(&verfer.code)?;
+        Ok(verfer)
     }
 
     fn new_with_qb2(qb2: &[u8]) -> Result<Matter> {
-        let m = Matter::new_with_qb2(qb2)?;
-        if !validate_code(&m.code) {
-            return Err(Box::new(Error::UnexpectedCode(m.code)));
-        }
-        Ok(m)
+        let verfer = Matter::new_with_qb2(qb2)?;
+        validate_code(&verfer.code)?;
+        Ok(verfer)
     }
 
     fn verify(&self, sig: &[u8], ser: &[u8]) -> Result<bool> {
