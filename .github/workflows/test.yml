@@ -28,13 +28,16 @@ jobs:
         run: RUSTFLAGS="-Dwarnings" cargo clippy -- -D warnings
 
       - name: Build
-        run: cargo build
+        run: cargo build --release
 
       - name: Test
-        run: cargo test
+        run: cargo test --release
 
       - name: Format
         run: cargo fmt --all -- --check
+
+      - name: Security Audit
+        run: cargo audit
 
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
