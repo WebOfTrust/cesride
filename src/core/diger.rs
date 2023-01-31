@@ -73,7 +73,7 @@ fn derive_digest(ev: matter::Codex, ser: &[u8]) -> Result<Vec<u8>> {
         }
         _ => {
             return Err(Box::new(Error::UnexpectedCode(format!(
-                "unexpected digest code: code = [{}]",
+                "unexpected digest code: code = '{}'",
                 ev.code()
             ))))
         }
@@ -177,7 +177,7 @@ impl Diger for Matter {
 
 #[cfg(test)]
 mod test_diger {
-    use super::{matter, Diger, Matter};
+    use super::{derive_digest, matter, Diger, Matter};
     use hex_literal::hex;
 
     #[test]
@@ -195,11 +195,7 @@ mod test_diger {
         let code = matter::Codex::Blake3_256.code();
 
         let m = <Matter as Diger>::new_with_code_and_ser(code, &ser).unwrap();
-        println!(
-            "blake3_256: {} [{}]",
-            hex::encode(m.raw()),
-            m.qb64().unwrap()
-        );
+        println!("blake3_256: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
         assert_eq!(
             m.raw(),
             // https://github.com/BLAKE3-team/BLAKE3/blob/master/test_vectors/test_vectors.json
@@ -210,11 +206,7 @@ mod test_diger {
         let code = matter::Codex::Blake3_512.code();
 
         let m = <Matter as Diger>::new_with_code_and_ser(code, &ser).unwrap();
-        println!(
-            "blake3_512: {} [{}]",
-            hex::encode(m.raw()),
-            m.qb64().unwrap()
-        );
+        println!("blake3_512: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
         assert_eq!(
             m.raw(),
             // https://github.com/BLAKE3-team/BLAKE3/blob/master/test_vectors/test_vectors.json
@@ -226,11 +218,7 @@ mod test_diger {
         let code = matter::Codex::Blake2b_256.code();
 
         let m = <Matter as Diger>::new_with_code_and_ser(code, ser).unwrap();
-        println!(
-            "blake2b_256: {} [{}]",
-            hex::encode(m.raw()),
-            m.qb64().unwrap()
-        );
+        println!("blake2b_256: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
         assert_eq!(
             m.raw(),
             // https://github.com/jasoncolburne/jason-math/blob/main/spec/jason/math/cryptography/digest/blake_spec.rb
@@ -241,11 +229,7 @@ mod test_diger {
         let code = matter::Codex::Blake2b_512.code();
 
         let m = <Matter as Diger>::new_with_code_and_ser(code, ser).unwrap();
-        println!(
-            "blake2b_512: {} [{}]",
-            hex::encode(m.raw()),
-            m.qb64().unwrap()
-        );
+        println!("blake2b_512: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
         assert_eq!(
             m.raw(),
             // https://github.com/jasoncolburne/jason-math/blob/main/spec/jason/math/cryptography/digest/blake_spec.rb
@@ -257,11 +241,7 @@ mod test_diger {
         let code = matter::Codex::Blake2s_256.code();
 
         let m = <Matter as Diger>::new_with_code_and_ser(code, &ser).unwrap();
-        println!(
-            "blake2s_256: {} [{}]",
-            hex::encode(m.raw()),
-            m.qb64().unwrap()
-        );
+        println!("blake2s_256: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
         assert_eq!(
             m.raw(),
             // generated locally
@@ -427,7 +407,7 @@ mod test_diger {
     }
 
     #[test]
-    fn test_python_parity() {
+    fn test_python_interop() {
         // compare() will exercise the most code
         let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -461,5 +441,10 @@ mod test_diger {
 
         assert!(!diger0.compare_diger(ser, &diger).unwrap()); // codes match
         assert!(!diger0.compare_dig(ser, &diger.qb64b().unwrap()).unwrap()); // codes match
+    }
+
+    #[test]
+    fn test_unhappy_paths() {
+        assert!(derive_digest(matter::Codex::Big, &[]).is_err());
     }
 }

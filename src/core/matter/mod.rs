@@ -1,6 +1,6 @@
 pub(crate) mod tables;
 
-use base64::Engine;
+use base64::{engine::general_purpose as b64_engine, Engine};
 
 use crate::core::util;
 use crate::error::{Error, Result};
@@ -27,11 +27,7 @@ impl Matter {
 
         let mut code = code.to_string();
         let rize = if SMALL_VRZ_DEX.contains(&first) || LARGE_VRZ_DEX.contains(&first) {
-            let rize = if raw_size == 0 {
-                raw.len() as u32
-            } else {
-                raw_size as u32
-            };
+            let rize = if raw_size == 0 { raw.len() as u32 } else { raw_size as u32 };
 
             let ls = (3 - (rize % 3)) % 3;
             size = (rize + ls) / 3;
@@ -49,7 +45,7 @@ impl Matter {
                     code = format!("{s}{}{}", &"AAAA"[0..hs as usize - 2], &code[1..2]);
                 } else {
                     return Err(Box::new(Error::InvalidVarRawSize(format!(
-                        "unsupported raw size: code = [{code}]",
+                        "unsupported raw size: code = '{code}'",
                     ))));
                 }
             } else if LARGE_VRZ_DEX.contains(&first) {
@@ -59,52 +55,59 @@ impl Matter {
                     code = format!("{s}{}", &code[1..hs as usize]);
                 } else {
                     return Err(Box::new(Error::InvalidVarRawSize(format!(
-                        "unsupported raw size: code = [{code}]",
+                        "unsupported raw size: code = '{code}'",
                     ))));
                 }
             } else {
+                // unreachable
+                // since this if else is inside another if that protects us against this
                 return Err(Box::new(Error::InvalidVarRawSize(format!(
-                    "unsupported variable raw size: code = [{code}]",
+                    "unsupported variable raw size: code = '{code}'",
                 ))));
             }
 
             rize
         } else {
-            let sizage_ = tables::sizage(&code)?;
-            if sizage_.fs == 0 {
-                return Err(Box::new(Error::InvalidVarRawSize(format!(
-                    "unsupported variable size: code = [{code}]",
+            let szg = tables::sizage(&code)?;
+            if szg.fs == 0 {
+                // unreachable
+                // programmer error, variable length sizages should be the only ones with fs == 0
+                return Err(Box::new(Error::InvalidVarSize(format!(
+                    "unsupported variable size: code = '{code}'",
                 ))));
             }
-            let cs = sizage_.hs + sizage_.ss;
-            ((sizage_.fs - cs) * 3 / 4) - sizage_.ls
+            let cs = szg.hs + szg.ss;
+            ((szg.fs - cs) * 3 / 4) - szg.ls
         };
 
-        Ok(Matter {
-            code,
-            size,
-            raw: raw[..rize as usize].to_owned(),
-        })
+        if raw.len() < rize as usize {
+            return Err(Box::new(Error::Shortage(format!(
+                "insufficient raw material: raw size = {}, rize = {rize}",
+                raw.len()
+            ))));
+        }
+
+        Ok(Matter { code, size, raw: raw[..rize as usize].to_vec() })
     }
 
     pub fn new_with_qb64(qb64: &str) -> Result<Matter> {
-        let mut m: Matter = Default::default();
-        m.exfil(qb64)?;
-        Ok(m)
+        let mut matter: Matter = Default::default();
+        matter.exfil(qb64)?;
+        Ok(matter)
     }
 
     pub fn new_with_qb64b(qb64b: &[u8]) -> Result<Matter> {
         let qb64 = String::from_utf8(qb64b.to_vec())?;
 
-        let mut m: Matter = Default::default();
-        m.exfil(&qb64)?;
-        Ok(m)
+        let mut matter: Matter = Default::default();
+        matter.exfil(&qb64)?;
+        Ok(matter)
     }
 
     pub fn new_with_qb2(qb2: &[u8]) -> Result<Matter> {
-        let mut m: Matter = Default::default();
-        m.bexfil(qb2)?;
-        Ok(m)
+        let mut matter: Matter = Default::default();
+        matter.bexfil(qb2)?;
+        Ok(matter)
     }
 
     pub fn code(&self) -> String {
@@ -136,48 +139,53 @@ impl Matter {
     fn infil(&self) -> Result<String> {
         let code = &self.code;
         let size = self.size;
-        let mut raw = self.raw.to_vec();
+        let mut raw = self.raw.clone();
 
         let ps = (3 - raw.len() % 3) % 3;
-        let sizage_ = tables::sizage(code)?;
+        let szg = tables::sizage(code)?;
 
-        if sizage_.fs == 0 {
-            let cs = sizage_.hs + sizage_.ss;
+        if szg.fs == 0 {
+            let cs = szg.hs + szg.ss;
             if cs % 4 != 0 {
+                // unreachable
+                // programmer error, this can't happen if sizages are correct
                 return Err(Box::new(Error::InvalidCodeSize(format!(
-                    "whole code size not multiple of 4 for variable length material: cs = [{cs}]",
+                    "whole code size not multiple of 4 for variable length material: cs = {cs}",
                 ))));
             };
 
             const SIXTY_FOUR: u32 = 64;
-            if SIXTY_FOUR.pow(sizage_.ss) - 1 < size {
+            if SIXTY_FOUR.pow(szg.ss) - 1 < size {
                 return Err(Box::new(Error::InvalidVarSize(format!(
-                    "invalid size for code: size = [{size}], code = [{code}]",
+                    "invalid size for code: size = {size}, code = '{code}'",
                 ))));
             }
 
-            let both = format!("{}{}", code, util::u32_to_b64(size, sizage_.ss as usize));
+            let both = format!("{}{}", code, util::u32_to_b64(size, szg.ss as usize)?);
 
-            if both.len() % 4 != ps - sizage_.ls as usize {
+            // TODO: should abstract into unsigned-friendly abs
+            if (ps >= szg.ls as usize && both.len() % 4 != ps - szg.ls as usize)
+                || (ps < szg.ls as usize && both.len() % 4 != szg.ls as usize - ps)
+            {
                 return Err(Box::new(Error::InvalidCodeSize(format!(
-                    "invalid code for converted raw pad size: code = [{both}], pad size = [{ps}]",
+                    "invalid code for converted raw pad size: code = '{both}', pad size = {ps}",
                 ))));
             }
 
-            for _ in 0..sizage_.ls {
+            for _ in 0..szg.ls {
                 raw.insert(0, 0);
             }
 
-            let b64 = base64::engine::general_purpose::URL_SAFE.encode(raw);
+            let b64 = b64_engine::URL_SAFE.encode(raw);
 
             Ok(format!("{both}{b64}"))
         } else {
             let both = code;
             let cs = both.len();
 
-            if (cs % 4) as u32 != ps as u32 - sizage_.ls {
+            if (cs % 4) as u32 != ps as u32 - szg.ls {
                 return Err(Box::new(Error::InvalidCodeSize(format!(
-                    "invalid code for converted raw pad size: code = [{both}], pad size = [{ps}]",
+                    "invalid code for converted raw pad size: code = '{both}', pad size = {ps}",
                 ))));
             }
 
@@ -185,7 +193,7 @@ impl Matter {
                 raw.insert(0, 0);
             }
 
-            let b64 = base64::engine::general_purpose::URL_SAFE.encode(raw);
+            let b64 = b64_engine::URL_SAFE.encode(raw);
 
             Ok(format!("{both}{}", &b64[cs % 4..]))
         }
@@ -194,38 +202,42 @@ impl Matter {
     fn binfil(&self) -> Result<Vec<u8>> {
         let code = &self.code;
         let size = self.size;
-        let mut raw = self.raw.to_vec();
+        let mut raw = self.raw.clone();
 
-        let mut sizage_ = tables::sizage(code)?;
-        let cs = sizage_.hs + sizage_.ss;
+        let mut szg = tables::sizage(code)?;
+        let cs = szg.hs + szg.ss;
 
         let both: &str;
         let temp: String;
-        if sizage_.fs == 0 {
+        if szg.fs == 0 {
             if cs % 4 != 0 {
+                // unreachable
+                // programmer error - sizages should not permit this
                 return Err(Box::new(Error::InvalidCodeSize(format!(
-                    "whole code size not multiple of 4 for variable length material: cs = [{cs}]",
+                    "whole code size not multiple of 4 for variable length material: cs = {cs}",
                 ))));
             }
 
             // ? check python code for a < 0 comparison
             const SIXTY_FOUR: u32 = 64;
-            if SIXTY_FOUR.pow(sizage_.ss) - 1 < size {
+            if SIXTY_FOUR.pow(szg.ss) - 1 < size {
                 return Err(Box::new(Error::InvalidVarSize(format!(
-                    "invalid size for code: size = [{size}], code = [{code}]",
+                    "invalid size for code: size = {size}, code = '{code}'",
                 ))));
             }
 
-            temp = format!("{code}{}", util::u32_to_b64(size, sizage_.ss as usize));
+            temp = format!("{code}{}", util::u32_to_b64(size, szg.ss as usize)?);
             both = &temp;
-            sizage_.fs = cs + (size * 4)
+            szg.fs = cs + (size * 4)
         } else {
             both = code;
         }
 
         if both.len() != cs as usize {
+            // unreachable
+            // programmer error - we compute cs from sizages and use those to create `both`
             return Err(Box::new(Error::InvalidCodeSize(format!(
-                "mismatched code size with table: code size = [{cs}], table size = [{}]",
+                "mismatched code size with table: code size = {cs}, table size = {}",
                 both.len()
             ))));
         }
@@ -238,28 +250,27 @@ impl Matter {
         // bcode
         let mut full: Vec<u8>;
         if n <= SMALL_VRZ_BYTES {
-            full = (util::b64_to_u32(both) << (2 * (cs % 4)))
-                .to_be_bytes()
-                .to_vec();
+            full = (util::b64_to_u32(both)? << (2 * (cs % 4))).to_be_bytes().to_vec();
         } else if n <= LARGE_VRZ_BYTES {
-            full = (util::b64_to_u64(both) << (2 * (cs % 4)))
-                .to_be_bytes()
-                .to_vec();
+            full = (util::b64_to_u64(both)? << (2 * (cs % 4))).to_be_bytes().to_vec();
         } else {
+            // unreachable
+            // programmer error - sizages will not permit cs > 8, thus:
+            // (8 + 1) * 3 / 4 == 6, which is <= 6, always.
             return Err(Box::new(Error::InvalidCodeSize(format!(
-                "unsupported code size: cs = [{cs}]",
+                "unsupported code size: cs = {cs}",
             ))));
         }
         // unpad code
         full.drain(0..full.len() - n as usize);
         // pad lead
-        full.resize(full.len() + sizage_.ls as usize, 0);
+        full.resize(full.len() + szg.ls as usize, 0);
         full.append(&mut raw);
 
         let bfs = full.len();
-        if bfs % 3 != 0 || (bfs * 4 / 3) != sizage_.fs as usize {
+        if bfs % 3 != 0 || (bfs * 4 / 3) != szg.fs as usize {
             return Err(Box::new(Error::InvalidCodeSize(format!(
-                "invalid code for raw size: code = [{both}], raw size = [{}]",
+                "invalid code for raw size: code = '{both}', raw size = {}",
                 raw.len()
             ))));
         }
@@ -278,46 +289,48 @@ impl Matter {
         let hs = tables::hardage(first)? as usize;
         if qb64.len() < hs {
             return Err(Box::new(Error::Shortage(format!(
-                "insufficient material for hard part of code: qb64 size = [{}], hs = [{hs}]",
+                "insufficient material for hard part of code: qb64 size = {}, hs = {hs}",
                 qb64.len(),
             ))));
         }
 
         // bounds already checked
         let hard = &qb64[..hs];
-        let mut sizage_ = tables::sizage(hard)?;
-        let cs = sizage_.hs + sizage_.ss;
+        let mut szg = tables::sizage(hard)?;
+        let cs = szg.hs + szg.ss;
 
         let mut size: u32 = 0;
-        if sizage_.fs == 0 {
+        if szg.fs == 0 {
             if cs % 4 != 0 {
+                // unreachable
+                // programmer error - cs is computed from sizages, code has been validated
                 return Err(Box::new(Error::InvalidCodeSize(format!(
-                    "code size not multiple of 4 for variable length material: cs = [{cs}]",
+                    "code size not multiple of 4 for variable length material: cs = {cs}",
                 ))));
             }
 
             if qb64.len() < cs as usize {
                 return Err(Box::new(Error::Shortage(format!(
-                    "insufficient material for code: qb64 size = [{}], cs = [{cs}]",
+                    "insufficient material for code: qb64 size = {}, cs = {cs}",
                     qb64.len(),
                 ))));
             }
-            let soft = &qb64[sizage_.hs as usize..cs as usize];
-            size = util::b64_to_u32(soft);
-            sizage_.fs = (size * 4) + cs;
+            let soft = &qb64[szg.hs as usize..cs as usize];
+            size = util::b64_to_u32(soft)?;
+            szg.fs = (size * 4) + cs;
         }
 
-        if qb64.len() < sizage_.fs as usize {
+        if qb64.len() < szg.fs as usize {
             return Err(Box::new(Error::Shortage(format!(
-                "insufficient material: qb64 size = [{}], fs = [{}]",
+                "insufficient material: qb64 size = {}, fs = {}",
                 qb64.len(),
-                sizage_.fs
+                szg.fs
             ))));
         }
 
-        let trim = &qb64[..sizage_.fs as usize];
+        let trim = &qb64[..szg.fs as usize];
         let ps = cs % 4;
-        let pbs = 2 * if ps != 0 { ps } else { sizage_.ls };
+        let pbs = 2 * if ps != 0 { ps } else { szg.ls };
 
         let raw: Vec<u8>;
         if ps != 0 {
@@ -326,7 +339,7 @@ impl Matter {
 
             // decode base to leave pre-padded raw
             let mut paw = Vec::<u8>::new();
-            base64::engine::general_purpose::URL_SAFE.decode_vec(buf, &mut paw)?;
+            b64_engine::URL_SAFE.decode_vec(buf, &mut paw)?;
 
             let mut pi: i32 = 0;
             // readInt
@@ -339,26 +352,26 @@ impl Matter {
                 return Err(Box::new(Error::Prepad()));
             }
 
-            raw = paw[ps as usize..].to_owned();
+            raw = paw[ps as usize..].to_vec();
             paw.clear();
         } else {
             let buf = &trim[cs as usize..];
             let mut paw = Vec::<u8>::new();
-            base64::engine::general_purpose::URL_SAFE.decode_vec(buf, &mut paw)?;
+            b64_engine::URL_SAFE.decode_vec(buf, &mut paw)?;
 
             let mut li: u32 = 0;
-            for b in &paw[..sizage_.ls as usize] {
+            for b in &paw[..szg.ls as usize] {
                 li = (li * 256) + (*b as u32);
             }
 
             if li != 0 {
-                return if sizage_.ls == 1 {
+                return if szg.ls == 1 {
                     Err(Box::new(Error::NonZeroedLeadByte()))
                 } else {
                     Err(Box::new(Error::NonZeroedLeadBytes()))
                 };
             }
-            raw = paw[sizage_.ls as usize..].to_owned();
+            raw = paw[szg.ls as usize..].to_vec();
             paw.clear();
         }
 
@@ -371,12 +384,10 @@ impl Matter {
 
     fn bexfil(&mut self, qb2: &[u8]) -> Result<()> {
         if qb2.is_empty() {
-            return Err(Box::new(Error::EmptyMaterial(
-                "empty qualified base2".to_string(),
-            )));
+            return Err(Box::new(Error::EmptyMaterial("empty qualified base2".to_string())));
         }
 
-        let first_byte = (qb2[0] & 0xfc) >> 2;
+        let first_byte = util::nab_sextets(qb2, 1)?[0];
         if first_byte > 0x3d {
             if first_byte == 0x3e {
                 return Err(Box::new(Error::UnexpectedCountCode(
@@ -387,58 +398,63 @@ impl Matter {
                     "unexpected start during extraction".to_string(),
                 )));
             } else {
+                // unreachable
+                // we just shifted a u8 right by 2, making it max 0x3f.
+                // we then validated it was > 0x3d and not 0x3f or 0x3e
                 return Err(Box::new(Error::UnexpectedCode(format!(
-                    "unexpected code start: sextet = [{first_byte}]",
+                    "unexpected code start: sextet = {first_byte}",
                 ))));
             }
         }
 
-        let first = util::b64_index_to_char(first_byte);
+        let first = util::b64_index_to_char(first_byte)?;
         let hs = tables::hardage(first)? as usize;
         let bhs = (hs * 3 + 3) / 4;
         if qb2.len() < bhs {
             return Err(Box::new(Error::Shortage(format!(
-                "insufficient material for hard part of code: qb2 size = [{}], bhs = [{bhs}]",
+                "insufficient material for hard part of code: qb2 size = {}, bhs = {bhs}",
                 qb2.len(),
             ))));
         }
 
         let qb2_vec = qb2.to_vec();
         let hard = util::code_b2_to_b64(&qb2_vec, hs)?;
-        let mut sizage_ = tables::sizage(&hard)?;
-        let cs = sizage_.hs + sizage_.ss;
+        let mut szg = tables::sizage(&hard)?;
+        let cs = szg.hs + szg.ss;
         let bcs = ((cs + 1) * 3) / 4;
         let mut size: u32 = 0;
-        if sizage_.fs == 0 {
+        if szg.fs == 0 {
             if cs % 4 != 0 {
+                // unreachable
+                // programmer error - computed from sizages
                 return Err(Box::new(Error::ParseQb2(format!(
-                    "code size not multiple of 4 for variable length material: cs = [{cs}]",
+                    "code size not multiple of 4 for variable length material: cs = {cs}",
                 ))));
             }
 
             if qb2.len() < bcs as usize {
                 return Err(Box::new(Error::Shortage(format!(
-                    "insufficient material for code: qb2 size = [{}], bcs = [{bcs}]",
+                    "insufficient material for code: qb2 size = {}, bcs = {bcs}",
                     qb2.len(),
                 ))));
             }
 
             let both = util::code_b2_to_b64(&qb2_vec, cs as usize)?;
-            size = util::b64_to_u32(&both[sizage_.hs as usize..cs as usize]);
-            sizage_.fs = (size * 4) + cs
+            size = util::b64_to_u32(&both[szg.hs as usize..cs as usize])?;
+            szg.fs = (size * 4) + cs
         }
 
-        let bfs = ((sizage_.fs + 1) * 3) / 4;
+        let bfs = ((szg.fs + 1) * 3) / 4;
         if qb2.len() < bfs as usize {
             return Err(Box::new(Error::Shortage(format!(
-                "insufficient material: qb2 size = [{}], bfs = [{bfs}]",
+                "insufficient material: qb2 size = {}, bfs = {bfs}",
                 qb2.len(),
             ))));
         }
 
         let trim = qb2[..bfs as usize].to_vec();
         let ps = cs % 4;
-        let pbs = 2 * if ps != 0 { ps } else { sizage_.ls };
+        let pbs = 2 * if ps != 0 { ps } else { szg.ls };
         if ps != 0 {
             let mut bytes: [u8; 1] = [0];
             bytes[0] = trim[bcs as usize - 1];
@@ -448,13 +464,9 @@ impl Matter {
                 return Err(Box::new(Error::NonZeroedPadBits()));
             }
         } else {
-            for value in trim
-                .iter()
-                .take((bcs + sizage_.ls) as usize)
-                .skip(bcs as usize)
-            {
+            for value in trim.iter().take((bcs + szg.ls) as usize).skip(bcs as usize) {
                 if *value != 0 {
-                    match sizage_.ls {
+                    match szg.ls {
                         1 => {
                             return Err(Box::new(Error::NonZeroedLeadByte()));
                         }
@@ -466,8 +478,10 @@ impl Matter {
             }
         }
 
-        let raw = trim[(bcs + sizage_.ls) as usize..].to_vec();
-        if raw.len() != (trim.len() - bcs as usize) - sizage_.ls as usize {
+        let raw = trim[(bcs + szg.ls) as usize..].to_vec();
+        if raw.len() != (trim.len() - bcs as usize) - szg.ls as usize {
+            // unreachable
+            // rust prevents this by the definition of `raw` above. i did some algebra to clarify
             return Err(Box::new(Error::Conversion(format!(
                 "improperly qualified material: qb2 = {qb2:?}",
             ))));
@@ -483,11 +497,7 @@ impl Matter {
 
 impl Default for Matter {
     fn default() -> Self {
-        Matter {
-            raw: vec![],
-            code: tables::Codex::Blake3_256.code().to_string(),
-            size: 0,
-        }
+        Matter { raw: vec![], code: tables::Codex::Blake3_256.code().to_string(), size: 0 }
     }
 }
 
@@ -605,10 +615,7 @@ mod matter_tests {
         assert_eq!(m.code, matter::Codex::Blake3_256.code());
 
         // partial override
-        m = Matter {
-            size: 3,
-            ..Default::default()
-        };
+        m = Matter { size: 3, ..Default::default() };
         assert_eq!(m.size, 3);
 
         // full override
@@ -621,5 +628,108 @@ mod matter_tests {
         assert_eq!(m.raw, b"a".to_vec());
         assert_eq!(m.code, matter::Codex::X25519_Cipher_Seed.code());
         assert_eq!(m.size, 1);
+
+        m = Matter::new_with_code_and_raw(
+            matter::Codex::Bytes_L2.code(),
+            &[0; 4095 * 3 + 1],
+            4095 * 3 + 1,
+        )
+        .unwrap();
+        assert_eq!(m.raw().len(), 4095 * 3 + 1);
+        assert_eq!(m.code(), matter::Codex::Bytes_Big_L2.code());
+    }
+
+    #[test]
+    fn test_unhappy_paths() {
+        // empty material
+        assert!(Matter::new_with_code_and_raw("", &[], 0).is_err());
+        assert!(Matter::new_with_code_and_raw(matter::Codex::Blake3_256.code(), &[], 0).is_err());
+        assert!(Matter::new_with_qb64("").is_err());
+        assert!(Matter::new_with_qb64b(&[]).is_err());
+        assert!(Matter::new_with_qb2(&[]).is_err());
+
+        // invalid code
+        assert!(Matter::new_with_code_and_raw("CESR", &[], 0).is_err());
+
+        // invalid code/raw size combination
+        assert!(Matter {
+            code: matter::Codex::Blake3_256.code().to_string(),
+            size: 32,
+            raw: [0; 31].to_vec(),
+        }
+        .qb64()
+        .is_err());
+
+        // insufficient hard material
+        assert!(Matter::new_with_qb64("0").is_err());
+        assert!(Matter::new_with_qb2(&[52 << 2]).is_err());
+
+        // insufficient code material
+        assert!(Matter::new_with_qb64("4A").is_err());
+        assert!(Matter::new_with_qb2(&[224, 0]).is_err());
+
+        // insufficient material
+        assert!(Matter::new_with_qb64("E").is_err());
+        assert!(Matter::new_with_qb2(&[4 << 2]).is_err());
+
+        // raw size too large
+        assert!(Matter::new_with_code_and_raw(
+            matter::Codex::Bytes_Big_L2.code(),
+            &[0; 8],
+            16777215 * 3 + 1
+        )
+        .is_err());
+        assert!(Matter::new_with_code_and_raw(
+            matter::Codex::Bytes_L2.code(),
+            &[0; 8],
+            16777215 * 3 + 1
+        )
+        .is_err());
+        assert!(Matter {
+            code: matter::Codex::Bytes_L2.code().to_string(),
+            size: 4096,
+            raw: [0; 4096].to_vec()
+        }
+        .qb64()
+        .is_err());
+        assert!(Matter {
+            code: matter::Codex::Bytes_L2.code().to_string(),
+            size: 4096,
+            raw: [0; 4096].to_vec(),
+        }
+        .qb2()
+        .is_err());
+        assert!(Matter {
+            code: matter::Codex::Bytes_L1.code().to_string(),
+            size: 4095,
+            raw: [0; 3].to_vec(),
+        }
+        .qb64()
+        .is_err());
+        assert!(Matter {
+            code: matter::Codex::Bytes_L1.code().to_string(),
+            size: 4095,
+            raw: [0; 3].to_vec(),
+        }
+        .qb2()
+        .is_err());
+
+        // pre-pad error
+        assert!(Matter::new_with_qb64("E___________________________________________").is_err());
+        assert!(Matter::new_with_qb2(&[
+            19, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+            255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        ])
+        .is_err());
+
+        // non-zeroed lead byte(s)
+        assert!(Matter::new_with_qb64("5AAB____").is_err());
+        assert!(Matter::new_with_qb64("6AAB____").is_err());
+        assert!(Matter::new_with_qb2(&[228, 0, 1, 255, 255, 255]).is_err());
+        assert!(Matter::new_with_qb2(&[232, 0, 1, 255, 255, 255]).is_err());
+
+        // unexpected qb2 codes
+        assert!(Matter::new_with_qb2(&[0xf8]).is_err()); // count code
+        assert!(Matter::new_with_qb2(&[0xfc]).is_err()); // op code
     }
 }

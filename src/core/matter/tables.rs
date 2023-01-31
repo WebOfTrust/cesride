@@ -1,69 +1,56 @@
+use crate::core::sizage::Sizage;
 use crate::error::{Error, Result};
 
-#[derive(Debug, PartialEq)]
-pub struct Sizage {
-    pub hs: u32,
-    pub ss: u32,
-    pub ls: u32,
-    pub fs: u32,
-}
-
-impl Sizage {
-    pub fn new(hs: u32, ss: u32, fs: u32, ls: u32) -> Sizage {
-        Self { hs, ss, ls, fs }
-    }
-}
-
 pub(crate) fn sizage(s: &str) -> Result<Sizage> {
-    match s {
-        "A" => Ok(Sizage::new(1, 0, 44, 0)),
-        "B" => Ok(Sizage::new(1, 0, 44, 0)),
-        "C" => Ok(Sizage::new(1, 0, 44, 0)),
-        "D" => Ok(Sizage::new(1, 0, 44, 0)),
-        "E" => Ok(Sizage::new(1, 0, 44, 0)),
-        "F" => Ok(Sizage::new(1, 0, 44, 0)),
-        "G" => Ok(Sizage::new(1, 0, 44, 0)),
-        "H" => Ok(Sizage::new(1, 0, 44, 0)),
-        "I" => Ok(Sizage::new(1, 0, 44, 0)),
-        "J" => Ok(Sizage::new(1, 0, 44, 0)),
-        "K" => Ok(Sizage::new(1, 0, 76, 0)),
-        "L" => Ok(Sizage::new(1, 0, 76, 0)),
-        "M" => Ok(Sizage::new(1, 0, 4, 0)),
-        "N" => Ok(Sizage::new(1, 0, 12, 0)),
-        "O" => Ok(Sizage::new(1, 0, 44, 0)),
-        "P" => Ok(Sizage::new(1, 0, 124, 0)),
-        "0A" => Ok(Sizage::new(2, 0, 24, 0)),
-        "0B" => Ok(Sizage::new(2, 0, 88, 0)),
-        "0C" => Ok(Sizage::new(2, 0, 88, 0)),
-        "0D" => Ok(Sizage::new(2, 0, 88, 0)),
-        "0E" => Ok(Sizage::new(2, 0, 88, 0)),
-        "0F" => Ok(Sizage::new(2, 0, 88, 0)),
-        "0G" => Ok(Sizage::new(2, 0, 88, 0)),
-        "0H" => Ok(Sizage::new(2, 0, 8, 0)),
-        "1AAA" => Ok(Sizage::new(4, 0, 48, 0)),
-        "1AAB" => Ok(Sizage::new(4, 0, 48, 0)),
-        "1AAC" => Ok(Sizage::new(4, 0, 80, 0)),
-        "1AAD" => Ok(Sizage::new(4, 0, 80, 0)),
-        "1AAE" => Ok(Sizage::new(4, 0, 56, 0)),
-        "1AAF" => Ok(Sizage::new(4, 0, 8, 0)),
-        "1AAG" => Ok(Sizage::new(4, 0, 36, 0)),
-        "1AAH" => Ok(Sizage::new(4, 0, 100, 0)),
-        "2AAA" => Ok(Sizage::new(4, 0, 8, 1)),
-        "3AAA" => Ok(Sizage::new(4, 0, 8, 2)),
-        "4A" => Ok(Sizage::new(2, 2, 0, 0)),
-        "5A" => Ok(Sizage::new(2, 2, 0, 1)),
-        "6A" => Ok(Sizage::new(2, 2, 0, 2)),
-        "7AAA" => Ok(Sizage::new(4, 4, 0, 0)),
-        "8AAA" => Ok(Sizage::new(4, 4, 0, 1)),
-        "9AAA" => Ok(Sizage::new(4, 4, 0, 2)),
-        "4B" => Ok(Sizage::new(2, 2, 0, 0)),
-        "5B" => Ok(Sizage::new(2, 2, 0, 1)),
-        "6B" => Ok(Sizage::new(2, 2, 0, 2)),
-        "7AAB" => Ok(Sizage::new(4, 4, 0, 0)),
-        "8AAB" => Ok(Sizage::new(4, 4, 0, 1)),
-        "9AAB" => Ok(Sizage::new(4, 4, 0, 2)),
-        _ => Err(Box::new(Error::UnknownSizage(s.to_string()))),
-    }
+    Ok(match s {
+        "A" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
+        "B" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
+        "C" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
+        "D" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
+        "E" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
+        "F" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
+        "G" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
+        "H" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
+        "I" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
+        "J" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
+        "K" => Sizage { hs: 1, ss: 0, fs: 76, ls: 0 },
+        "L" => Sizage { hs: 1, ss: 0, fs: 76, ls: 0 },
+        "M" => Sizage { hs: 1, ss: 0, fs: 4, ls: 0 },
+        "N" => Sizage { hs: 1, ss: 0, fs: 12, ls: 0 },
+        "O" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
+        "P" => Sizage { hs: 1, ss: 0, fs: 124, ls: 0 },
+        "0A" => Sizage { hs: 2, ss: 0, fs: 24, ls: 0 },
+        "0B" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
+        "0C" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
+        "0D" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
+        "0E" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
+        "0F" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
+        "0G" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
+        "0H" => Sizage { hs: 2, ss: 0, fs: 8, ls: 0 },
+        "1AAA" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
+        "1AAB" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
+        "1AAC" => Sizage { hs: 4, ss: 0, fs: 80, ls: 0 },
+        "1AAD" => Sizage { hs: 4, ss: 0, fs: 80, ls: 0 },
+        "1AAE" => Sizage { hs: 4, ss: 0, fs: 56, ls: 0 },
+        "1AAF" => Sizage { hs: 4, ss: 0, fs: 8, ls: 0 },
+        "1AAG" => Sizage { hs: 4, ss: 0, fs: 36, ls: 0 },
+        "1AAH" => Sizage { hs: 4, ss: 0, fs: 100, ls: 0 },
+        "2AAA" => Sizage { hs: 4, ss: 0, fs: 8, ls: 1 },
+        "3AAA" => Sizage { hs: 4, ss: 0, fs: 8, ls: 2 },
+        "4A" => Sizage { hs: 2, ss: 2, fs: 0, ls: 0 },
+        "5A" => Sizage { hs: 2, ss: 2, fs: 0, ls: 1 },
+        "6A" => Sizage { hs: 2, ss: 2, fs: 0, ls: 2 },
+        "7AAA" => Sizage { hs: 4, ss: 4, fs: 0, ls: 0 },
+        "8AAA" => Sizage { hs: 4, ss: 4, fs: 0, ls: 1 },
+        "9AAA" => Sizage { hs: 4, ss: 4, fs: 0, ls: 2 },
+        "4B" => Sizage { hs: 2, ss: 2, fs: 0, ls: 0 },
+        "5B" => Sizage { hs: 2, ss: 2, fs: 0, ls: 1 },
+        "6B" => Sizage { hs: 2, ss: 2, fs: 0, ls: 2 },
+        "7AAB" => Sizage { hs: 4, ss: 4, fs: 0, ls: 0 },
+        "8AAB" => Sizage { hs: 4, ss: 4, fs: 0, ls: 1 },
+        "9AAB" => Sizage { hs: 4, ss: 4, fs: 0, ls: 2 },
+        _ => return Err(Box::new(Error::UnknownSizage(s.to_string()))),
+    })
 }
 
 pub(crate) fn hardage(c: char) -> Result<i32> {
@@ -71,9 +58,7 @@ pub(crate) fn hardage(c: char) -> Result<i32> {
         'A'..='Z' | 'a'..='z' => Ok(1),
         '0' | '4' | '5' | '6' => Ok(2),
         '1' | '2' | '3' | '7' | '8' | '9' => Ok(4),
-        '-' => Err(Box::new(Error::UnexpectedCode(
-            "count code start".to_string(),
-        ))),
+        '-' => Err(Box::new(Error::UnexpectedCode("count code start".to_string()))),
         '_' => Err(Box::new(Error::UnexpectedCode("op code start".to_string()))),
         _ => Err(Box::new(Error::UnknownHardage(c.to_string()))),
     }
@@ -578,5 +563,60 @@ mod tables_tests {
         assert_eq!(Codex::Bytes_Big_L0.code(), "7AAB");
         assert_eq!(Codex::Bytes_Big_L1.code(), "8AAB");
         assert_eq!(Codex::Bytes_Big_L2.code(), "9AAB");
+
+        assert_eq!(Codex::from_code("A").unwrap(), Codex::Ed25519_Seed);
+        assert_eq!(Codex::from_code("B").unwrap(), Codex::Ed25519N);
+        assert_eq!(Codex::from_code("C").unwrap(), Codex::X25519);
+        assert_eq!(Codex::from_code("D").unwrap(), Codex::Ed25519);
+        assert_eq!(Codex::from_code("E").unwrap(), Codex::Blake3_256);
+        assert_eq!(Codex::from_code("F").unwrap(), Codex::Blake2b_256);
+        assert_eq!(Codex::from_code("G").unwrap(), Codex::Blake2s_256);
+        assert_eq!(Codex::from_code("H").unwrap(), Codex::SHA3_256);
+        assert_eq!(Codex::from_code("I").unwrap(), Codex::SHA2_256);
+        assert_eq!(Codex::from_code("J").unwrap(), Codex::ECDSA_256k1_Seed);
+        assert_eq!(Codex::from_code("K").unwrap(), Codex::Ed448_Seed);
+        assert_eq!(Codex::from_code("L").unwrap(), Codex::X448);
+        assert_eq!(Codex::from_code("M").unwrap(), Codex::Short);
+        assert_eq!(Codex::from_code("N").unwrap(), Codex::Big);
+        assert_eq!(Codex::from_code("O").unwrap(), Codex::X25519_Private);
+        assert_eq!(Codex::from_code("P").unwrap(), Codex::X25519_Cipher_Seed);
+        assert_eq!(Codex::from_code("0A").unwrap(), Codex::Salt_128);
+        assert_eq!(Codex::from_code("0B").unwrap(), Codex::Ed25519_Sig);
+        assert_eq!(Codex::from_code("0C").unwrap(), Codex::ECDSA_256k1_Sig);
+        assert_eq!(Codex::from_code("0D").unwrap(), Codex::Blake3_512);
+        assert_eq!(Codex::from_code("0E").unwrap(), Codex::Blake2b_512);
+        assert_eq!(Codex::from_code("0F").unwrap(), Codex::SHA3_512);
+        assert_eq!(Codex::from_code("0G").unwrap(), Codex::SHA2_512);
+        assert_eq!(Codex::from_code("0H").unwrap(), Codex::Long);
+        assert_eq!(Codex::from_code("1AAA").unwrap(), Codex::ECDSA_256k1N);
+        assert_eq!(Codex::from_code("1AAB").unwrap(), Codex::ECDSA_256k1);
+        assert_eq!(Codex::from_code("1AAC").unwrap(), Codex::Ed448N);
+        assert_eq!(Codex::from_code("1AAD").unwrap(), Codex::Ed448);
+        assert_eq!(Codex::from_code("1AAE").unwrap(), Codex::Ed448_Sig);
+        assert_eq!(Codex::from_code("1AAF").unwrap(), Codex::Tern);
+        assert_eq!(Codex::from_code("1AAG").unwrap(), Codex::DateTime);
+        assert_eq!(Codex::from_code("1AAH").unwrap(), Codex::X25519_Cipher_Salt);
+        assert_eq!(Codex::from_code("2AAA").unwrap(), Codex::TBD1);
+        assert_eq!(Codex::from_code("3AAA").unwrap(), Codex::TBD2);
+        assert_eq!(Codex::from_code("4A").unwrap(), Codex::StrB64_L0);
+        assert_eq!(Codex::from_code("5A").unwrap(), Codex::StrB64_L1);
+        assert_eq!(Codex::from_code("6A").unwrap(), Codex::StrB64_L2);
+        assert_eq!(Codex::from_code("7AAA").unwrap(), Codex::StrB64_Big_L0);
+        assert_eq!(Codex::from_code("8AAA").unwrap(), Codex::StrB64_Big_L1);
+        assert_eq!(Codex::from_code("9AAA").unwrap(), Codex::StrB64_Big_L2);
+        assert_eq!(Codex::from_code("4B").unwrap(), Codex::Bytes_L0);
+        assert_eq!(Codex::from_code("5B").unwrap(), Codex::Bytes_L1);
+        assert_eq!(Codex::from_code("6B").unwrap(), Codex::Bytes_L2);
+        assert_eq!(Codex::from_code("7AAB").unwrap(), Codex::Bytes_Big_L0);
+        assert_eq!(Codex::from_code("8AAB").unwrap(), Codex::Bytes_Big_L1);
+        assert_eq!(Codex::from_code("9AAB").unwrap(), Codex::Bytes_Big_L2);
+    }
+
+    #[test]
+    fn test_unhappy_paths() {
+        assert!(hardage('-').is_err());
+        assert!(hardage('_').is_err());
+        assert!(hardage('#').is_err());
+        assert!(Codex::from_code("CESR").is_err());
     }
 }

@@ -19,8 +19,14 @@ pub enum Error {
     InvalidVarSize(String),
     #[error("invalid variable raw size: {0}")]
     InvalidVarRawSize(String),
+    #[error("invalid variable index: {0}")]
+    InvalidVarIndex(String),
     #[error("invalid code size: {0}")]
     InvalidCodeSize(String),
+    #[error("invalid base64 character: {0}")]
+    InvalidBase64Character(char),
+    #[error("invalid base64 index: {0}")]
+    InvalidBase64Index(u8),
     #[error("shortage: {0}")]
     Shortage(String),
     #[error("empty qb64")]
@@ -29,6 +35,8 @@ pub enum Error {
     UnknownSizage(String),
     #[error("unknown hardage: {0}")]
     UnknownHardage(String),
+    #[error("unknown bardage: {0}")]
+    UnknownBardage(String),
     #[error("variable size codes not supported")]
     UnsupportedSize(),
     #[error("need {0} more characters")]
@@ -43,6 +51,8 @@ pub enum Error {
     NonZeroedLeadBytes(),
     #[error("non-zeroed pad bits")]
     NonZeroedPadBits(),
+    #[error("parsing error: {0}")]
+    Parsing(String),
     #[error("error parsing qb64: {0}")]
     ParseQb64(String),
     #[error("error parsing qb2: {0}")]

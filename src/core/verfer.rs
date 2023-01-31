@@ -34,23 +34,6 @@ fn validate_code(code: &str) -> Result<()> {
     Ok(())
 }
 
-fn verify_signature(verfer: &Matter, ev: matter::Codex, sig: &[u8], ser: &[u8]) -> Result<bool> {
-    Ok(match ev {
-        matter::Codex::Ed25519N => verify_ed25519_signature(verfer, sig, ser)?,
-        matter::Codex::Ed25519 => verify_ed25519_signature(verfer, sig, ser)?,
-        matter::Codex::ECDSA_256k1N => verify_ecdsa_256k1_signature(verfer, sig, ser)?,
-        matter::Codex::ECDSA_256k1 => verify_ecdsa_256k1_signature(verfer, sig, ser)?,
-        // matter::Codex::Ed448N => verify_ed448_signature(verfer, sig, ser)?,
-        // matter::Codex::Ed448 => verify_ed448_signature(verfer, sig, ser)?,
-        _ => {
-            return Err(Box::new(Error::UnexpectedCode(format!(
-                "unexpected digest code: code = [{}]",
-                ev.code()
-            ))))
-        }
-    })
-}
-
 fn verify_ed25519_signature(verfer: &Matter, sig: &[u8], ser: &[u8]) -> Result<bool> {
     use ed25519_dalek::{PublicKey, Signature, Verifier};
 
@@ -110,7 +93,19 @@ impl Verfer for Matter {
 
     fn verify(&self, sig: &[u8], ser: &[u8]) -> Result<bool> {
         let ev = matter::Codex::from_code(&self.code)?;
-        verify_signature(self, ev, sig, ser)
+
+        match ev {
+            matter::Codex::Ed25519N => verify_ed25519_signature(self, sig, ser),
+            matter::Codex::Ed25519 => verify_ed25519_signature(self, sig, ser),
+            matter::Codex::ECDSA_256k1N => verify_ecdsa_256k1_signature(self, sig, ser),
+            matter::Codex::ECDSA_256k1 => verify_ecdsa_256k1_signature(self, sig, ser),
+            // matter::Codex::Ed448N => verify_ed448_signature(verfer, sig, ser)?,
+            // matter::Codex::Ed448 => verify_ed448_signature(verfer, sig, ser)?,
+            _ => Err(Box::new(Error::UnexpectedCode(format!(
+                "unexpected signature code: code = '{}'",
+                ev.code()
+            )))),
+        }
     }
 }
 
@@ -136,16 +131,10 @@ mod test_verfer {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let good_code = matter::Codex::Ed25519N.code();
-        let good_qb64 = Matter::new_with_code_and_raw(good_code, &raw, 0)
-            .unwrap()
-            .qb64()
-            .unwrap();
+        let good_qb64 = Matter::new_with_code_and_raw(good_code, &raw, 0).unwrap().qb64().unwrap();
 
         let bad_code = matter::Codex::Blake3_256.code();
-        let bad_qb64 = Matter::new_with_code_and_raw(bad_code, &raw, 0)
-            .unwrap()
-            .qb64()
-            .unwrap();
+        let bad_qb64 = Matter::new_with_code_and_raw(bad_code, &raw, 0).unwrap().qb64().unwrap();
 
         assert!(<Matter as Verfer>::new_with_qb64(&good_qb64).is_ok());
         assert!(<Matter as Verfer>::new_with_qb64(&bad_qb64).is_err());
@@ -156,16 +145,11 @@ mod test_verfer {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let good_code = matter::Codex::Ed25519N.code();
-        let good_qb64b = Matter::new_with_code_and_raw(good_code, &raw, 0)
-            .unwrap()
-            .qb64b()
-            .unwrap();
+        let good_qb64b =
+            Matter::new_with_code_and_raw(good_code, &raw, 0).unwrap().qb64b().unwrap();
 
         let bad_code = matter::Codex::Blake3_256.code();
-        let bad_qb64b = Matter::new_with_code_and_raw(bad_code, &raw, 0)
-            .unwrap()
-            .qb64b()
-            .unwrap();
+        let bad_qb64b = Matter::new_with_code_and_raw(bad_code, &raw, 0).unwrap().qb64b().unwrap();
 
         assert!(<Matter as Verfer>::new_with_qb64b(&good_qb64b).is_ok());
         assert!(<Matter as Verfer>::new_with_qb64b(&bad_qb64b).is_err());
@@ -176,16 +160,10 @@ mod test_verfer {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let good_code = matter::Codex::Ed25519N.code();
-        let good_qb2 = Matter::new_with_code_and_raw(good_code, &raw, 0)
-            .unwrap()
-            .qb2()
-            .unwrap();
+        let good_qb2 = Matter::new_with_code_and_raw(good_code, &raw, 0).unwrap().qb2().unwrap();
 
         let bad_code = matter::Codex::Blake3_256.code();
-        let bad_qb2 = Matter::new_with_code_and_raw(bad_code, &raw, 0)
-            .unwrap()
-            .qb2()
-            .unwrap();
+        let bad_qb2 = Matter::new_with_code_and_raw(bad_code, &raw, 0).unwrap().qb2().unwrap();
 
         assert!(<Matter as Verfer>::new_with_qb2(&good_qb2).is_ok());
         assert!(<Matter as Verfer>::new_with_qb2(&bad_qb2).is_err());
@@ -209,8 +187,15 @@ mod test_verfer {
 
         let raw = keypair.public.as_bytes();
 
-        let m =
+        let mut m =
             <Matter as Verfer>::new_with_code_and_raw(matter::Codex::Ed25519.code(), raw).unwrap();
+        assert!(m.verify(&sig, &ser).unwrap());
+        assert!(!m.verify(&bad_sig, &ser).unwrap());
+        assert!(!m.verify(&sig, &bad_ser).unwrap());
+        assert!(m.verify(&[], &ser).is_err());
+
+        // exercise control flows for non-transferrable variant
+        m.code = matter::Codex::Ed25519N.code().to_string();
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());
@@ -234,10 +219,28 @@ mod test_verfer {
         let public_key = VerifyingKey::from(private_key);
         let raw = public_key.to_encoded_point(true).to_bytes();
 
-        let m = <Matter as Verfer>::new_with_code_and_raw(matter::Codex::ECDSA_256k1.code(), &raw)
-            .unwrap();
+        let mut m =
+            <Matter as Verfer>::new_with_code_and_raw(matter::Codex::ECDSA_256k1.code(), &raw)
+                .unwrap();
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());
+        assert!(m.verify(&[], &ser).is_err());
+
+        m.code = matter::Codex::ECDSA_256k1N.code().to_string();
+        assert!(m.verify(&sig, &ser).unwrap());
+        assert!(!m.verify(&bad_sig, &ser).unwrap());
+        assert!(!m.verify(&sig, &bad_ser).unwrap());
+    }
+
+    #[test]
+    fn test_unhappy_paths() {
+        assert!(Matter {
+            code: matter::Codex::Blake3_256.code().to_string(),
+            raw: vec![],
+            size: 0
+        }
+        .verify(&[], &[])
+        .is_err());
     }
 }
