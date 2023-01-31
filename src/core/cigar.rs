@@ -24,35 +24,23 @@ fn validate_code(code: &str) -> Result<()> {
 impl Cigar {
     pub fn new_with_code_and_raw(verfer: &Matter, code: &str, raw: &[u8]) -> Result<Cigar> {
         validate_code(code)?;
-        Ok(Cigar {
-            matter: Matter::new_with_code_and_raw(code, raw, 0)?,
-            verfer: verfer.clone(),
-        })
+        Ok(Cigar { matter: Matter::new_with_code_and_raw(code, raw, 0)?, verfer: verfer.clone() })
     }
 
     pub fn new_with_qb64(verfer: &Matter, qb64: &str) -> Result<Cigar> {
-        let cigar = Cigar {
-            matter: Matter::new_with_qb64(qb64)?,
-            verfer: verfer.clone(),
-        };
+        let cigar = Cigar { matter: Matter::new_with_qb64(qb64)?, verfer: verfer.clone() };
         validate_code(&cigar.matter.code)?;
         Ok(cigar)
     }
 
     pub fn new_with_qb64b(verfer: &Matter, qb64b: &[u8]) -> Result<Cigar> {
-        let cigar = Cigar {
-            matter: Matter::new_with_qb64b(qb64b)?,
-            verfer: verfer.clone(),
-        };
+        let cigar = Cigar { matter: Matter::new_with_qb64b(qb64b)?, verfer: verfer.clone() };
         validate_code(&cigar.matter.code)?;
         Ok(cigar)
     }
 
     pub fn new_with_qb2(verfer: &Matter, qb2: &[u8]) -> Result<Cigar> {
-        let cigar = Cigar {
-            matter: Matter::new_with_qb2(qb2)?,
-            verfer: verfer.clone(),
-        };
+        let cigar = Cigar { matter: Matter::new_with_qb2(qb2)?, verfer: verfer.clone() };
         validate_code(&cigar.matter.code)?;
         Ok(cigar)
     }
@@ -198,5 +186,14 @@ mod test_cigar {
         assert_eq!(cigar.qb64().unwrap(), cigar.matter.qb64().unwrap());
         assert_eq!(cigar.qb64b().unwrap(), cigar.matter.qb64b().unwrap());
         assert_eq!(cigar.qb2().unwrap(), cigar.matter.qb2().unwrap());
+    }
+
+    #[test]
+    fn test_unhappy_paths() {
+        let vcode = matter::Codex::Ed25519.code();
+        let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
+        let verfer = <Matter as Verfer>::new_with_code_and_raw(vcode, vraw).unwrap();
+
+        assert!(Cigar::new_with_code_and_raw(&verfer, "CESR", &[]).is_err());
     }
 }

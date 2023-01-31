@@ -1,7 +1,7 @@
 use crate::error::{Error, Result};
 
-fn b64_char_to_index(c: char) -> u8 {
-    match c {
+pub fn b64_char_to_index(c: char) -> Result<u8> {
+    Ok(match c {
         'A' => 0,
         'B' => 1,
         'C' => 2,
@@ -66,12 +66,14 @@ fn b64_char_to_index(c: char) -> u8 {
         '9' => 61,
         '-' => 62,
         '_' => 63,
-        _ => todo!(),
-    }
+        _ => {
+            return Err(Box::new(Error::InvalidBase64Character(c)));
+        }
+    })
 }
 
-pub fn b64_index_to_char(i: u8) -> char {
-    match i {
+pub fn b64_index_to_char(i: u8) -> Result<char> {
+    Ok(match i {
         0 => 'A',
         1 => 'B',
         2 => 'C',
@@ -136,63 +138,65 @@ pub fn b64_index_to_char(i: u8) -> char {
         61 => '9',
         62 => '-',
         63 => '_',
-        _ => todo!(),
-    }
+        _ => {
+            return Err(Box::new(Error::InvalidBase64Index(i)));
+        }
+    })
 }
 
-pub fn b64_to_u32(b64: &str) -> u32 {
+pub fn b64_to_u32(b64: &str) -> Result<u32> {
     let mut out: u32 = 0;
 
     for c in b64.chars() {
-        out = (out << 6) + (b64_char_to_index(c) as u32);
+        out = (out << 6) + (b64_char_to_index(c)? as u32);
     }
 
-    out
+    Ok(out)
 }
 
-pub fn b64_to_u64(b64: &str) -> u64 {
+pub fn b64_to_u64(b64: &str) -> Result<u64> {
     let mut out: u64 = 0;
 
     for c in b64.chars() {
-        out = (out << 6) + (b64_char_to_index(c) as u64);
+        out = (out << 6) + (b64_char_to_index(c)? as u64);
     }
 
-    out
+    Ok(out)
 }
 
-pub fn u32_to_b64(n: u32, length: usize) -> String {
+pub fn u32_to_b64(n: u32, length: usize) -> Result<String> {
     let mut x = n;
     let mut out = String::new();
 
     while x > 0 {
-        out.insert(0, b64_index_to_char((x % 64).try_into().unwrap()));
+        out.insert(0, b64_index_to_char((x % 64).try_into().unwrap())?);
         x /= 64;
     }
 
-    for _ in 0..length - out.len() {
+    for _ in out.len()..length {
         out.insert(0, 'A');
     }
 
-    out
+    Ok(out)
 }
 
-pub fn u64_to_b64(n: u64, length: usize) -> String {
+pub fn u64_to_b64(n: u64, length: usize) -> Result<String> {
     let mut x = n;
     let mut out = String::new();
 
     while x > 0 {
-        out.insert(0, b64_index_to_char((x % 64).try_into().unwrap()));
+        out.insert(0, b64_index_to_char((x % 64).try_into().unwrap())?);
         x /= 64;
     }
 
-    for _ in 0..length - out.len() {
+    for _ in out.len()..length {
         out.insert(0, 'A');
     }
 
-    out
+    Ok(out)
 }
 
-pub fn code_b2_to_b64(b2: &Vec<u8>, length: usize) -> Result<String> {
+pub fn code_b2_to_b64(b2: &[u8], length: usize) -> Result<String> {
     let n = ((length + 1) * 3) / 4;
 
     if n > b2.len() {
@@ -205,17 +209,54 @@ pub fn code_b2_to_b64(b2: &Vec<u8>, length: usize) -> Result<String> {
 
         let i = u32::from_be_bytes(bytes);
         let tbs = 2 * (length % 4) + (4 - n) * 8;
-        Ok(u32_to_b64(i >> tbs, length))
+        Ok(u32_to_b64(i >> tbs, length)?)
     } else if length <= 8 {
         let mut bytes: [u8; 8] = [0; 8];
         bytes[..n].copy_from_slice(&b2[..n]);
 
         let i = u64::from_be_bytes(bytes);
         let tbs = 2 * (length % 4) + (8 - n) * 8;
-        Ok(u64_to_b64(i >> tbs, length))
+        Ok(u64_to_b64(i >> tbs, length)?)
     } else {
-        return Err(Box::new(Error::Matter("unexpected length".to_string())));
+        Err(Box::new(Error::Matter("unexpected length".to_string())))
     }
+}
+
+pub fn code_b64_to_b2(code: &str) -> Result<Vec<u8>> {
+    let mut i = b64_to_u64(code)?;
+    i <<= 2 * (code.len() % 4);
+    let n = ((code.len() + 1) * 3) / 4;
+    Ok(i.to_be_bytes()[8 - n..8].to_vec())
+}
+
+pub fn nab_sextets(binary: &[u8], count: usize) -> Result<Vec<u8>> {
+    let n = ((count + 1) * 3) / 4;
+
+    if n > binary.len() {
+        return Err(Box::new(Error::TooSmall(n - binary.len())));
+    }
+
+    let mut padded = binary.to_vec();
+    let bps = 3 - (binary.len() % 3);
+    padded.resize(binary.len() + bps, 0);
+
+    let mut out = Vec::new();
+    let mut i: usize = 0;
+    loop {
+        let n = ((padded[i] as u32) << 16) + ((padded[i + 1] as u32) << 8) + padded[i + 2] as u32;
+
+        out.push(((n & 0xfc0000) >> 18) as u8);
+        out.push(((n & 0x03f000) >> 12) as u8);
+        out.push(((n & 0x000fc0) >> 6) as u8);
+        out.push((n & 0x00003f) as u8);
+
+        i += 3;
+        if i >= padded.len() {
+            break;
+        }
+    }
+
+    Ok(out[..count].to_vec())
 }
 
 #[cfg(test)]
@@ -224,33 +265,33 @@ mod util_tests {
 
     #[test]
     fn test_u32_to_b64() {
-        assert_eq!(util::u32_to_b64(0, 1), "A");
-        assert_eq!(util::u32_to_b64(1, 1), "B");
-        assert_eq!(util::u32_to_b64(0, 2), "AA");
-        assert_eq!(util::u32_to_b64(1, 2), "AB");
-        assert_eq!(util::u32_to_b64(4095, 2), "__");
-        assert_eq!(util::u32_to_b64(16777215, 4), "____");
+        assert_eq!(util::u32_to_b64(0, 1).unwrap(), "A");
+        assert_eq!(util::u32_to_b64(1, 1).unwrap(), "B");
+        assert_eq!(util::u32_to_b64(0, 2).unwrap(), "AA");
+        assert_eq!(util::u32_to_b64(1, 2).unwrap(), "AB");
+        assert_eq!(util::u32_to_b64(4095, 2).unwrap(), "__");
+        assert_eq!(util::u32_to_b64(16777215, 4).unwrap(), "____");
     }
 
     #[test]
     fn test_b64_to_u32() {
-        assert_eq!(util::b64_to_u32("A"), 0);
-        assert_eq!(util::b64_to_u32("B"), 1);
-        assert_eq!(util::b64_to_u32("AA"), 0);
-        assert_eq!(util::b64_to_u32("AB"), 1);
-        assert_eq!(util::b64_to_u32("__"), 4095);
-        assert_eq!(util::b64_to_u32("____"), 16777215);
+        assert_eq!(util::b64_to_u32("A").unwrap(), 0);
+        assert_eq!(util::b64_to_u32("B").unwrap(), 1);
+        assert_eq!(util::b64_to_u32("AA").unwrap(), 0);
+        assert_eq!(util::b64_to_u32("AB").unwrap(), 1);
+        assert_eq!(util::b64_to_u32("__").unwrap(), 4095);
+        assert_eq!(util::b64_to_u32("____").unwrap(), 16777215);
     }
 
     #[test]
     fn test_b64_to_u64() {
-        assert_eq!(util::b64_to_u64("A"), 0);
-        assert_eq!(util::b64_to_u64("B"), 1);
-        assert_eq!(util::b64_to_u64("AA"), 0);
-        assert_eq!(util::b64_to_u64("AB"), 1);
-        assert_eq!(util::b64_to_u64("__"), 4095);
-        assert_eq!(util::b64_to_u64("____"), 16777215);
-        assert_eq!(util::b64_to_u64("________"), 281474976710655);
+        assert_eq!(util::b64_to_u64("A").unwrap(), 0);
+        assert_eq!(util::b64_to_u64("B").unwrap(), 1);
+        assert_eq!(util::b64_to_u64("AA").unwrap(), 0);
+        assert_eq!(util::b64_to_u64("AB").unwrap(), 1);
+        assert_eq!(util::b64_to_u64("__").unwrap(), 4095);
+        assert_eq!(util::b64_to_u64("____").unwrap(), 16777215);
+        assert_eq!(util::b64_to_u64("________").unwrap(), 281474976710655);
     }
 
     #[test]
@@ -259,7 +300,7 @@ mod util_tests {
 
         let mut i = 0;
         for c in s.chars() {
-            assert_eq!(util::b64_char_to_index(c), i);
+            assert_eq!(util::b64_char_to_index(c).unwrap(), i);
             i += 1;
         }
     }
@@ -268,7 +309,52 @@ mod util_tests {
     fn test_b64_index_to_char() {
         let mut chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".chars();
         for i in 0..63 {
-            assert_eq!(util::b64_index_to_char(i), chars.next().unwrap());
+            assert_eq!(util::b64_index_to_char(i).unwrap(), chars.next().unwrap());
         }
+    }
+
+    #[test]
+    fn test_code_b2_to_b64() {
+        assert_eq!(util::code_b2_to_b64(&vec![0], 1).unwrap(), "A");
+        assert_eq!(util::code_b2_to_b64(&vec![0, 0, 0, 0, 0, 0], 8).unwrap(), "AAAAAAAA");
+        assert_eq!(util::code_b2_to_b64(&vec![8, 68, 145], 4).unwrap(), "CESR");
+        assert_eq!(util::code_b2_to_b64(&vec![40, 68, 72, 0, 32, 194], 8).unwrap(), "KERIACDC");
+        assert_eq!(util::code_b2_to_b64(&vec![252], 1).unwrap(), "_");
+        assert_eq!(
+            util::code_b2_to_b64(&vec![255, 255, 255, 255, 255, 255], 8).unwrap(),
+            "________"
+        );
+        assert_eq!(util::code_b2_to_b64(&vec![244, 0, 1], 4).unwrap(), "9AAB");
+    }
+
+    #[test]
+    fn test_code_b64_to_b2() {
+        assert_eq!(util::code_b64_to_b2("A").unwrap(), vec![0]);
+        assert_eq!(util::code_b64_to_b2("AAAAAAAA").unwrap(), vec![0, 0, 0, 0, 0, 0]);
+        assert_eq!(util::code_b64_to_b2("CESR").unwrap(), vec![8, 68, 145]);
+        assert_eq!(util::code_b64_to_b2("KERIACDC").unwrap(), vec![40, 68, 72, 0, 32, 194]);
+        assert_eq!(util::code_b64_to_b2("_").unwrap(), vec![252]);
+        assert_eq!(util::code_b64_to_b2("________").unwrap(), vec![255, 255, 255, 255, 255, 255]);
+        assert_eq!(util::code_b64_to_b2("9AAB").unwrap(), vec![244, 0, 1]);
+    }
+
+    #[test]
+    fn test_nab_sextets() {
+        assert_eq!(util::nab_sextets(&[255, 255, 255], 4).unwrap(), vec![63, 63, 63, 63]);
+        assert_eq!(
+            util::nab_sextets(&[255, 255, 255, 0, 0, 0], 8).unwrap(),
+            vec![63, 63, 63, 63, 0, 0, 0, 0]
+        );
+        assert_eq!(util::nab_sextets(&[255], 1).unwrap(), vec![63]);
+        assert_eq!(util::nab_sextets(&[127, 127], 2).unwrap(), vec![31, 55]);
+        assert!(util::nab_sextets(&[127, 127], 3).is_err());
+    }
+
+    #[test]
+    fn test_unhappy_paths() {
+        assert!(util::b64_char_to_index('#').is_err());
+        assert!(util::b64_index_to_char(64).is_err());
+        assert!(util::code_b2_to_b64(&[0], 2).is_err());
+        assert!(util::code_b2_to_b64(&[0; 32], 9).is_err());
     }
 }
