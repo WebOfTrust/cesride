@@ -1,4 +1,4 @@
-use crate::error::{Error, Result};
+use crate::error::{err, Error, Result};
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct Sizage {
@@ -25,7 +25,7 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "-V" => Sizage { hs: 2, ss: 2, fs: 4, ls: 0 },
         "-0V" => Sizage { hs: 3, ss: 5, fs: 8, ls: 0 },
         "--AAA" => Sizage { hs: 5, ss: 3, fs: 8, ls: 0 },
-        _ => return Err(Box::new(Error::UnknownSizage(s.to_string()))),
+        _ => return err!(Error::UnknownSizage(s.to_string())),
     })
 }
 
@@ -35,7 +35,7 @@ pub(crate) fn hardage(s: &str) -> Result<u32> {
         | "-V" => Ok(2),
         "-0" => Ok(3),
         "--" => Ok(5),
-        _ => Err(Box::new(Error::UnknownHardage(s.to_string()))),
+        _ => err!(Error::UnknownHardage(s.to_string())),
     }
 }
 
@@ -56,7 +56,7 @@ pub(crate) fn bardage(b: &[u8]) -> Result<u32> {
         | [62, 21] => Ok(2),
         [62, 52] => Ok(3),
         [62, 62] => Ok(5),
-        _ => Err(Box::new(Error::UnknownBardage(format!("{b:?}")))),
+        _ => err!(Error::UnknownBardage(format!("{b:?}"))),
     }
 }
 
@@ -117,7 +117,7 @@ impl Codex {
             "-V" => Codex::AttachedMaterialQuadlets,
             "-0V" => Codex::BigAttachedMaterialQuadlets,
             "--AAA" => Codex::KERIProtocolStack,
-            _ => return Err(Box::new(Error::UnexpectedCode(code.to_string()))),
+            _ => return err!(Error::UnexpectedCode(code.to_string())),
         })
     }
 }

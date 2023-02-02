@@ -60,3 +60,25 @@ pub enum Error {
     #[error("conversion error: {0}")]
     Conversion(String),
 }
+
+macro_rules! err {
+    ($e:expr) => {
+        Err(Box::new($e))
+    };
+}
+
+pub(crate) use err;
+
+#[cfg(test)]
+mod test {
+    use super::{Error, Result};
+
+    fn explode() -> Result<()> {
+        return err!(Error::Prepad());
+    }
+
+    #[test]
+    fn err() {
+        assert!(explode().is_err());
+    }
+}

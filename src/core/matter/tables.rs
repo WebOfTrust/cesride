@@ -1,4 +1,4 @@
-use crate::error::{Error, Result};
+use crate::error::{err, Error, Result};
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct Sizage {
@@ -56,7 +56,7 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "7AAB" => Sizage { hs: 4, ss: 4, fs: 0, ls: 0 },
         "8AAB" => Sizage { hs: 4, ss: 4, fs: 0, ls: 1 },
         "9AAB" => Sizage { hs: 4, ss: 4, fs: 0, ls: 2 },
-        _ => return Err(Box::new(Error::UnknownSizage(s.to_string()))),
+        _ => return err!(Error::UnknownSizage(s.to_string())),
     })
 }
 
@@ -65,9 +65,9 @@ pub(crate) fn hardage(c: char) -> Result<i32> {
         'A'..='Z' | 'a'..='z' => Ok(1),
         '0' | '4' | '5' | '6' => Ok(2),
         '1' | '2' | '3' | '7' | '8' | '9' => Ok(4),
-        '-' => Err(Box::new(Error::UnexpectedCode("count code start".to_string()))),
-        '_' => Err(Box::new(Error::UnexpectedCode("op code start".to_string()))),
-        _ => Err(Box::new(Error::UnknownHardage(c.to_string()))),
+        '-' => err!(Error::UnexpectedCode("count code start".to_string())),
+        '_' => err!(Error::UnexpectedCode("op code start".to_string())),
+        _ => err!(Error::UnknownHardage(c.to_string())),
     }
 }
 
@@ -222,7 +222,7 @@ impl Codex {
             "7AAB" => Codex::Bytes_Big_L0,
             "8AAB" => Codex::Bytes_Big_L1,
             "9AAB" => Codex::Bytes_Big_L2,
-            _ => return Err(Box::new(Error::UnexpectedCode(code.to_string()))),
+            _ => return err!(Error::UnexpectedCode(code.to_string())),
         })
     }
 }

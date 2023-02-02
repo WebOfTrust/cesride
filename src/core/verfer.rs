@@ -1,5 +1,5 @@
 use crate::core::matter::{tables as matter, Matter};
-use crate::error::{Error, Result};
+use crate::error::{err, Error, Result};
 
 pub trait Verfer {
     fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Matter>
@@ -28,7 +28,7 @@ fn validate_code(code: &str) -> Result<()> {
     ]
     .contains(&code)
     {
-        return Err(Box::new(Error::UnexpectedCode(code.to_string())));
+        return err!(Error::UnexpectedCode(code.to_string()));
     }
 
     Ok(())
@@ -53,7 +53,7 @@ fn verify_ecdsa_256k1_signature(verfer: &Matter, sig: &[u8], ser: &[u8]) -> Resu
     let signature = match Signature::try_from(sig) {
         Ok(s) => s,
         Err(e) => {
-            return Err(Box::new(e));
+            return err!(e);
         }
     };
 
@@ -101,10 +101,10 @@ impl Verfer for Matter {
             matter::Codex::ECDSA_256k1 => verify_ecdsa_256k1_signature(self, sig, ser),
             // matter::Codex::Ed448N => verify_ed448_signature(verfer, sig, ser)?,
             // matter::Codex::Ed448 => verify_ed448_signature(verfer, sig, ser)?,
-            _ => Err(Box::new(Error::UnexpectedCode(format!(
+            _ => err!(Error::UnexpectedCode(format!(
                 "unexpected signature code: code = '{}'",
                 ev.code()
-            )))),
+            ))),
         }
     }
 }

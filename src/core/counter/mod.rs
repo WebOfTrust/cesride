@@ -1,7 +1,7 @@
 pub(crate) mod tables;
 
 use crate::core::util;
-use crate::error::{Error, Result};
+use crate::error::{err, Error, Result};
 
 #[derive(Debug, Clone)]
 pub struct Counter {
@@ -18,7 +18,7 @@ impl Counter {
 
     pub fn new_with_code_and_count(code: &str, count: u32) -> Result<Counter> {
         if code.is_empty() {
-            return Err(Box::new(Error::EmptyMaterial("empty code".to_string())));
+            return err!(Error::EmptyMaterial("empty code".to_string()));
         }
 
         let szg = tables::sizage(code)?;
@@ -26,17 +26,17 @@ impl Counter {
         if szg.fs != cs || cs % 4 != 0 {
             // unreachable
             // code validated and unless sizages are broken this cannot be reached
-            return Err(Box::new(Error::InvalidCodeSize(format!(
+            return err!(Error::InvalidCodeSize(format!(
                 "whole code size not a multiple of 4: cs = {cs}, fs = {}",
                 szg.fs
-            ))));
+            )));
         }
 
         const SIXTY_FOUR: u32 = 64;
         if count > SIXTY_FOUR.pow(szg.ss) - 1 {
-            return Err(Box::new(Error::InvalidVarIndex(format!(
+            return err!(Error::InvalidVarIndex(format!(
                 "invalid count for code: count = {count}, code = '{code}'"
-            ))));
+            )));
         }
 
         Ok(Counter { code: code.to_string(), count })
@@ -78,9 +78,9 @@ impl Counter {
     fn sem_ver_parts_to_b64(parts: &[u8]) -> Result<String> {
         for p in parts.iter().copied() {
             if p > 63 {
-                return Err(Box::new(Error::Parsing(format!(
+                return err!(Error::Parsing(format!(
                     "semantic version out of bounds: parts = {parts:?}"
-                ))));
+                )));
             }
         }
 
@@ -101,18 +101,18 @@ impl Counter {
         let mut parts = Vec::new();
 
         if strings.len() > 3 {
-            return Err(Box::new(Error::Conversion(format!(
+            return err!(Error::Conversion(format!(
                 "invalid semantic version: version = '{version}'"
-            ))));
+            )));
         }
 
         for s in strings {
             let n = match s.parse::<i8>() {
                 Ok(n) => {
                     if n < 0 {
-                        return Err(Box::new(Error::Conversion(format!(
+                        return err!(Error::Conversion(format!(
                             "invalid semantic version: version = '{version}'"
-                        ))));
+                        )));
                     } else {
                         n as u8
                     }
@@ -121,9 +121,9 @@ impl Counter {
                     if s.is_empty() {
                         0
                     } else {
-                        return Err(Box::new(Error::Conversion(format!(
+                        return err!(Error::Conversion(format!(
                             "invalid semantic version: version = '{version}'"
-                        ))));
+                        )));
                     }
                 }
             };
@@ -162,27 +162,27 @@ impl Counter {
         if szg.fs != cs || cs % 4 != 0 {
             // unreachable
             // unless sizages are broken this cannot happen
-            return Err(Box::new(Error::InvalidCodeSize(format!(
+            return err!(Error::InvalidCodeSize(format!(
                 "whole code size not complete or not a multiple of 4: cs = {cs}, fs = {}",
                 szg.fs
-            ))));
+            )));
         }
 
         const SIXTY_FOUR: u32 = 64;
         if count > SIXTY_FOUR.pow(szg.ss) - 1 {
-            return Err(Box::new(Error::InvalidVarIndex(format!(
+            return err!(Error::InvalidVarIndex(format!(
                 "invalid count for code: count = {count}, code = '{code}'"
-            ))));
+            )));
         }
 
         let both = format!("{code}{}", util::u32_to_b64(count, szg.ss as usize)?);
         if both.len() != cs as usize {
             // unreachable
             // unless sizages are broken, we constructed both to be of length cs
-            return Err(Box::new(Error::InvalidCodeSize(format!(
+            return err!(Error::InvalidCodeSize(format!(
                 "mismatched code size: size = {}, code = '{both}'",
                 both.len()
-            ))));
+            )));
         }
 
         Ok(both)
@@ -195,7 +195,7 @@ impl Counter {
 
     fn exfil(&mut self, qb64: &str) -> Result<()> {
         if qb64.is_empty() {
-            return Err(Box::new(Error::EmptyMaterial("empty qb64".to_string())));
+            return err!(Error::EmptyMaterial("empty qb64".to_string()));
         }
 
         // we validated there will be a char here, above.
@@ -203,10 +203,10 @@ impl Counter {
 
         let hs = tables::hardage(first)? as usize;
         if qb64.len() < hs {
-            return Err(Box::new(Error::Shortage(format!(
+            return err!(Error::Shortage(format!(
                 "insufficient material for hard part of code: qb64 size = {}, hs = {hs}",
                 qb64.len()
-            ))));
+            )));
         }
 
         // bounds already checked
@@ -215,10 +215,10 @@ impl Counter {
         let cs = szg.hs + szg.ss;
 
         if qb64.len() < cs as usize {
-            return Err(Box::new(Error::Shortage(format!(
+            return err!(Error::Shortage(format!(
                 "insufficient material for code: qb64 size = {}, cs = {cs}",
                 qb64.len()
-            ))));
+            )));
         }
 
         let count_b64 = &qb64[szg.hs as usize..cs as usize];
@@ -232,32 +232,32 @@ impl Counter {
 
     fn bexfil(&mut self, qb2: &[u8]) -> Result<()> {
         if qb2.is_empty() {
-            return Err(Box::new(Error::EmptyMaterial("empty qualified base2".to_string())));
+            return err!(Error::EmptyMaterial("empty qualified base2".to_string()));
         }
 
         let first = util::nab_sextets(qb2, 2)?;
         if first[0] > 0x3e {
             if first[0] == 0x3f {
-                return Err(Box::new(Error::UnexpectedOpCode(
+                return err!(Error::UnexpectedOpCode(
                     "unexpected start during extraction".to_string(),
-                )));
+                ));
             } else {
                 // unreachable
                 // programmer error - nab_sextets ensures values fall below 0x40. the only possible
                 // value is 0x3f, and we handle it
-                return Err(Box::new(Error::UnexpectedCode(format!(
+                return err!(Error::UnexpectedCode(format!(
                     "unexpected code start: sextets = {first:?}"
-                ))));
+                )));
             }
         }
 
         let hs = tables::bardage(&first)?;
         let bhs = ((hs + 1) * 3) / 4;
         if qb2.len() < bhs as usize {
-            return Err(Box::new(Error::Shortage(format!(
+            return err!(Error::Shortage(format!(
                 "need more bytes: qb2 size = {}, bhs = {bhs}",
                 qb2.len()
-            ))));
+            )));
         }
 
         let hard = util::code_b2_to_b64(qb2, hs as usize)?;
@@ -265,10 +265,10 @@ impl Counter {
         let cs = szg.hs + szg.ss;
         let bcs = ((cs + 1) * 3) / 4;
         if qb2.len() < bcs as usize {
-            return Err(Box::new(Error::Shortage(format!(
+            return err!(Error::Shortage(format!(
                 "need more bytes: qb2 size = {}, bcs = {bcs}",
                 qb2.len()
-            ))));
+            )));
         }
 
         let both = util::code_b2_to_b64(qb2, cs as usize)?;
