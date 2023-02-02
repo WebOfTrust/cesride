@@ -22,63 +22,60 @@ impl Matter {
         // this unwrap can stay since we have validated that code is not empty, above
         let first = code.chars().next().unwrap();
 
-        const SMALL_VRZ_DEX: [char; 3] = ['4', '5', '6'];
-        const LARGE_VRZ_DEX: [char; 3] = ['7', '8', '9'];
-
         let mut code = code.to_string();
-        let rize = if SMALL_VRZ_DEX.contains(&first) || LARGE_VRZ_DEX.contains(&first) {
-            let rize = if raw_size == 0 { raw.len() as u32 } else { raw_size as u32 };
+        let rize =
+            if tables::SMALL_VRZ_DEX.contains(&first) || tables::LARGE_VRZ_DEX.contains(&first) {
+                let rize = if raw_size == 0 { raw.len() as u32 } else { raw_size as u32 };
 
-            let ls = (3 - (rize % 3)) % 3;
-            size = (rize + ls) / 3;
+                let ls = (3 - (rize % 3)) % 3;
+                size = (rize + ls) / 3;
 
-            const SIXTY_FOUR: u32 = 64;
-            if SMALL_VRZ_DEX.contains(&first) {
-                if size < SIXTY_FOUR.pow(2) {
-                    let hs = 2;
-                    let s = SMALL_VRZ_DEX[ls as usize];
-                    code = format!("{s}{}", &code[1..hs as usize]);
-                } else if size < SIXTY_FOUR.pow(4) {
-                    let hs = 4;
-                    let s = LARGE_VRZ_DEX[ls as usize];
+                if tables::SMALL_VRZ_DEX.contains(&first) {
+                    if size < 64_u32.pow(2) {
+                        let hs = 2;
+                        let s = tables::SMALL_VRZ_DEX[ls as usize];
+                        code = format!("{s}{}", &code[1..hs as usize]);
+                    } else if size < 64_u32.pow(4) {
+                        let hs = 4;
+                        let s = tables::LARGE_VRZ_DEX[ls as usize];
 
-                    code = format!("{s}{}{}", &"AAAA"[0..hs as usize - 2], &code[1..2]);
+                        code = format!("{s}{}{}", &"AAAA"[0..hs as usize - 2], &code[1..2]);
+                    } else {
+                        return err!(Error::InvalidVarRawSize(format!(
+                            "unsupported raw size: code = '{code}'",
+                        )));
+                    }
+                } else if tables::LARGE_VRZ_DEX.contains(&first) {
+                    if size < 64_u32.pow(4) {
+                        let hs = 4;
+                        let s = tables::LARGE_VRZ_DEX[ls as usize];
+                        code = format!("{s}{}", &code[1..hs as usize]);
+                    } else {
+                        return err!(Error::InvalidVarRawSize(format!(
+                            "unsupported raw size: code = '{code}'",
+                        )));
+                    }
                 } else {
+                    // unreachable
+                    // since this if else is inside another if that protects us against this
                     return err!(Error::InvalidVarRawSize(format!(
-                        "unsupported raw size: code = '{code}'",
+                        "unsupported variable raw size: code = '{code}'",
                     )));
                 }
-            } else if LARGE_VRZ_DEX.contains(&first) {
-                if size < SIXTY_FOUR.pow(4) {
-                    let hs = 4;
-                    let s = LARGE_VRZ_DEX[ls as usize];
-                    code = format!("{s}{}", &code[1..hs as usize]);
-                } else {
-                    return err!(Error::InvalidVarRawSize(format!(
-                        "unsupported raw size: code = '{code}'",
-                    )));
-                }
+
+                rize
             } else {
-                // unreachable
-                // since this if else is inside another if that protects us against this
-                return err!(Error::InvalidVarRawSize(format!(
-                    "unsupported variable raw size: code = '{code}'",
-                )));
-            }
-
-            rize
-        } else {
-            let szg = tables::sizage(&code)?;
-            if szg.fs == 0 {
-                // unreachable
-                // programmer error, variable length sizages should be the only ones with fs == 0
-                return err!(Error::InvalidVarSize(format!(
-                    "unsupported variable size: code = '{code}'",
-                )));
-            }
-            let cs = szg.hs + szg.ss;
-            ((szg.fs - cs) * 3 / 4) - szg.ls
-        };
+                let szg = tables::sizage(&code)?;
+                if szg.fs == 0 {
+                    // unreachable
+                    // programmer error, variable length sizages should be the only ones with fs == 0
+                    return err!(Error::InvalidVarSize(format!(
+                        "unsupported variable size: code = '{code}'",
+                    )));
+                }
+                let cs = szg.hs + szg.ss;
+                ((szg.fs - cs) * 3 / 4) - szg.ls
+            };
 
         if raw.len() < rize as usize {
             return err!(Error::Shortage(format!(
@@ -154,8 +151,7 @@ impl Matter {
                 )));
             };
 
-            const SIXTY_FOUR: u32 = 64;
-            if SIXTY_FOUR.pow(szg.ss) - 1 < size {
+            if 64_u32.pow(szg.ss) - 1 < size {
                 return err!(Error::InvalidVarSize(format!(
                     "invalid size for code: size = {size}, code = '{code}'",
                 )));
@@ -219,8 +215,7 @@ impl Matter {
             }
 
             // ? check python code for a < 0 comparison
-            const SIXTY_FOUR: u32 = 64;
-            if SIXTY_FOUR.pow(szg.ss) - 1 < size {
+            if 64_u32.pow(szg.ss) - 1 < size {
                 return err!(Error::InvalidVarSize(format!(
                     "invalid size for code: size = {size}, code = '{code}'",
                 )));
@@ -244,14 +239,11 @@ impl Matter {
 
         let n = ((cs + 1) * 3) / 4;
 
-        const SMALL_VRZ_BYTES: u32 = 3;
-        const LARGE_VRZ_BYTES: u32 = 6;
-
         // bcode
         let mut full: Vec<u8>;
-        if n <= SMALL_VRZ_BYTES {
+        if n <= tables::SMALL_VRZ_BYTES {
             full = (util::b64_to_u32(both)? << (2 * (cs % 4))).to_be_bytes().to_vec();
-        } else if n <= LARGE_VRZ_BYTES {
+        } else if n <= tables::LARGE_VRZ_BYTES {
             full = (util::b64_to_u64(both)? << (2 * (cs % 4))).to_be_bytes().to_vec();
         } else {
             // unreachable
@@ -345,8 +337,7 @@ impl Matter {
                 pi = (pi * 256) + (*b as i32)
             }
 
-            const TWO: i32 = 2;
-            if (pi & (TWO.pow(pbs) - 1)) != 0 {
+            if (pi & (2_i32.pow(pbs) - 1)) != 0 {
                 return err!(Error::Prepad());
             }
 
@@ -457,8 +448,7 @@ impl Matter {
             let mut bytes: [u8; 1] = [0];
             bytes[0] = trim[bcs as usize - 1];
             let pi = u8::from_be_bytes(bytes);
-            const TWO: u8 = 2;
-            if pi & (TWO.pow(pbs) - 1) != 0 {
+            if pi & (2_u8.pow(pbs) - 1) != 0 {
                 return err!(Error::NonZeroedPadBits());
             }
         } else {

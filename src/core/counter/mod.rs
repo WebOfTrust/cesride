@@ -32,8 +32,7 @@ impl Counter {
             )));
         }
 
-        const SIXTY_FOUR: u32 = 64;
-        if count > SIXTY_FOUR.pow(szg.ss) - 1 {
+        if count > 64_u32.pow(szg.ss) - 1 {
             return err!(Error::InvalidVarIndex(format!(
                 "invalid count for code: count = {count}, code = '{code}'"
             )));
@@ -168,8 +167,7 @@ impl Counter {
             )));
         }
 
-        const SIXTY_FOUR: u32 = 64;
-        if count > SIXTY_FOUR.pow(szg.ss) - 1 {
+        if count > 64_u32.pow(szg.ss) - 1 {
             return err!(Error::InvalidVarIndex(format!(
                 "invalid count for code: count = {count}, code = '{code}'"
             )));
