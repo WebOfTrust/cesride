@@ -1,5 +1,10 @@
 use crate::error::{err, Error, Result};
 
+pub(crate) const SMALL_VRZ_DEX: [char; 3] = ['4', '5', '6'];
+pub(crate) const LARGE_VRZ_DEX: [char; 3] = ['7', '8', '9'];
+pub(crate) const SMALL_VRZ_BYTES: u32 = 3;
+pub(crate) const LARGE_VRZ_BYTES: u32 = 6;
+
 #[derive(Debug, PartialEq)]
 pub(crate) struct Sizage {
     pub hs: u32,
