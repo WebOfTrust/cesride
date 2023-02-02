@@ -1,4 +1,4 @@
-use crate::error::{Error, Result};
+use crate::error::{err, Error, Result};
 
 pub fn b64_char_to_index(c: char) -> Result<u8> {
     Ok(match c {
@@ -67,7 +67,7 @@ pub fn b64_char_to_index(c: char) -> Result<u8> {
         '-' => 62,
         '_' => 63,
         _ => {
-            return Err(Box::new(Error::InvalidBase64Character(c)));
+            return err!(Error::InvalidBase64Character(c));
         }
     })
 }
@@ -139,7 +139,7 @@ pub fn b64_index_to_char(i: u8) -> Result<char> {
         62 => '-',
         63 => '_',
         _ => {
-            return Err(Box::new(Error::InvalidBase64Index(i)));
+            return err!(Error::InvalidBase64Index(i));
         }
     })
 }
@@ -200,7 +200,7 @@ pub fn code_b2_to_b64(b2: &[u8], length: usize) -> Result<String> {
     let n = ((length + 1) * 3) / 4;
 
     if n > b2.len() {
-        return Err(Box::new(Error::Matter("not enough bytes".to_string())));
+        return err!(Error::Matter("not enough bytes".to_string()));
     }
 
     if length <= 4 {
@@ -218,7 +218,7 @@ pub fn code_b2_to_b64(b2: &[u8], length: usize) -> Result<String> {
         let tbs = 2 * (length % 4) + (8 - n) * 8;
         Ok(u64_to_b64(i >> tbs, length)?)
     } else {
-        Err(Box::new(Error::Matter("unexpected length".to_string())))
+        err!(Error::Matter("unexpected length".to_string()))
     }
 }
 
@@ -233,7 +233,7 @@ pub fn nab_sextets(binary: &[u8], count: usize) -> Result<Vec<u8>> {
     let n = ((count + 1) * 3) / 4;
 
     if n > binary.len() {
-        return Err(Box::new(Error::TooSmall(n - binary.len())));
+        return err!(Error::TooSmall(n - binary.len()));
     }
 
     let mut padded = binary.to_vec();

@@ -1,7 +1,7 @@
 use blake2::Digest;
 
 use crate::core::matter::{tables as matter, Matter};
-use crate::error::{Error, Result};
+use crate::error::{err, Error, Result};
 
 type Blake2b256 = blake2::Blake2b<blake2::digest::consts::U32>;
 
@@ -72,10 +72,10 @@ fn derive_digest(ev: matter::Codex, ser: &[u8]) -> Result<Vec<u8>> {
             hasher.finalize().to_vec()
         }
         _ => {
-            return Err(Box::new(Error::UnexpectedCode(format!(
+            return err!(Error::UnexpectedCode(format!(
                 "unexpected digest code: code = '{}'",
                 ev.code()
-            ))))
+            )))
         }
     };
 
@@ -96,7 +96,7 @@ fn validate_code(code: &str) -> Result<()> {
     ]
     .contains(&code)
     {
-        return Err(Box::new(Error::UnexpectedCode(code.to_string())));
+        return err!(Error::UnexpectedCode(code.to_string()));
     }
 
     Ok(())

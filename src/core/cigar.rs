@@ -1,5 +1,5 @@
 use crate::core::matter::{tables as matter, Matter};
-use crate::error::{Error, Result};
+use crate::error::{err, Error, Result};
 
 #[derive(Debug, Clone)]
 pub struct Cigar {
@@ -15,7 +15,7 @@ fn validate_code(code: &str) -> Result<()> {
     ]
     .contains(&code)
     {
-        return Err(Box::new(Error::UnexpectedCode(code.to_string())));
+        return err!(Error::UnexpectedCode(code.to_string()));
     }
 
     Ok(())

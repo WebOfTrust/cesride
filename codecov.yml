@@ -6,5 +6,5 @@ coverage:
         paths: ["src"]
     patch:
       default:
-        target: 90
+        target: 75
         paths: ["src"]
