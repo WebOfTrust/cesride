@@ -5,7 +5,7 @@ use crate::error::{err, Error, Result};
 
 type Blake2b256 = blake2::Blake2b<blake2::digest::consts::U32>;
 
-trait Diger {
+pub trait Diger {
     fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Matter>
     where
         Self: Sized;

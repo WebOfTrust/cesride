@@ -1,4 +1,6 @@
 /target
 /Cargo.lock
+/cargo/*/Cargo.toml
+/cargo/*/Cargo.lock
 /*.profraw
 .idea

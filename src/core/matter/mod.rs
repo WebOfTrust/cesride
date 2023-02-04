@@ -1,10 +1,13 @@
-pub(crate) mod tables;
-
 use base64::{engine::general_purpose as b64_engine, Engine};
+#[cfg(feature = "python")]
+use pyo3::prelude::pyclass;
 
 use crate::core::util;
 use crate::error::{err, Error, Result};
 
+pub mod tables;
+
+#[cfg_attr(feature = "python", pyclass)]
 #[derive(Debug, Clone)]
 pub struct Matter {
     pub(crate) raw: Vec<u8>,
@@ -130,8 +133,6 @@ impl Matter {
     pub fn qb2(&self) -> Result<Vec<u8>> {
         self.binfil()
     }
-
-    pub fn transferable() {}
 
     fn infil(&self) -> Result<String> {
         let code = &self.code;

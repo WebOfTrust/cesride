@@ -1,4 +1,4 @@
-pub(crate) mod tables;
+pub mod tables;
 
 use crate::core::util;
 use crate::error::{err, Error, Result};

@@ -1,0 +1,11 @@
+[lib]
+path = "../../src/lib_python.rs"
+test = false
+doctest = false
+bench = true
+doc = true
+crate-type = ["cdylib"]
+
+[features]
+default = ["python"]
+python = []
