@@ -1,3 +1,5 @@
+use lazy_static::lazy_static;
+
 use crate::core::matter::{tables as matter, Matter};
 use crate::error::{err, Error, Result};
 
@@ -18,16 +20,18 @@ pub trait Verfer {
 }
 
 fn validate_code(code: &str) -> Result<()> {
-    if !vec![
-        matter::Codex::Ed25519N.code(),
-        matter::Codex::Ed25519.code(),
-        matter::Codex::ECDSA_256k1N.code(),
-        matter::Codex::ECDSA_256k1.code(),
-        // matter::Codex::Ed448N.code(),
-        // matter::Codex::Ed448.code(),
-    ]
-    .contains(&code)
-    {
+    lazy_static! {
+        static ref CODES: Vec<&'static str> = vec![
+            matter::Codex::Ed25519N.code(),
+            matter::Codex::Ed25519.code(),
+            matter::Codex::ECDSA_256k1N.code(),
+            matter::Codex::ECDSA_256k1.code(),
+            // matter::Codex::Ed448N.code(),
+            // matter::Codex::Ed448.code(),
+        ];
+    }
+
+    if !CODES.contains(&code) {
         return err!(Error::UnexpectedCode(code.to_string()));
     }
 

@@ -1,4 +1,5 @@
 use blake2::Digest;
+use lazy_static::lazy_static;
 
 use crate::core::matter::{tables as matter, Matter};
 use crate::error::{err, Error, Result};
@@ -83,19 +84,21 @@ fn derive_digest(ev: matter::Codex, ser: &[u8]) -> Result<Vec<u8>> {
 }
 
 fn validate_code(code: &str) -> Result<()> {
-    if !vec![
-        matter::Codex::Blake3_256.code(),
-        matter::Codex::Blake3_512.code(),
-        matter::Codex::Blake2b_256.code(),
-        matter::Codex::Blake2b_512.code(),
-        matter::Codex::Blake2s_256.code(),
-        matter::Codex::SHA3_256.code(),
-        matter::Codex::SHA3_512.code(),
-        matter::Codex::SHA2_256.code(),
-        matter::Codex::SHA2_512.code(),
-    ]
-    .contains(&code)
-    {
+    lazy_static! {
+        static ref CODES: Vec<&'static str> = vec![
+            matter::Codex::Blake3_256.code(),
+            matter::Codex::Blake3_512.code(),
+            matter::Codex::Blake2b_256.code(),
+            matter::Codex::Blake2b_512.code(),
+            matter::Codex::Blake2s_256.code(),
+            matter::Codex::SHA3_256.code(),
+            matter::Codex::SHA3_512.code(),
+            matter::Codex::SHA2_256.code(),
+            matter::Codex::SHA2_512.code(),
+        ];
+    }
+
+    if !CODES.contains(&code) {
         return err!(Error::UnexpectedCode(code.to_string()));
     }
 
