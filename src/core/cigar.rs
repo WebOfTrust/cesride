@@ -1,3 +1,5 @@
+use lazy_static::lazy_static;
+
 use crate::core::matter::{tables as matter, Matter};
 use crate::error::{err, Error, Result};
 
@@ -8,13 +10,15 @@ pub struct Cigar {
 }
 
 fn validate_code(code: &str) -> Result<()> {
-    if !vec![
-        matter::Codex::Ed25519_Sig.code(),
-        matter::Codex::ECDSA_256k1_Sig.code(),
-        // matter::Codex::Ed448_Sig.code(),
-    ]
-    .contains(&code)
-    {
+    lazy_static! {
+        static ref CODES: Vec<&'static str> = vec![
+            matter::Codex::Ed25519_Sig.code(),
+            matter::Codex::ECDSA_256k1_Sig.code(),
+            // matter::Codex::Ed448_Sig.code(),
+        ];
+    }
+
+    if !CODES.contains(&code) {
         return err!(Error::UnexpectedCode(code.to_string()));
     }
 
