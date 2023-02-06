@@ -5,7 +5,7 @@ TAIL_LINES = $(shell echo $$(( $(TOTAL_LINES) - $(DELIMITING_LINE) )))
 
 python:
 	@head -n $(DELIMITING_LINE) Cargo.toml > cargo/$@/Cargo.toml
-	@echo "pyo3 = { version = \"0.18.0\", features = [\"abi3\", \"extension-module\"] }" >> cargo/$@/Cargo.toml
+	@echo "pyo3 = { version = \"~0.18\", features = [\"abi3\", \"extension-module\"] }" >> cargo/$@/Cargo.toml
 	@tail -n $(TAIL_LINES) Cargo.toml >> cargo/$@/Cargo.toml
 	@echo >> cargo/$@/Cargo.toml
 	@cat cargo/$@/Cargo.toml.tail >> cargo/$@/Cargo.toml
