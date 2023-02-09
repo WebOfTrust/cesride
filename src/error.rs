@@ -59,6 +59,10 @@ pub enum Error {
     ParseQb2(String),
     #[error("conversion error: {0}")]
     Conversion(String),
+    #[error("{0}")]
+    Value(String),
+    #[error("{0}")]
+    Validation(String),
 }
 
 macro_rules! err {
