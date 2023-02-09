@@ -16,7 +16,7 @@ pub struct Matter {
 }
 
 impl Matter {
-    pub fn new_with_code_and_raw(code: &str, raw: &[u8], raw_size: usize) -> Result<Matter> {
+    pub fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Matter> {
         if code.is_empty() {
             return err!(Error::EmptyMaterial("empty code".to_string()));
         }
@@ -28,7 +28,7 @@ impl Matter {
         let mut code = code.to_string();
         let rize =
             if tables::SMALL_VRZ_DEX.contains(&first) || tables::LARGE_VRZ_DEX.contains(&first) {
-                let rize = if raw_size == 0 { raw.len() as u32 } else { raw_size as u32 };
+                let rize = raw.len() as u32;
 
                 let ls = (3 - (rize % 3)) % 3;
                 size = (rize + ls) / 3;
@@ -503,7 +503,7 @@ mod matter_tests {
         assert_eq!(m.code, matter::Codex::Ed25519N.code());
 
         // qb64
-        let mut m2 = Matter::new_with_code_and_raw(&m.code, &m.raw, m.raw.len()).unwrap();
+        let mut m2 = Matter::new_with_code_and_raw(&m.code, &m.raw).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
         assert_eq!(m.size, m2.size);
@@ -525,7 +525,7 @@ mod matter_tests {
 
         // small variable b64(), ls = 0
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
-        m = Matter::new_with_code_and_raw(matter::Codex::StrB64_L0.code(), &raw, 9).unwrap();
+        m = Matter::new_with_code_and_raw(matter::Codex::StrB64_L0.code(), &raw).unwrap();
         m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -537,7 +537,7 @@ mod matter_tests {
 
         // small variable b64(), ls = 1
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7];
-        m = Matter::new_with_code_and_raw(matter::Codex::StrB64_L1.code(), &raw, 8).unwrap();
+        m = Matter::new_with_code_and_raw(matter::Codex::StrB64_L1.code(), &raw).unwrap();
         m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -549,7 +549,7 @@ mod matter_tests {
 
         // small variable b64(), ls = 2
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6];
-        m = Matter::new_with_code_and_raw(matter::Codex::StrB64_L2.code(), &raw, 7).unwrap();
+        m = Matter::new_with_code_and_raw(matter::Codex::StrB64_L2.code(), &raw).unwrap();
         m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -565,7 +565,7 @@ mod matter_tests {
 
         // large variable bytes, ls = 0
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
-        m = Matter::new_with_code_and_raw(matter::Codex::Bytes_Big_L0.code(), &raw, 9).unwrap();
+        m = Matter::new_with_code_and_raw(matter::Codex::Bytes_Big_L0.code(), &raw).unwrap();
         m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -577,7 +577,7 @@ mod matter_tests {
 
         // large variable bytes, ls = 1
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7];
-        m = Matter::new_with_code_and_raw(matter::Codex::Bytes_Big_L1.code(), &raw, 8).unwrap();
+        m = Matter::new_with_code_and_raw(matter::Codex::Bytes_Big_L1.code(), &raw).unwrap();
         m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -589,7 +589,7 @@ mod matter_tests {
 
         // large variable bytes, ls = 0
         let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6];
-        m = Matter::new_with_code_and_raw(matter::Codex::Bytes_Big_L2.code(), &raw, 7).unwrap();
+        m = Matter::new_with_code_and_raw(matter::Codex::Bytes_Big_L2.code(), &raw).unwrap();
         m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
         assert_eq!(m.raw, m2.raw);
@@ -618,12 +618,8 @@ mod matter_tests {
         assert_eq!(m.code, matter::Codex::X25519_Cipher_Seed.code());
         assert_eq!(m.size, 1);
 
-        m = Matter::new_with_code_and_raw(
-            matter::Codex::Bytes_L2.code(),
-            &[0; 4095 * 3 + 1],
-            4095 * 3 + 1,
-        )
-        .unwrap();
+        m = Matter::new_with_code_and_raw(matter::Codex::Bytes_L2.code(), &[0; 4095 * 3 + 1])
+            .unwrap();
         assert_eq!(m.raw().len(), 4095 * 3 + 1);
         assert_eq!(m.code(), matter::Codex::Bytes_Big_L2.code());
     }
@@ -631,14 +627,14 @@ mod matter_tests {
     #[test]
     fn test_unhappy_paths() {
         // empty material
-        assert!(Matter::new_with_code_and_raw("", &[], 0).is_err());
-        assert!(Matter::new_with_code_and_raw(matter::Codex::Blake3_256.code(), &[], 0).is_err());
+        assert!(Matter::new_with_code_and_raw("", &[]).is_err());
+        assert!(Matter::new_with_code_and_raw(matter::Codex::Blake3_256.code(), &[]).is_err());
         assert!(Matter::new_with_qb64("").is_err());
         assert!(Matter::new_with_qb64b(&[]).is_err());
         assert!(Matter::new_with_qb2(&[]).is_err());
 
         // invalid code
-        assert!(Matter::new_with_code_and_raw("CESR", &[], 0).is_err());
+        assert!(Matter::new_with_code_and_raw("CESR", &[]).is_err());
 
         // invalid code/raw size combination
         assert!(Matter {
@@ -664,16 +660,15 @@ mod matter_tests {
         // raw size too large
         assert!(Matter::new_with_code_and_raw(
             matter::Codex::Bytes_Big_L2.code(),
-            &[0; 8],
-            16777215 * 3 + 1
+            &[0; (16777215 * 3 + 1)],
         )
         .is_err());
         assert!(Matter::new_with_code_and_raw(
             matter::Codex::Bytes_L2.code(),
-            &[0; 8],
-            16777215 * 3 + 1
+            &[0; (16777215 * 3 + 1)],
         )
         .is_err());
+
         assert!(Matter {
             code: matter::Codex::Bytes_L2.code().to_string(),
             size: 4096,

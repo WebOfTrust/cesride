@@ -74,7 +74,7 @@ fn verify_ecdsa_256k1_signature(verfer: &Matter, sig: &[u8], ser: &[u8]) -> Resu
 impl Verfer for Matter {
     fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Matter> {
         validate_code(code)?;
-        Matter::new_with_code_and_raw(code, raw, 0)
+        Matter::new_with_code_and_raw(code, raw)
     }
 
     fn new_with_qb64(qb64: &str) -> Result<Matter> {
@@ -135,10 +135,10 @@ mod test_verfer {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let good_code = matter::Codex::Ed25519N.code();
-        let good_qb64 = Matter::new_with_code_and_raw(good_code, &raw, 0).unwrap().qb64().unwrap();
+        let good_qb64 = Matter::new_with_code_and_raw(good_code, &raw).unwrap().qb64().unwrap();
 
         let bad_code = matter::Codex::Blake3_256.code();
-        let bad_qb64 = Matter::new_with_code_and_raw(bad_code, &raw, 0).unwrap().qb64().unwrap();
+        let bad_qb64 = Matter::new_with_code_and_raw(bad_code, &raw).unwrap().qb64().unwrap();
 
         assert!(<Matter as Verfer>::new_with_qb64(&good_qb64).is_ok());
         assert!(<Matter as Verfer>::new_with_qb64(&bad_qb64).is_err());
@@ -149,11 +149,10 @@ mod test_verfer {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let good_code = matter::Codex::Ed25519N.code();
-        let good_qb64b =
-            Matter::new_with_code_and_raw(good_code, &raw, 0).unwrap().qb64b().unwrap();
+        let good_qb64b = Matter::new_with_code_and_raw(good_code, &raw).unwrap().qb64b().unwrap();
 
         let bad_code = matter::Codex::Blake3_256.code();
-        let bad_qb64b = Matter::new_with_code_and_raw(bad_code, &raw, 0).unwrap().qb64b().unwrap();
+        let bad_qb64b = Matter::new_with_code_and_raw(bad_code, &raw).unwrap().qb64b().unwrap();
 
         assert!(<Matter as Verfer>::new_with_qb64b(&good_qb64b).is_ok());
         assert!(<Matter as Verfer>::new_with_qb64b(&bad_qb64b).is_err());
@@ -164,10 +163,10 @@ mod test_verfer {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let good_code = matter::Codex::Ed25519N.code();
-        let good_qb2 = Matter::new_with_code_and_raw(good_code, &raw, 0).unwrap().qb2().unwrap();
+        let good_qb2 = Matter::new_with_code_and_raw(good_code, &raw).unwrap().qb2().unwrap();
 
         let bad_code = matter::Codex::Blake3_256.code();
-        let bad_qb2 = Matter::new_with_code_and_raw(bad_code, &raw, 0).unwrap().qb2().unwrap();
+        let bad_qb2 = Matter::new_with_code_and_raw(bad_code, &raw).unwrap().qb2().unwrap();
 
         assert!(<Matter as Verfer>::new_with_qb2(&good_qb2).is_ok());
         assert!(<Matter as Verfer>::new_with_qb2(&bad_qb2).is_err());
