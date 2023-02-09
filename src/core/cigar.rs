@@ -28,7 +28,7 @@ fn validate_code(code: &str) -> Result<()> {
 impl Cigar {
     pub fn new_with_code_and_raw(verfer: &Matter, code: &str, raw: &[u8]) -> Result<Cigar> {
         validate_code(code)?;
-        Ok(Cigar { matter: Matter::new_with_code_and_raw(code, raw, 0)?, verfer: verfer.clone() })
+        Ok(Cigar { matter: Matter::new_with_code_and_raw(code, raw)?, verfer: verfer.clone() })
     }
 
     pub fn new_with_qb64(verfer: &Matter, qb64: &str) -> Result<Cigar> {
