@@ -24,3 +24,4 @@ hex-literal = "*"
 hex = "*"
 rand = "0.7.0" # this needs pinning for one of the seeding pieces of a signing suite
 rand_core = "*"
+rstest = "*"

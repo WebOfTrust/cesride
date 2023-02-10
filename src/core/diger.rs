@@ -180,8 +180,11 @@ impl Diger for Matter {
 
 #[cfg(test)]
 mod test_diger {
-    use super::{derive_digest, matter, Diger, Matter};
+    use super::derive_digest;
+    use crate::core::diger::Diger;
+    use crate::core::matter::{tables as matter, Matter};
     use hex_literal::hex;
+    use rstest::rstest;
 
     #[test]
     fn test_new_with_code_and_raw() {
@@ -192,110 +195,37 @@ mod test_diger {
         assert_eq!(m.raw(), raw);
     }
 
-    #[test]
-    fn test_new_with_code_and_ser() {
-        let ser = vec![0, 1, 2];
-        let code = matter::Codex::Blake3_256.code();
+    #[rstest]
+    // https://github.com/BLAKE3-team/BLAKE3/blob/master/test_vectors/test_vectors.json
+    #[case(b"\x00\x01\x02", matter::Codex::Blake3_256.code(),
+        &hex!("e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f"))]
+    #[case(b"\x00\x01\x02", matter::Codex::Blake3_512.code(),
+        &hex!("e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f"
+              "5b49b82f805a538c68915c1ae8035c900fd1d4b13902920fd05e1450822f36de"))]
+    // https://github.com/jasoncolburne/jason-math/blob/main/spec/jason/math/cryptography/digest/blake_spec.rb
+    #[case(b"abc", matter::Codex::Blake2b_256.code(),
+        &hex!("bddd813c634239723171ef3fee98579b94964e3bb1cb3e427262c8c068d52319"))]
+    #[case(b"The quick brown fox jumps over the lazy dog", matter::Codex::Blake2b_512.code(),
+        &hex!("a8add4bdddfd93e4877d2746e62817b116364a1fa7bc148d95090bc7333b3673"
+              "f82401cf7aa2e4cb1ecd90296e3f14cb5413f8ed77be73045b13914cdcd6a918"))]
+    // generated locally
+    #[case(b"\x00\x01\x02", matter::Codex::Blake2s_256.code(),
+        &hex!("e8f91c6ef232a041452ab0e149070cdd7dd1769e75b3a5921be37876c45c9900"))]
+    // https://github.com/jasoncolburne/jason-math/blob/main/spec/jason/math/cryptography/digest/secure_hash_algorithm_spec.rb
+    #[case(b"abc", matter::Codex::SHA3_256.code(),
+        &hex!("3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532"))]
+    #[case(b"abc", matter::Codex::SHA3_512.code(),
+        &hex!("b751850b1a57168a5693cd924b6b096e08f621827444f70d884f5d0240d2712e"
+              "10e116e9192af3c91a7ec57647e3934057340b4cf408d5a56592f8274eec53f0"))]
+    #[case(b"abc", matter::Codex::SHA2_256.code(),
+        &hex!("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"))]
+    #[case(b"abc", matter::Codex::SHA2_512.code(),
+        &hex!("ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a"
+              "2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f"))]
 
-        let m = <Matter as Diger>::new_with_code_and_ser(code, &ser).unwrap();
-        println!("blake3_256: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
-        assert_eq!(
-            m.raw(),
-            // https://github.com/BLAKE3-team/BLAKE3/blob/master/test_vectors/test_vectors.json
-            hex!("e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f")
-        );
-
-        let ser = vec![0, 1, 2];
-        let code = matter::Codex::Blake3_512.code();
-
-        let m = <Matter as Diger>::new_with_code_and_ser(code, &ser).unwrap();
-        println!("blake3_512: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
-        assert_eq!(
-            m.raw(),
-            // https://github.com/BLAKE3-team/BLAKE3/blob/master/test_vectors/test_vectors.json
-            hex!("e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f"
-                 "5b49b82f805a538c68915c1ae8035c900fd1d4b13902920fd05e1450822f36de")
-        );
-
-        let ser = b"abc";
-        let code = matter::Codex::Blake2b_256.code();
-
+    fn test_new_with_code_and_ser(#[case] ser: &[u8], #[case] code: &str, #[case] raw: &[u8]) {
         let m = <Matter as Diger>::new_with_code_and_ser(code, ser).unwrap();
-        println!("blake2b_256: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
-        assert_eq!(
-            m.raw(),
-            // https://github.com/jasoncolburne/jason-math/blob/main/spec/jason/math/cryptography/digest/blake_spec.rb
-            hex!("bddd813c634239723171ef3fee98579b94964e3bb1cb3e427262c8c068d52319")
-        );
-
-        let ser = b"The quick brown fox jumps over the lazy dog";
-        let code = matter::Codex::Blake2b_512.code();
-
-        let m = <Matter as Diger>::new_with_code_and_ser(code, ser).unwrap();
-        println!("blake2b_512: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
-        assert_eq!(
-            m.raw(),
-            // https://github.com/jasoncolburne/jason-math/blob/main/spec/jason/math/cryptography/digest/blake_spec.rb
-            hex!("a8add4bdddfd93e4877d2746e62817b116364a1fa7bc148d95090bc7333b3673"
-                 "f82401cf7aa2e4cb1ecd90296e3f14cb5413f8ed77be73045b13914cdcd6a918")
-        );
-
-        let ser = vec![0, 1, 2];
-        let code = matter::Codex::Blake2s_256.code();
-
-        let m = <Matter as Diger>::new_with_code_and_ser(code, &ser).unwrap();
-        println!("blake2s_256: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
-        assert_eq!(
-            m.raw(),
-            // generated locally
-            hex!("e8f91c6ef232a041452ab0e149070cdd7dd1769e75b3a5921be37876c45c9900")
-        );
-
-        let ser = b"abc";
-        let code = matter::Codex::SHA3_256.code();
-
-        let m = <Matter as Diger>::new_with_code_and_ser(code, ser).unwrap();
-        println!("sha3_256: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
-        assert_eq!(
-            m.raw(),
-            // https://github.com/jasoncolburne/jason-math/blob/main/spec/jason/math/cryptography/digest/secure_hash_algorithm_spec.rb
-            hex!("3a985da74fe225b2045c172d6bd390bd855f086e3e9d525b46bfe24511431532")
-        );
-
-        let ser = b"abc";
-        let code = matter::Codex::SHA3_512.code();
-
-        let m = <Matter as Diger>::new_with_code_and_ser(code, ser).unwrap();
-        println!("sha3_512: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
-        assert_eq!(
-            m.raw(),
-            // https://github.com/jasoncolburne/jason-math/blob/main/spec/jason/math/cryptography/digest/secure_hash_algorithm_spec.rb
-            hex!("b751850b1a57168a5693cd924b6b096e08f621827444f70d884f5d0240d2712e"
-                 "10e116e9192af3c91a7ec57647e3934057340b4cf408d5a56592f8274eec53f0")
-        );
-
-        let ser = b"abc";
-        let code = matter::Codex::SHA2_256.code();
-
-        let m = <Matter as Diger>::new_with_code_and_ser(code, ser).unwrap();
-        println!("sha2_256: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
-        assert_eq!(
-            m.raw(),
-            // https://github.com/jasoncolburne/jason-math/blob/main/spec/jason/math/cryptography/digest/secure_hash_algorithm_spec.rb
-            hex!("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
-        );
-
-        let ser = b"abc";
-        let code = matter::Codex::SHA2_512.code();
-
-        let m = <Matter as Diger>::new_with_code_and_ser(code, ser).unwrap();
-        println!("sha2_512: {} [{}]", hex::encode(m.raw()), m.qb64().unwrap());
-        assert_eq!(
-            m.raw(),
-            // https://github.com/BLAKE3-team/BLAKE3/blob/master/test_vectors/test_vectors.json
-            hex!("ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a"
-                 "2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f")
-        );
+        assert_eq!(m.raw(), raw);
     }
 
     #[test]
@@ -367,12 +297,12 @@ mod test_diger {
         // same ser, different algorithm - should return true
         let code2 = matter::Codex::Blake2b_256.code();
         let ev = matter::Codex::from_code(code2).unwrap();
-        let raw2 = super::derive_digest(ev.clone(), &ser).unwrap();
+        let raw2 = derive_digest(ev.clone(), &ser).unwrap();
         let m2 = Matter::new_with_code_and_raw(code2, &raw2).unwrap();
         assert!(m.compare_dig(&ser, &m2.qb64b().unwrap()).unwrap());
 
         // different ser, different algorithm - should return false
-        let raw2 = super::derive_digest(ev, &vec![0, 1, 2, 3]).unwrap();
+        let raw2 = derive_digest(ev, &vec![0, 1, 2, 3]).unwrap();
         let m2 = Matter::new_with_code_and_raw(code2, &raw2).unwrap();
         assert!(!m.compare_dig(&ser, &m2.qb64b().unwrap()).unwrap());
     }
@@ -399,12 +329,12 @@ mod test_diger {
         // same ser, different algorithm - should return true
         let code2 = matter::Codex::Blake2b_256.code();
         let ev = matter::Codex::from_code(code2).unwrap();
-        let raw2 = super::derive_digest(ev.clone(), &ser).unwrap();
+        let raw2 = derive_digest(ev.clone(), &ser).unwrap();
         let m2 = Matter::new_with_code_and_raw(code2, &raw2).unwrap();
         assert!(m.compare_diger(&ser, &m2).unwrap());
 
         // different ser, different algorithm - should return false
-        let raw2 = super::derive_digest(ev, &vec![0, 1, 2, 3]).unwrap();
+        let raw2 = derive_digest(ev, &vec![0, 1, 2, 3]).unwrap();
         let m2 = Matter::new_with_code_and_raw(code2, &raw2).unwrap();
         assert!(!m.compare_diger(&ser, &m2).unwrap());
     }
