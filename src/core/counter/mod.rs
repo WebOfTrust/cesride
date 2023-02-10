@@ -291,20 +291,25 @@ impl Default for Counter {
 
 #[cfg(test)]
 mod counter_tests {
-    use super::{tables as counter, Counter};
+    use crate::core::counter::{tables as counter, Counter};
     use base64::{engine::general_purpose as b64_engine, Engine};
+    use rstest::rstest;
 
-    #[test]
-    fn test_python_interop() {
-        let qsc = "-AAB";
+    #[rstest]
+    #[case("-AAB", 1, "B", counter::Codex::ControllerIdxSigs.code())]
+    #[case("-AAF", 5, "F", counter::Codex::ControllerIdxSigs.code())]
+    #[case("-0VAAAQA", 1024, "QA", counter::Codex::BigAttachedMaterialQuadlets.code())]
+    fn test_creation(
+        #[case] qsc: &str,
+        #[case] count: u32,
+        #[case] count_b64: &str,
+        #[case] code: &str,
+    ) {
         let qscb = qsc.as_bytes();
         let qscb2 = &b64_engine::URL_SAFE.decode(qsc).unwrap();
 
-        let counter1 =
-            Counter::new_with_code_and_count(counter::Codex::ControllerIdxSigs.code(), 1).unwrap();
-        let counter2 =
-            Counter::new_with_code_and_count_b64(counter::Codex::ControllerIdxSigs.code(), "B")
-                .unwrap();
+        let counter1 = Counter::new_with_code_and_count(code, count).unwrap();
+        let counter2 = Counter::new_with_code_and_count_b64(code, count_b64).unwrap();
         let counter3 = Counter::new_with_qb64(qsc).unwrap();
         let counter4 = Counter::new_with_qb64b(qscb).unwrap();
         let counter5 = Counter::new_with_qb2(qscb2).unwrap();
@@ -317,101 +322,28 @@ mod counter_tests {
         assert_eq!(counter1.count(), counter4.count());
         assert_eq!(counter1.code(), counter5.code());
         assert_eq!(counter1.count(), counter5.count());
+    }
 
-        let longqsc64 = &format!("{qsc}ABCD");
-        let counter = Counter::new_with_qb64(longqsc64).unwrap();
-        assert_eq!(
-            counter.qb64().unwrap().len() as u32,
-            counter::sizage(&counter.code()).unwrap().fs
-        );
-
-        let shortqsc64 = &qsc[..qsc.len() - 1];
-        assert!(Counter::new_with_qb64(shortqsc64).is_err());
-
-        let mut longqscb2 = qscb2.clone();
-        longqscb2.resize(longqscb2.len() + 5, 1);
-        let counter = Counter::new_with_qb2(&longqscb2).unwrap();
-        assert_eq!(counter.qb2().unwrap(), *qscb2);
-        assert_eq!(
-            counter.qb64().unwrap().len() as u32,
-            counter::sizage(&counter.code()).unwrap().fs
-        );
-
-        let shortqscb2 = &qscb2[..2];
-        assert!(Counter::new_with_qb2(shortqscb2).is_err());
-
-        let qsc = "-AAF";
+    #[rstest]
+    #[case(0, "AAA", 0, "AAA", counter::Codex::KERIProtocolStack.code())]
+    fn test_versioned_creation(
+        #[case] verint: u32,
+        #[case] version: &str,
+        #[case] count: u32,
+        #[case] count_b64: &str,
+        #[case] code: &str,
+    ) {
+        let qsc = &format!("{code}{version}");
         let qscb = qsc.as_bytes();
         let qscb2 = &b64_engine::URL_SAFE.decode(qsc).unwrap();
 
-        let counter1 =
-            Counter::new_with_code_and_count(counter::Codex::ControllerIdxSigs.code(), 5).unwrap();
-        let counter2 =
-            Counter::new_with_code_and_count_b64(counter::Codex::ControllerIdxSigs.code(), "F")
-                .unwrap();
+        let counter1 = Counter::new_with_code_and_count(code, count).unwrap();
+        let counter2 = Counter::new_with_code_and_count_b64(code, count_b64).unwrap();
         let counter3 = Counter::new_with_qb64(qsc).unwrap();
         let counter4 = Counter::new_with_qb64b(qscb).unwrap();
         let counter5 = Counter::new_with_qb2(qscb2).unwrap();
 
-        assert_eq!(counter1.code(), counter2.code());
-        assert_eq!(counter1.count(), counter2.count());
-        assert_eq!(counter1.code(), counter3.code());
-        assert_eq!(counter1.count(), counter3.count());
-        assert_eq!(counter1.code(), counter4.code());
-        assert_eq!(counter1.count(), counter4.count());
-        assert_eq!(counter1.code(), counter5.code());
-        assert_eq!(counter1.count(), counter5.count());
-
-        let qsc = "-0VAAAQA";
-        let qscb = qsc.as_bytes();
-        let qscb2 = &b64_engine::URL_SAFE.decode(qsc).unwrap();
-
-        let counter1 = Counter::new_with_code_and_count(
-            counter::Codex::BigAttachedMaterialQuadlets.code(),
-            1024,
-        )
-        .unwrap();
-        let counter2 = Counter::new_with_code_and_count_b64(
-            counter::Codex::BigAttachedMaterialQuadlets.code(),
-            "QA",
-        )
-        .unwrap();
-        let counter3 = Counter::new_with_qb64(qsc).unwrap();
-        let counter4 = Counter::new_with_qb64b(qscb).unwrap();
-        let counter5 = Counter::new_with_qb2(qscb2).unwrap();
-
-        assert_eq!(counter1.code(), counter2.code());
-        assert_eq!(counter1.count(), counter2.count());
-        assert_eq!(counter1.code(), counter3.code());
-        assert_eq!(counter1.count(), counter3.count());
-        assert_eq!(counter1.code(), counter4.code());
-        assert_eq!(counter1.count(), counter4.count());
-        assert_eq!(counter1.code(), counter5.code());
-        assert_eq!(counter1.count(), counter5.count());
-
-        let counter1 = Counter::new_with_qb64(qsc).unwrap();
-        let counter2 = Counter::new_with_qb2(&counter1.qb2().unwrap()).unwrap();
-        assert_eq!(counter1.code(), counter2.code());
-        assert_eq!(counter1.count(), counter2.count());
-        assert_eq!(counter1.qb2().unwrap(), counter2.qb2().unwrap());
-        assert_eq!(counter1.qb64().unwrap(), counter2.qb64().unwrap());
-
-        let verint: u32 = 0;
-        let version = "AAA";
-        let qsc = &format!("{}{version}", counter::Codex::KERIProtocolStack.code());
-        let qscb = qsc.as_bytes();
-        let qscb2 = &b64_engine::URL_SAFE.decode(qsc).unwrap();
-
-        let counter1 =
-            Counter::new_with_code_and_count(counter::Codex::KERIProtocolStack.code(), 0).unwrap();
-        let counter2 =
-            Counter::new_with_code_and_count_b64(counter::Codex::KERIProtocolStack.code(), "AAA")
-                .unwrap();
-        let counter3 = Counter::new_with_qb64(qsc).unwrap();
-        let counter4 = Counter::new_with_qb64b(qscb).unwrap();
-        let counter5 = Counter::new_with_qb2(qscb2).unwrap();
-
-        assert_eq!(counter1.code(), counter::Codex::KERIProtocolStack.code());
+        assert_eq!(counter1.code(), code);
         assert_eq!(counter1.count(), verint);
         assert_eq!(counter1.code(), counter2.code());
         assert_eq!(counter1.count(), counter2.count());
@@ -423,25 +355,94 @@ mod counter_tests {
         assert_eq!(counter1.count(), counter5.count());
 
         assert_eq!(counter1.count_as_b64(3).unwrap(), version);
+
+        // when 0 is an argument, we use a default
         assert_eq!(counter1.count_as_b64(0).unwrap(), version);
+    }
 
-        assert_eq!(Counter::sem_ver_str_to_b64("1.2.3").unwrap(), "BCD");
-        assert_eq!(Counter::sem_ver_to_b64(1, 0, 0).unwrap(), "BAA");
-        assert_eq!(Counter::sem_ver_to_b64(0, 1, 0).unwrap(), "ABA");
-        assert_eq!(Counter::sem_ver_to_b64(0, 0, 1).unwrap(), "AAB");
-        assert_eq!(Counter::sem_ver_to_b64(3, 4, 5).unwrap(), "DEF");
+    #[rstest]
+    fn test_b64_overflow_and_underflow(#[values("-AAB")] qsc: &str) {
+        // add some chars
+        let longqsc64 = &format!("{qsc}ABCD");
+        let counter = Counter::new_with_qb64(longqsc64).unwrap();
+        assert_eq!(
+            counter.qb64().unwrap().len() as u32,
+            counter::sizage(&counter.code()).unwrap().fs
+        );
 
-        assert_eq!(Counter::sem_ver_str_to_b64("1.1").unwrap(), "BBA");
-        assert_eq!(Counter::sem_ver_str_to_b64("1.").unwrap(), "BAA");
-        assert_eq!(Counter::sem_ver_str_to_b64("1").unwrap(), "BAA");
-        assert_eq!(Counter::sem_ver_str_to_b64("1.2.").unwrap(), "BCA");
-        assert_eq!(Counter::sem_ver_str_to_b64("..").unwrap(), "AAA");
-        assert_eq!(Counter::sem_ver_str_to_b64("1..3").unwrap(), "BAD");
+        // remove a char
+        let shortqsc64 = &qsc[..qsc.len() - 1];
+        assert!(Counter::new_with_qb64(shortqsc64).is_err());
+    }
 
-        assert!(Counter::sem_ver_str_to_b64("64.0.1").is_err());
-        assert!(Counter::sem_ver_str_to_b64("-1.0.1").is_err());
-        assert!(Counter::sem_ver_str_to_b64("0.0.64").is_err());
-        assert!(Counter::sem_ver_to_b64(64, 0, 0).is_err());
+    #[rstest]
+    fn test_binary_overflow_and_underflow(#[values(vec![248, 0, 1])] qscb2: Vec<u8>) {
+        // add some bytes
+        let mut longqscb2 = qscb2.clone();
+        longqscb2.resize(longqscb2.len() + 5, 1);
+        let counter = Counter::new_with_qb2(&longqscb2).unwrap();
+        assert_eq!(counter.qb2().unwrap(), *qscb2);
+        assert_eq!(
+            counter.qb64().unwrap().len() as u32,
+            counter::sizage(&counter.code()).unwrap().fs
+        );
+
+        // remove a bytes
+        let shortqscb2 = &qscb2[..qscb2.len() - 1];
+        assert!(Counter::new_with_qb2(shortqscb2).is_err());
+    }
+
+    #[rstest]
+    fn test_exfil_infil_bexfil_binfil(#[values("-0VAAAQA")] qsc: &str) {
+        let counter1 = Counter::new_with_qb64(qsc).unwrap();
+        let counter2 = Counter::new_with_qb2(&counter1.qb2().unwrap()).unwrap();
+        assert_eq!(counter1.code(), counter2.code());
+        assert_eq!(counter1.count(), counter2.count());
+        assert_eq!(counter1.qb2().unwrap(), counter2.qb2().unwrap());
+        assert_eq!(qsc, counter2.qb64().unwrap());
+    }
+
+    #[rstest]
+    #[case("1.2.3", "BCD")]
+    #[case("1.1", "BBA")]
+    #[case("1.", "BAA")]
+    #[case("1", "BAA")]
+    #[case("1.2.", "BCA")]
+    #[case("..", "AAA")]
+    #[case("1..3", "BAD")]
+    fn test_semantic_versioning_strings(#[case] version: &str, #[case] b64: &str) {
+        assert_eq!(Counter::sem_ver_str_to_b64(version).unwrap(), b64);
+    }
+
+    #[rstest]
+    #[case(1, 0, 0, "BAA")]
+    #[case(0, 1, 0, "ABA")]
+    #[case(0, 0, 1, "AAB")]
+    #[case(3, 4, 5, "DEF")]
+    fn test_semantic_versioning_u8s(
+        #[case] major: u8,
+        #[case] minor: u8,
+        #[case] patch: u8,
+        #[case] b64: &str,
+    ) {
+        assert_eq!(Counter::sem_ver_to_b64(major, minor, patch).unwrap(), b64);
+    }
+
+    #[rstest]
+    fn test_semantic_versioning_unhappy_strings(
+        #[values("64.0.1", "-1.0.1", "0.0.64")] version: &str,
+    ) {
+        assert!(Counter::sem_ver_str_to_b64(version).is_err());
+    }
+
+    #[rstest]
+    #[case(64, 0, 0)]
+    fn test_semantic_versioning_unhappy_u32s(
+        #[case] major: u8,
+        #[case] minor: u8,
+        #[case] patch: u8,
+    ) {
+        assert!(Counter::sem_ver_to_b64(major, minor, patch).is_err());
     }
 
     #[test]
@@ -471,9 +472,10 @@ mod counter_tests {
         assert!(Counter::new_with_qb2(&[0xfb, 0xe0]).is_err());
     }
 
-    #[test]
-    fn test_qb64b() {
-        let c = Counter { code: counter::Codex::ControllerIdxSigs.code().to_string(), count: 1 };
+    #[rstest]
+    #[case(counter::Codex::ControllerIdxSigs.code(), 1)]
+    fn test_qb64b(#[case] code: &str, #[case] count: u32) {
+        let c = Counter { code: code.to_string(), count };
         assert!(Counter::new_with_qb64b(&c.qb64b().unwrap()).is_ok());
     }
 }

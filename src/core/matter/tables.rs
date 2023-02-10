@@ -65,7 +65,7 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
     })
 }
 
-pub(crate) fn hardage(c: char) -> Result<i32> {
+pub(crate) fn hardage(c: char) -> Result<u32> {
     match c {
         'A'..='Z' | 'a'..='z' => Ok(1),
         '0' | '4' | '5' | '6' => Ok(2),
@@ -234,394 +234,131 @@ impl Codex {
 
 #[cfg(test)]
 mod tables_tests {
-    use super::{hardage, sizage, Codex, Sizage};
+    use crate::core::matter::tables::{hardage, sizage, Codex};
+    use rstest::rstest;
 
-    #[test]
-    fn test_sizage() {
-        let mut s: Sizage;
-
-        s = sizage(Codex::Ed25519_Seed.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 44);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Ed25519N.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 44);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::X25519.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 44);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Ed25519.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 44);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Blake3_256.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 44);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Blake2b_256.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 44);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Blake2s_256.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 44);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::SHA3_256.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 44);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::SHA2_256.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 44);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::ECDSA_256k1_Seed.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 44);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Ed448_Seed.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 76);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::X448.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 76);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Short.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 4);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Big.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 12);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::X25519_Private.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 44);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::X25519_Cipher_Seed.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 124);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Salt_128.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 24);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Ed25519_Sig.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 88);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::ECDSA_256k1_Sig.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 88);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Blake3_512.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 88);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Blake2b_512.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 88);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::SHA3_512.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 88);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::SHA2_512.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 88);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Long.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 8);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::ECDSA_256k1N.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 48);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::ECDSA_256k1.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 48);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Ed448N.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 80);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Ed448.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 80);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Ed448_Sig.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 56);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Tern.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 8);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::DateTime.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 36);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::X25519_Cipher_Salt.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 100);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::TBD1.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 8);
-        assert_eq!(s.ls, 1);
-
-        s = sizage(Codex::TBD2.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 0);
-        assert_eq!(s.fs, 8);
-        assert_eq!(s.ls, 2);
-
-        s = sizage(Codex::StrB64_L0.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 0);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::StrB64_L1.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 0);
-        assert_eq!(s.ls, 1);
-
-        s = sizage(Codex::StrB64_L2.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 0);
-        assert_eq!(s.ls, 2);
-
-        s = sizage(Codex::StrB64_Big_L0.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 4);
-        assert_eq!(s.fs, 0);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::StrB64_Big_L1.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 4);
-        assert_eq!(s.fs, 0);
-        assert_eq!(s.ls, 1);
-
-        s = sizage(Codex::StrB64_Big_L2.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 4);
-        assert_eq!(s.fs, 0);
-        assert_eq!(s.ls, 2);
-
-        s = sizage(Codex::Bytes_L0.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 0);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Bytes_L1.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 0);
-        assert_eq!(s.ls, 1);
-
-        s = sizage(Codex::Bytes_L2.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 0);
-        assert_eq!(s.ls, 2);
-
-        s = sizage(Codex::Bytes_Big_L0.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 4);
-        assert_eq!(s.fs, 0);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Bytes_Big_L1.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 4);
-        assert_eq!(s.fs, 0);
-        assert_eq!(s.ls, 1);
-
-        s = sizage(Codex::Bytes_Big_L2.code()).unwrap();
-        assert_eq!(s.hs, 4);
-        assert_eq!(s.ss, 4);
-        assert_eq!(s.fs, 0);
-        assert_eq!(s.ls, 2);
+    #[rstest]
+    #[case("A", 1, 0, 44, 0)]
+    #[case("B", 1, 0, 44, 0)]
+    #[case("C", 1, 0, 44, 0)]
+    #[case("D", 1, 0, 44, 0)]
+    #[case("E", 1, 0, 44, 0)]
+    #[case("F", 1, 0, 44, 0)]
+    #[case("G", 1, 0, 44, 0)]
+    #[case("H", 1, 0, 44, 0)]
+    #[case("I", 1, 0, 44, 0)]
+    #[case("J", 1, 0, 44, 0)]
+    #[case("K", 1, 0, 76, 0)]
+    #[case("L", 1, 0, 76, 0)]
+    #[case("M", 1, 0, 4, 0)]
+    #[case("N", 1, 0, 12, 0)]
+    #[case("O", 1, 0, 44, 0)]
+    #[case("P", 1, 0, 124, 0)]
+    #[case("0A", 2, 0, 24, 0)]
+    #[case("0B", 2, 0, 88, 0)]
+    #[case("0C", 2, 0, 88, 0)]
+    #[case("0D", 2, 0, 88, 0)]
+    #[case("0E", 2, 0, 88, 0)]
+    #[case("0F", 2, 0, 88, 0)]
+    #[case("0G", 2, 0, 88, 0)]
+    #[case("0H", 2, 0, 8, 0)]
+    #[case("1AAA", 4, 0, 48, 0)]
+    #[case("1AAB", 4, 0, 48, 0)]
+    #[case("1AAC", 4, 0, 80, 0)]
+    #[case("1AAD", 4, 0, 80, 0)]
+    #[case("1AAE", 4, 0, 56, 0)]
+    #[case("1AAF", 4, 0, 8, 0)]
+    #[case("1AAG", 4, 0, 36, 0)]
+    #[case("1AAH", 4, 0, 100, 0)]
+    #[case("2AAA", 4, 0, 8, 1)]
+    #[case("3AAA", 4, 0, 8, 2)]
+    #[case("4A", 2, 2, 0, 0)]
+    #[case("5A", 2, 2, 0, 1)]
+    #[case("6A", 2, 2, 0, 2)]
+    #[case("7AAA", 4, 4, 0, 0)]
+    #[case("8AAA", 4, 4, 0, 1)]
+    #[case("9AAA", 4, 4, 0, 2)]
+    #[case("4B", 2, 2, 0, 0)]
+    #[case("5B", 2, 2, 0, 1)]
+    #[case("6B", 2, 2, 0, 2)]
+    #[case("7AAB", 4, 4, 0, 0)]
+    #[case("8AAB", 4, 4, 0, 1)]
+    #[case("9AAB", 4, 4, 0, 2)]
+    fn test_sizage(
+        #[case] code: &str,
+        #[case] hs: u32,
+        #[case] ss: u32,
+        #[case] fs: u32,
+        #[case] ls: u32,
+    ) {
+        let s = sizage(code).unwrap();
+        assert_eq!(s.hs, hs);
+        assert_eq!(s.ss, ss);
+        assert_eq!(s.fs, fs);
+        assert_eq!(s.ls, ls);
     }
 
-    #[test]
-    fn test_hardage() {
-        assert_eq!(hardage('A').unwrap(), 1);
-        assert_eq!(hardage('G').unwrap(), 1);
-        assert_eq!(hardage('b').unwrap(), 1);
-        assert_eq!(hardage('z').unwrap(), 1);
-        assert_eq!(hardage('1').unwrap(), 4);
-        assert_eq!(hardage('0').unwrap(), 2);
+    #[rstest]
+    #[case('A', 1)]
+    #[case('G', 1)]
+    #[case('b', 1)]
+    #[case('z', 1)]
+    #[case('1', 4)]
+    #[case('0', 2)]
+    fn test_hardage(#[case] code: char, #[case] hdg: u32) {
+        assert_eq!(hardage(code).unwrap(), hdg);
     }
 
-    #[test]
-    fn test_codes() {
-        assert_eq!(Codex::Ed25519_Seed.code(), "A");
-        assert_eq!(Codex::Ed25519N.code(), "B");
-        assert_eq!(Codex::X25519.code(), "C");
-        assert_eq!(Codex::Ed25519.code(), "D");
-        assert_eq!(Codex::Blake3_256.code(), "E");
-        assert_eq!(Codex::Blake2b_256.code(), "F");
-        assert_eq!(Codex::Blake2s_256.code(), "G");
-        assert_eq!(Codex::SHA3_256.code(), "H");
-        assert_eq!(Codex::SHA2_256.code(), "I");
-        assert_eq!(Codex::ECDSA_256k1_Seed.code(), "J");
-        assert_eq!(Codex::Ed448_Seed.code(), "K");
-        assert_eq!(Codex::X448.code(), "L");
-        assert_eq!(Codex::Short.code(), "M");
-        assert_eq!(Codex::Big.code(), "N");
-        assert_eq!(Codex::X25519_Private.code(), "O");
-        assert_eq!(Codex::X25519_Cipher_Seed.code(), "P");
-        assert_eq!(Codex::Salt_128.code(), "0A");
-        assert_eq!(Codex::Ed25519_Sig.code(), "0B");
-        assert_eq!(Codex::ECDSA_256k1_Sig.code(), "0C");
-        assert_eq!(Codex::Blake3_512.code(), "0D");
-        assert_eq!(Codex::Blake2b_512.code(), "0E");
-        assert_eq!(Codex::SHA3_512.code(), "0F");
-        assert_eq!(Codex::SHA2_512.code(), "0G");
-        assert_eq!(Codex::Long.code(), "0H");
-        assert_eq!(Codex::ECDSA_256k1N.code(), "1AAA");
-        assert_eq!(Codex::ECDSA_256k1.code(), "1AAB");
-        assert_eq!(Codex::Ed448N.code(), "1AAC");
-        assert_eq!(Codex::Ed448.code(), "1AAD");
-        assert_eq!(Codex::Ed448_Sig.code(), "1AAE");
-        assert_eq!(Codex::Tern.code(), "1AAF");
-        assert_eq!(Codex::DateTime.code(), "1AAG");
-        assert_eq!(Codex::X25519_Cipher_Salt.code(), "1AAH");
-        assert_eq!(Codex::TBD1.code(), "2AAA");
-        assert_eq!(Codex::TBD2.code(), "3AAA");
-        assert_eq!(Codex::StrB64_L0.code(), "4A");
-        assert_eq!(Codex::StrB64_L1.code(), "5A");
-        assert_eq!(Codex::StrB64_L2.code(), "6A");
-        assert_eq!(Codex::StrB64_Big_L0.code(), "7AAA");
-        assert_eq!(Codex::StrB64_Big_L1.code(), "8AAA");
-        assert_eq!(Codex::StrB64_Big_L2.code(), "9AAA");
-        assert_eq!(Codex::Bytes_L0.code(), "4B");
-        assert_eq!(Codex::Bytes_L1.code(), "5B");
-        assert_eq!(Codex::Bytes_L2.code(), "6B");
-        assert_eq!(Codex::Bytes_Big_L0.code(), "7AAB");
-        assert_eq!(Codex::Bytes_Big_L1.code(), "8AAB");
-        assert_eq!(Codex::Bytes_Big_L2.code(), "9AAB");
-
-        assert_eq!(Codex::from_code("A").unwrap(), Codex::Ed25519_Seed);
-        assert_eq!(Codex::from_code("B").unwrap(), Codex::Ed25519N);
-        assert_eq!(Codex::from_code("C").unwrap(), Codex::X25519);
-        assert_eq!(Codex::from_code("D").unwrap(), Codex::Ed25519);
-        assert_eq!(Codex::from_code("E").unwrap(), Codex::Blake3_256);
-        assert_eq!(Codex::from_code("F").unwrap(), Codex::Blake2b_256);
-        assert_eq!(Codex::from_code("G").unwrap(), Codex::Blake2s_256);
-        assert_eq!(Codex::from_code("H").unwrap(), Codex::SHA3_256);
-        assert_eq!(Codex::from_code("I").unwrap(), Codex::SHA2_256);
-        assert_eq!(Codex::from_code("J").unwrap(), Codex::ECDSA_256k1_Seed);
-        assert_eq!(Codex::from_code("K").unwrap(), Codex::Ed448_Seed);
-        assert_eq!(Codex::from_code("L").unwrap(), Codex::X448);
-        assert_eq!(Codex::from_code("M").unwrap(), Codex::Short);
-        assert_eq!(Codex::from_code("N").unwrap(), Codex::Big);
-        assert_eq!(Codex::from_code("O").unwrap(), Codex::X25519_Private);
-        assert_eq!(Codex::from_code("P").unwrap(), Codex::X25519_Cipher_Seed);
-        assert_eq!(Codex::from_code("0A").unwrap(), Codex::Salt_128);
-        assert_eq!(Codex::from_code("0B").unwrap(), Codex::Ed25519_Sig);
-        assert_eq!(Codex::from_code("0C").unwrap(), Codex::ECDSA_256k1_Sig);
-        assert_eq!(Codex::from_code("0D").unwrap(), Codex::Blake3_512);
-        assert_eq!(Codex::from_code("0E").unwrap(), Codex::Blake2b_512);
-        assert_eq!(Codex::from_code("0F").unwrap(), Codex::SHA3_512);
-        assert_eq!(Codex::from_code("0G").unwrap(), Codex::SHA2_512);
-        assert_eq!(Codex::from_code("0H").unwrap(), Codex::Long);
-        assert_eq!(Codex::from_code("1AAA").unwrap(), Codex::ECDSA_256k1N);
-        assert_eq!(Codex::from_code("1AAB").unwrap(), Codex::ECDSA_256k1);
-        assert_eq!(Codex::from_code("1AAC").unwrap(), Codex::Ed448N);
-        assert_eq!(Codex::from_code("1AAD").unwrap(), Codex::Ed448);
-        assert_eq!(Codex::from_code("1AAE").unwrap(), Codex::Ed448_Sig);
-        assert_eq!(Codex::from_code("1AAF").unwrap(), Codex::Tern);
-        assert_eq!(Codex::from_code("1AAG").unwrap(), Codex::DateTime);
-        assert_eq!(Codex::from_code("1AAH").unwrap(), Codex::X25519_Cipher_Salt);
-        assert_eq!(Codex::from_code("2AAA").unwrap(), Codex::TBD1);
-        assert_eq!(Codex::from_code("3AAA").unwrap(), Codex::TBD2);
-        assert_eq!(Codex::from_code("4A").unwrap(), Codex::StrB64_L0);
-        assert_eq!(Codex::from_code("5A").unwrap(), Codex::StrB64_L1);
-        assert_eq!(Codex::from_code("6A").unwrap(), Codex::StrB64_L2);
-        assert_eq!(Codex::from_code("7AAA").unwrap(), Codex::StrB64_Big_L0);
-        assert_eq!(Codex::from_code("8AAA").unwrap(), Codex::StrB64_Big_L1);
-        assert_eq!(Codex::from_code("9AAA").unwrap(), Codex::StrB64_Big_L2);
-        assert_eq!(Codex::from_code("4B").unwrap(), Codex::Bytes_L0);
-        assert_eq!(Codex::from_code("5B").unwrap(), Codex::Bytes_L1);
-        assert_eq!(Codex::from_code("6B").unwrap(), Codex::Bytes_L2);
-        assert_eq!(Codex::from_code("7AAB").unwrap(), Codex::Bytes_Big_L0);
-        assert_eq!(Codex::from_code("8AAB").unwrap(), Codex::Bytes_Big_L1);
-        assert_eq!(Codex::from_code("9AAB").unwrap(), Codex::Bytes_Big_L2);
+    #[rstest]
+    #[case(Codex::Ed25519_Seed, "A")]
+    #[case(Codex::Ed25519N, "B")]
+    #[case(Codex::X25519, "C")]
+    #[case(Codex::Ed25519, "D")]
+    #[case(Codex::Blake3_256, "E")]
+    #[case(Codex::Blake2b_256, "F")]
+    #[case(Codex::Blake2s_256, "G")]
+    #[case(Codex::SHA3_256, "H")]
+    #[case(Codex::SHA2_256, "I")]
+    #[case(Codex::ECDSA_256k1_Seed, "J")]
+    #[case(Codex::Ed448_Seed, "K")]
+    #[case(Codex::X448, "L")]
+    #[case(Codex::Short, "M")]
+    #[case(Codex::Big, "N")]
+    #[case(Codex::X25519_Private, "O")]
+    #[case(Codex::X25519_Cipher_Seed, "P")]
+    #[case(Codex::Salt_128, "0A")]
+    #[case(Codex::Ed25519_Sig, "0B")]
+    #[case(Codex::ECDSA_256k1_Sig, "0C")]
+    #[case(Codex::Blake3_512, "0D")]
+    #[case(Codex::Blake2b_512, "0E")]
+    #[case(Codex::SHA3_512, "0F")]
+    #[case(Codex::SHA2_512, "0G")]
+    #[case(Codex::Long, "0H")]
+    #[case(Codex::ECDSA_256k1N, "1AAA")]
+    #[case(Codex::ECDSA_256k1, "1AAB")]
+    #[case(Codex::Ed448N, "1AAC")]
+    #[case(Codex::Ed448, "1AAD")]
+    #[case(Codex::Ed448_Sig, "1AAE")]
+    #[case(Codex::Tern, "1AAF")]
+    #[case(Codex::DateTime, "1AAG")]
+    #[case(Codex::X25519_Cipher_Salt, "1AAH")]
+    #[case(Codex::TBD1, "2AAA")]
+    #[case(Codex::TBD2, "3AAA")]
+    #[case(Codex::StrB64_L0, "4A")]
+    #[case(Codex::StrB64_L1, "5A")]
+    #[case(Codex::StrB64_L2, "6A")]
+    #[case(Codex::StrB64_Big_L0, "7AAA")]
+    #[case(Codex::StrB64_Big_L1, "8AAA")]
+    #[case(Codex::StrB64_Big_L2, "9AAA")]
+    #[case(Codex::Bytes_L0, "4B")]
+    #[case(Codex::Bytes_L1, "5B")]
+    #[case(Codex::Bytes_L2, "6B")]
+    #[case(Codex::Bytes_Big_L0, "7AAB")]
+    #[case(Codex::Bytes_Big_L1, "8AAB")]
+    #[case(Codex::Bytes_Big_L2, "9AAB")]
+    fn test_codes(#[case] variant: Codex, #[case] code: &str) {
+        assert_eq!(variant.code(), code);
+        assert_eq!(Codex::from_code(code).unwrap(), variant);
     }
 
     #[test]

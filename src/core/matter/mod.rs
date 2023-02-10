@@ -493,122 +493,45 @@ impl Default for Matter {
 #[cfg(test)]
 mod matter_tests {
     use crate::core::matter::{tables as matter, Matter};
+    use rstest::rstest;
+
+    #[rstest]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::StrB64_L0.code())]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::StrB64_L1.code())]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::StrB64_L2.code())]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::Bytes_L0.code())]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::Bytes_L1.code())]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::Bytes_L2.code())]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::StrB64_Big_L0.code())]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::StrB64_Big_L1.code())]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::StrB64_Big_L2.code())]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::Bytes_Big_L0.code())]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::Bytes_Big_L1.code())]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::Bytes_Big_L2.code())]
+    fn test_matter_new(#[case] raw: &Vec<u8>, #[case] code: &str) {
+        let m = Matter::new_with_code_and_raw(code, raw).unwrap();
+        let m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+        let m2 = Matter::new_with_qb2(&m.qb2().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+    }
 
     #[test]
-    fn test_matter_new() {
-        let qb64 = "BGlOiUdp5sMmfotHfCWQKEzWR91C72AH0lT84c0um-Qj";
-
-        // basic
-        let mut m = Matter::new_with_qb64(qb64).unwrap();
-        assert_eq!(m.code, matter::Codex::Ed25519N.code());
-
-        // qb64
-        let mut m2 = Matter::new_with_code_and_raw(&m.code, &m.raw).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-        assert_eq!(qb64, m2.qb64().unwrap());
-
-        // qb64b
-        m2 = Matter::new_with_qb64b(&m.qb64b().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-        assert_eq!(qb64, m2.qb64().unwrap());
-
-        // qb2
-        m2 = Matter::new_with_qb2(&m.qb2().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-        assert_eq!(qb64, m2.qb64().unwrap());
-
-        // small variable b64(), ls = 0
-        let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
-        m = Matter::new_with_code_and_raw(matter::Codex::StrB64_L0.code(), &raw).unwrap();
-        m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-        m2 = Matter::new_with_qb2(&m.qb2().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-
-        // small variable b64(), ls = 1
-        let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7];
-        m = Matter::new_with_code_and_raw(matter::Codex::StrB64_L1.code(), &raw).unwrap();
-        m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-        m2 = Matter::new_with_qb2(&m.qb2().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-
-        // small variable b64(), ls = 2
-        let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6];
-        m = Matter::new_with_code_and_raw(matter::Codex::StrB64_L2.code(), &raw).unwrap();
-        m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-        m2 = Matter::new_with_qb2(&m.qb2().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-
-        // small variable bytes is essentially the same as the above
-
-        // large variable b64 is essentially the same as below
-
-        // large variable bytes, ls = 0
-        let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
-        m = Matter::new_with_code_and_raw(matter::Codex::Bytes_Big_L0.code(), &raw).unwrap();
-        m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-        m2 = Matter::new_with_qb2(&m.qb2().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-
-        // large variable bytes, ls = 1
-        let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6, 7];
-        m = Matter::new_with_code_and_raw(matter::Codex::Bytes_Big_L1.code(), &raw).unwrap();
-        m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-        m2 = Matter::new_with_qb2(&m.qb2().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-
-        // large variable bytes, ls = 0
-        let raw: Vec<u8> = vec![0, 1, 2, 3, 4, 5, 6];
-        m = Matter::new_with_code_and_raw(matter::Codex::Bytes_Big_L2.code(), &raw).unwrap();
-        m2 = Matter::new_with_qb64(&m.qb64().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-        m2 = Matter::new_with_qb2(&m.qb2().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-
+    fn test_defaults_and_overrides() {
         // default
-        m = Default::default();
+        let m = Matter::default();
         assert_eq!(m.code, matter::Codex::Blake3_256.code());
 
         // partial override
-        m = Matter { size: 3, ..Default::default() };
+        let m = Matter { size: 3, ..Default::default() };
         assert_eq!(m.size, 3);
 
         // full override
-        m = Matter {
+        let m = Matter {
             raw: b"a".to_vec(),
             code: matter::Codex::X25519_Cipher_Seed.code().to_string(),
             size: 1,
@@ -617,8 +540,41 @@ mod matter_tests {
         assert_eq!(m.raw, b"a".to_vec());
         assert_eq!(m.code, matter::Codex::X25519_Cipher_Seed.code());
         assert_eq!(m.size, 1);
+    }
 
-        m = Matter::new_with_code_and_raw(matter::Codex::Bytes_L2.code(), &[0; 4095 * 3 + 1])
+    #[test]
+    fn test_exfil_infil_bexfil_binfil() {
+        let qb64 = "BGlOiUdp5sMmfotHfCWQKEzWR91C72AH0lT84c0um-Qj";
+
+        // basic
+        let m = Matter::new_with_qb64(qb64).unwrap();
+        assert_eq!(m.code, matter::Codex::Ed25519N.code());
+
+        // qb64
+        let m2 = Matter::new_with_code_and_raw(&m.code, &m.raw).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+        assert_eq!(qb64, m2.qb64().unwrap());
+
+        // qb64b
+        let m2 = Matter::new_with_qb64b(&m.qb64b().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+        assert_eq!(qb64, m2.qb64().unwrap());
+
+        // qb2
+        let m2 = Matter::new_with_qb2(&m.qb2().unwrap()).unwrap();
+        assert_eq!(m.code, m2.code);
+        assert_eq!(m.raw, m2.raw);
+        assert_eq!(m.size, m2.size);
+        assert_eq!(qb64, m2.qb64().unwrap());
+    }
+
+    #[test]
+    fn test_big_boundary() {
+        let m = Matter::new_with_code_and_raw(matter::Codex::Bytes_L2.code(), &[0; 4095 * 3 + 1])
             .unwrap();
         assert_eq!(m.raw().len(), 4095 * 3 + 1);
         assert_eq!(m.code(), matter::Codex::Bytes_Big_L2.code());

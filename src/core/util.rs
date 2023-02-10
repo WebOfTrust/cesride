@@ -262,36 +262,40 @@ pub fn nab_sextets(binary: &[u8], count: usize) -> Result<Vec<u8>> {
 #[cfg(test)]
 mod util_tests {
     use crate::core::util;
+    use rstest::rstest;
 
-    #[test]
-    fn test_u32_to_b64() {
-        assert_eq!(util::u32_to_b64(0, 1).unwrap(), "A");
-        assert_eq!(util::u32_to_b64(1, 1).unwrap(), "B");
-        assert_eq!(util::u32_to_b64(0, 2).unwrap(), "AA");
-        assert_eq!(util::u32_to_b64(1, 2).unwrap(), "AB");
-        assert_eq!(util::u32_to_b64(4095, 2).unwrap(), "__");
-        assert_eq!(util::u32_to_b64(16777215, 4).unwrap(), "____");
+    #[rstest]
+    #[case(0, 1, "A")]
+    #[case(1, 1, "B")]
+    #[case(0, 2, "AA")]
+    #[case(1, 2, "AB")]
+    #[case(4095, 2, "__")]
+    #[case(16777215, 4, "____")]
+    fn test_u32_to_b64(#[case] n: u32, #[case] length: usize, #[case] b64: &str) {
+        assert_eq!(util::u32_to_b64(n, length).unwrap(), b64);
     }
 
-    #[test]
-    fn test_b64_to_u32() {
-        assert_eq!(util::b64_to_u32("A").unwrap(), 0);
-        assert_eq!(util::b64_to_u32("B").unwrap(), 1);
-        assert_eq!(util::b64_to_u32("AA").unwrap(), 0);
-        assert_eq!(util::b64_to_u32("AB").unwrap(), 1);
-        assert_eq!(util::b64_to_u32("__").unwrap(), 4095);
-        assert_eq!(util::b64_to_u32("____").unwrap(), 16777215);
+    #[rstest]
+    #[case(0, "A")]
+    #[case(1, "B")]
+    #[case(0, "AA")]
+    #[case(1, "AB")]
+    #[case(4095, "__")]
+    #[case(16777215, "____")]
+    fn test_b64_to_u32(#[case] n: u32, #[case] b64: &str) {
+        assert_eq!(util::b64_to_u32(b64).unwrap(), n);
     }
 
-    #[test]
-    fn test_b64_to_u64() {
-        assert_eq!(util::b64_to_u64("A").unwrap(), 0);
-        assert_eq!(util::b64_to_u64("B").unwrap(), 1);
-        assert_eq!(util::b64_to_u64("AA").unwrap(), 0);
-        assert_eq!(util::b64_to_u64("AB").unwrap(), 1);
-        assert_eq!(util::b64_to_u64("__").unwrap(), 4095);
-        assert_eq!(util::b64_to_u64("____").unwrap(), 16777215);
-        assert_eq!(util::b64_to_u64("________").unwrap(), 281474976710655);
+    #[rstest]
+    #[case(0, "A")]
+    #[case(1, "B")]
+    #[case(0, "AA")]
+    #[case(1, "AB")]
+    #[case(4095, "__")]
+    #[case(16777215, "____")]
+    #[case(281474976710655, "________")]
+    fn test_b64_to_u64(#[case] n: u64, #[case] b64: &str) {
+        assert_eq!(util::b64_to_u64(b64).unwrap(), n);
     }
 
     #[test]
@@ -313,41 +317,44 @@ mod util_tests {
         }
     }
 
-    #[test]
-    fn test_code_b2_to_b64() {
-        assert_eq!(util::code_b2_to_b64(&vec![0], 1).unwrap(), "A");
-        assert_eq!(util::code_b2_to_b64(&vec![0, 0, 0, 0, 0, 0], 8).unwrap(), "AAAAAAAA");
-        assert_eq!(util::code_b2_to_b64(&vec![8, 68, 145], 4).unwrap(), "CESR");
-        assert_eq!(util::code_b2_to_b64(&vec![40, 68, 72, 0, 32, 194], 8).unwrap(), "KERIACDC");
-        assert_eq!(util::code_b2_to_b64(&vec![252], 1).unwrap(), "_");
-        assert_eq!(
-            util::code_b2_to_b64(&vec![255, 255, 255, 255, 255, 255], 8).unwrap(),
-            "________"
-        );
-        assert_eq!(util::code_b2_to_b64(&vec![244, 0, 1], 4).unwrap(), "9AAB");
+    #[rstest]
+    #[case(&vec![0], 1, "A")]
+    #[case(&vec![0, 0, 0, 0, 0, 0], 8, "AAAAAAAA")]
+    #[case(&vec![8, 68, 145], 4, "CESR")]
+    #[case(&vec![40, 68, 72, 0, 32, 194], 8, "KERIACDC")]
+    #[case(&vec![252], 1, "_")]
+    #[case(&vec![255, 255, 255, 255, 255, 255], 8, "________")]
+    #[case(&vec![244, 0, 1], 4, "9AAB")]
+    fn test_code_b2_to_b64(#[case] b2: &Vec<u8>, #[case] length: usize, #[case] b64: &str) {
+        assert_eq!(util::code_b2_to_b64(b2, length).unwrap(), b64);
     }
 
-    #[test]
-    fn test_code_b64_to_b2() {
-        assert_eq!(util::code_b64_to_b2("A").unwrap(), vec![0]);
-        assert_eq!(util::code_b64_to_b2("AAAAAAAA").unwrap(), vec![0, 0, 0, 0, 0, 0]);
-        assert_eq!(util::code_b64_to_b2("CESR").unwrap(), vec![8, 68, 145]);
-        assert_eq!(util::code_b64_to_b2("KERIACDC").unwrap(), vec![40, 68, 72, 0, 32, 194]);
-        assert_eq!(util::code_b64_to_b2("_").unwrap(), vec![252]);
-        assert_eq!(util::code_b64_to_b2("________").unwrap(), vec![255, 255, 255, 255, 255, 255]);
-        assert_eq!(util::code_b64_to_b2("9AAB").unwrap(), vec![244, 0, 1]);
+    #[rstest]
+    #[case(vec![0], "A")]
+    #[case(vec![0, 0, 0, 0, 0, 0], "AAAAAAAA")]
+    #[case(vec![8, 68, 145], "CESR")]
+    #[case(vec![40, 68, 72, 0, 32, 194], "KERIACDC")]
+    #[case(vec![252], "_")]
+    #[case(vec![255, 255, 255, 255, 255, 255], "________")]
+    #[case(vec![244, 0, 1], "9AAB")]
+    fn test_code_b64_to_b2(#[case] b2: Vec<u8>, #[case] b64: &str) {
+        assert_eq!(util::code_b64_to_b2(b64).unwrap(), b2);
     }
 
-    #[test]
-    fn test_nab_sextets() {
-        assert_eq!(util::nab_sextets(&[255, 255, 255], 4).unwrap(), vec![63, 63, 63, 63]);
+    #[rstest]
+    #[case(&[255, 255, 255], 4, vec![63, 63, 63, 63])]
+    #[case(&[255, 255, 255], 4, vec![63, 63, 63, 63])]
+    #[case(&[255, 255, 255, 0, 0, 0], 8, vec![63, 63, 63, 63, 0, 0, 0, 0])]
+    #[case(&[255], 1, vec![63])]
+    #[case(&[127, 127], 2, vec![31, 55])]
+    fn test_nab_sextets(#[case] binary: &[u8], #[case] length: usize, #[case] result: Vec<u8>) {
+        assert_eq!(util::nab_sextets(binary, length).unwrap(), result);
         assert_eq!(
             util::nab_sextets(&[255, 255, 255, 0, 0, 0], 8).unwrap(),
             vec![63, 63, 63, 63, 0, 0, 0, 0]
         );
         assert_eq!(util::nab_sextets(&[255], 1).unwrap(), vec![63]);
         assert_eq!(util::nab_sextets(&[127, 127], 2).unwrap(), vec![31, 55]);
-        assert!(util::nab_sextets(&[127, 127], 3).is_err());
     }
 
     #[test]
@@ -356,5 +363,6 @@ mod util_tests {
         assert!(util::b64_index_to_char(64).is_err());
         assert!(util::code_b2_to_b64(&[0], 2).is_err());
         assert!(util::code_b2_to_b64(&[0; 32], 9).is_err());
+        assert!(util::nab_sextets(&[127, 127], 3).is_err());
     }
 }

@@ -7,7 +7,7 @@ use crate::{
     error::{err, Error, Result},
 };
 
-use super::util;
+use crate::core::util;
 
 /// Indexer is fully qualified cryptographic material primitive base class for
 /// indexed primitives. Indexed codes are a mix of indexed and variable length

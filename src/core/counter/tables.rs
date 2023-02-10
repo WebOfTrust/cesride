@@ -124,145 +124,68 @@ impl Codex {
 
 #[cfg(test)]
 mod tables_tests {
-    use super::{bardage, hardage, sizage, Codex, Sizage};
+    use crate::core::counter::tables::{bardage, hardage, sizage, Codex};
+    use rstest::rstest;
 
-    #[test]
-    fn test_hardage() {
-        assert_eq!(hardage("-A").unwrap(), 2);
-        assert_eq!(hardage("-G").unwrap(), 2);
-        assert_eq!(hardage("-V").unwrap(), 2);
-        assert_eq!(hardage("-0").unwrap(), 3);
-        assert_eq!(hardage("--").unwrap(), 5);
+    #[rstest]
+    #[case("-A", 2)]
+    #[case("-G", 2)]
+    #[case("-V", 2)]
+    #[case("-0", 3)]
+    #[case("--", 5)]
+    fn test_hardage(#[case] code: &str, #[case] hdg: u32) {
+        assert_eq!(hardage(code).unwrap(), hdg);
     }
 
-    #[test]
-    fn test_sizage() {
-        let mut s: Sizage;
-
-        s = sizage("-A").unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 4);
-        assert_eq!(s.ls, 0);
-
-        s = sizage("-B").unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 4);
-        assert_eq!(s.ls, 0);
-
-        s = sizage("-C").unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 4);
-        assert_eq!(s.ls, 0);
-
-        s = sizage("-D").unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 4);
-        assert_eq!(s.ls, 0);
-
-        s = sizage("-E").unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 4);
-        assert_eq!(s.ls, 0);
-
-        s = sizage("-F").unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 4);
-        assert_eq!(s.ls, 0);
-
-        s = sizage("-G").unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 4);
-        assert_eq!(s.ls, 0);
-
-        s = sizage("-H").unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 4);
-        assert_eq!(s.ls, 0);
-
-        s = sizage("-I").unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 4);
-        assert_eq!(s.ls, 0);
-
-        s = sizage("-J").unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 4);
-        assert_eq!(s.ls, 0);
-
-        s = sizage("-K").unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 4);
-        assert_eq!(s.ls, 0);
-
-        s = sizage("-L").unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 4);
-        assert_eq!(s.ls, 0);
-
-        s = sizage("-V").unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.fs, 4);
-        assert_eq!(s.ls, 0);
-
-        s = sizage("-0V").unwrap();
-        assert_eq!(s.hs, 3);
-        assert_eq!(s.ss, 5);
-        assert_eq!(s.fs, 8);
-        assert_eq!(s.ls, 0);
-
-        s = sizage("--AAA").unwrap();
-        assert_eq!(s.hs, 5);
-        assert_eq!(s.ss, 3);
-        assert_eq!(s.fs, 8);
-        assert_eq!(s.ls, 0);
+    #[rstest]
+    #[case("-A", 2, 2, 4, 0)]
+    #[case("-B", 2, 2, 4, 0)]
+    #[case("-C", 2, 2, 4, 0)]
+    #[case("-D", 2, 2, 4, 0)]
+    #[case("-E", 2, 2, 4, 0)]
+    #[case("-F", 2, 2, 4, 0)]
+    #[case("-G", 2, 2, 4, 0)]
+    #[case("-H", 2, 2, 4, 0)]
+    #[case("-I", 2, 2, 4, 0)]
+    #[case("-J", 2, 2, 4, 0)]
+    #[case("-K", 2, 2, 4, 0)]
+    #[case("-L", 2, 2, 4, 0)]
+    #[case("-V", 2, 2, 4, 0)]
+    #[case("-0V", 3, 5, 8, 0)]
+    #[case("--AAA", 5, 3, 8, 0)]
+    fn test_sizage(
+        #[case] code: &str,
+        #[case] hs: u32,
+        #[case] ss: u32,
+        #[case] fs: u32,
+        #[case] ls: u32,
+    ) {
+        let s = sizage(code).unwrap();
+        assert_eq!(s.hs, hs);
+        assert_eq!(s.ss, ss);
+        assert_eq!(s.fs, fs);
+        assert_eq!(s.ls, ls);
     }
 
-    #[test]
-    fn test_codex() {
-        assert_eq!(Codex::ControllerIdxSigs.code(), "-A");
-        assert_eq!(Codex::WitnessIdxSigs.code(), "-B");
-        assert_eq!(Codex::NonTransReceiptCouples.code(), "-C");
-        assert_eq!(Codex::TransReceiptQuadruples.code(), "-D");
-        assert_eq!(Codex::FirstSeenReplayCouples.code(), "-E");
-        assert_eq!(Codex::TransIdxSigGroups.code(), "-F");
-        assert_eq!(Codex::SealSourceCouples.code(), "-G");
-        assert_eq!(Codex::TransLastIdxSigGroups.code(), "-H");
-        assert_eq!(Codex::SealSourceTriples.code(), "-I");
-        assert_eq!(Codex::SadPathSig.code(), "-J");
-        assert_eq!(Codex::SadPathSigGroup.code(), "-K");
-        assert_eq!(Codex::PathedMaterialQuadlets.code(), "-L");
-        assert_eq!(Codex::AttachedMaterialQuadlets.code(), "-V");
-        assert_eq!(Codex::BigAttachedMaterialQuadlets.code(), "-0V");
-        assert_eq!(Codex::KERIProtocolStack.code(), "--AAA");
-
-        assert_eq!(Codex::from_code("-A").unwrap(), Codex::ControllerIdxSigs);
-        assert_eq!(Codex::from_code("-B").unwrap(), Codex::WitnessIdxSigs);
-        assert_eq!(Codex::from_code("-C").unwrap(), Codex::NonTransReceiptCouples);
-        assert_eq!(Codex::from_code("-D").unwrap(), Codex::TransReceiptQuadruples);
-        assert_eq!(Codex::from_code("-E").unwrap(), Codex::FirstSeenReplayCouples);
-        assert_eq!(Codex::from_code("-F").unwrap(), Codex::TransIdxSigGroups);
-        assert_eq!(Codex::from_code("-G").unwrap(), Codex::SealSourceCouples);
-        assert_eq!(Codex::from_code("-H").unwrap(), Codex::TransLastIdxSigGroups);
-        assert_eq!(Codex::from_code("-I").unwrap(), Codex::SealSourceTriples);
-        assert_eq!(Codex::from_code("-J").unwrap(), Codex::SadPathSig);
-        assert_eq!(Codex::from_code("-K").unwrap(), Codex::SadPathSigGroup);
-        assert_eq!(Codex::from_code("-L").unwrap(), Codex::PathedMaterialQuadlets);
-        assert_eq!(Codex::from_code("-V").unwrap(), Codex::AttachedMaterialQuadlets);
-        assert_eq!(Codex::from_code("-0V").unwrap(), Codex::BigAttachedMaterialQuadlets);
-        assert_eq!(Codex::from_code("--AAA").unwrap(), Codex::KERIProtocolStack);
+    #[rstest]
+    #[case(Codex::ControllerIdxSigs, "-A")]
+    #[case(Codex::WitnessIdxSigs, "-B")]
+    #[case(Codex::NonTransReceiptCouples, "-C")]
+    #[case(Codex::TransReceiptQuadruples, "-D")]
+    #[case(Codex::FirstSeenReplayCouples, "-E")]
+    #[case(Codex::TransIdxSigGroups, "-F")]
+    #[case(Codex::SealSourceCouples, "-G")]
+    #[case(Codex::TransLastIdxSigGroups, "-H")]
+    #[case(Codex::SealSourceTriples, "-I")]
+    #[case(Codex::SadPathSig, "-J")]
+    #[case(Codex::SadPathSigGroup, "-K")]
+    #[case(Codex::PathedMaterialQuadlets, "-L")]
+    #[case(Codex::AttachedMaterialQuadlets, "-V")]
+    #[case(Codex::BigAttachedMaterialQuadlets, "-0V")]
+    #[case(Codex::KERIProtocolStack, "--AAA")]
+    fn test_codex(#[case] variant: Codex, #[case] code: &str) {
+        assert_eq!(variant.code(), code);
+        assert_eq!(Codex::from_code(code).unwrap(), variant);
     }
 
     #[test]

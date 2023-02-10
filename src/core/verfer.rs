@@ -115,7 +115,8 @@ impl Verfer for Matter {
 
 #[cfg(test)]
 mod test_verfer {
-    use super::{matter, Matter, Verfer};
+    use crate::core::matter::{tables as matter, Matter};
+    use crate::core::verfer::Verfer;
     use hex_literal::hex;
 
     #[test]

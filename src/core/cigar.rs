@@ -84,8 +84,8 @@ impl Cigar {
 
 #[cfg(test)]
 mod test_cigar {
-    use super::{Cigar, Matter};
-    use crate::core::matter::tables as matter;
+    use crate::core::cigar::Cigar;
+    use crate::core::matter::{tables as matter, Matter};
     use crate::core::verfer::Verfer;
 
     #[test]
