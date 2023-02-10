@@ -18,9 +18,12 @@ lazy_static = "~1"
 sha2 = "~0.10"
 sha3 = "~0.10"
 thiserror = "~1"
+# Clippy fix: disable "oldtime" feature for chrono
+chrono = { version = "~0.4", default-features = false, features = ["clock"] }
 
 [dev-dependencies]
 hex-literal = "*"
 hex = "*"
 rand = "0.7.0" # this needs pinning for one of the seeding pieces of a signing suite
 rand_core = "*"
+rstest = "*"
