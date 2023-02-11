@@ -3,27 +3,27 @@ use pyo3::{
     exceptions::{PyException, PyValueError},
 };
 
+use crate::core::diger::Diger;
 use crate::core::matter::Matter;
 
 #[pymethods]
-impl Matter {
+impl Diger {
     #[new]
     fn py_new(
         code: Option<&str>,
         raw: Option<&[u8]>,
-        raw_size: Option<usize>,
         qb64: Option<&str>,
         qb64b: Option<&[u8]>,
         qb2: Option<&[u8]>,
     ) -> PyResult<Self> {
         let result = if let Some(code) = code {
-            let (raw, raw_size) = if raw.is_none() || raw_size.is_none() {
-                return Err(PyValueError::new_err("code present, raw and raw_size missing"));
+            let raw = if raw.is_none() {
+                return Err(PyValueError::new_err("code present, raw missing"));
             } else {
-                (raw.unwrap(), raw_size.unwrap())
+                raw.unwrap()
             };
 
-            Self::new_with_code_and_raw(code, raw, raw_size)
+            Self::new_with_code_and_raw(code, raw)
         } else if let Some(qb64) = qb64 {
             Self::new_with_qb64(qb64)
         } else if let Some(qb64b) = qb64b {
