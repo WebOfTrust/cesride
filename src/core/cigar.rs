@@ -2,11 +2,12 @@ use lazy_static::lazy_static;
 
 use crate::core::matter::{tables as matter, Matter};
 use crate::error::{err, Error, Result};
+use crate::Verfer;
 
 #[derive(Debug, Clone)]
 pub struct Cigar {
     pub(crate) matter: Matter,
-    pub(crate) verfer: Matter,
+    pub(crate) verfer: Verfer,
 }
 
 fn validate_code(code: &str) -> Result<()> {
@@ -26,24 +27,24 @@ fn validate_code(code: &str) -> Result<()> {
 }
 
 impl Cigar {
-    pub fn new_with_code_and_raw(verfer: &Matter, code: &str, raw: &[u8]) -> Result<Cigar> {
+    pub fn new_with_code_and_raw(verfer: &Verfer, code: &str, raw: &[u8]) -> Result<Cigar> {
         validate_code(code)?;
         Ok(Cigar { matter: Matter::new_with_code_and_raw(code, raw)?, verfer: verfer.clone() })
     }
 
-    pub fn new_with_qb64(verfer: &Matter, qb64: &str) -> Result<Cigar> {
+    pub fn new_with_qb64(verfer: &Verfer, qb64: &str) -> Result<Cigar> {
         let cigar = Cigar { matter: Matter::new_with_qb64(qb64)?, verfer: verfer.clone() };
         validate_code(&cigar.matter.code)?;
         Ok(cigar)
     }
 
-    pub fn new_with_qb64b(verfer: &Matter, qb64b: &[u8]) -> Result<Cigar> {
+    pub fn new_with_qb64b(verfer: &Verfer, qb64b: &[u8]) -> Result<Cigar> {
         let cigar = Cigar { matter: Matter::new_with_qb64b(qb64b)?, verfer: verfer.clone() };
         validate_code(&cigar.matter.code)?;
         Ok(cigar)
     }
 
-    pub fn new_with_qb2(verfer: &Matter, qb2: &[u8]) -> Result<Cigar> {
+    pub fn new_with_qb2(verfer: &Verfer, qb2: &[u8]) -> Result<Cigar> {
         let cigar = Cigar { matter: Matter::new_with_qb2(qb2)?, verfer: verfer.clone() };
         validate_code(&cigar.matter.code)?;
         Ok(cigar)
@@ -73,11 +74,11 @@ impl Cigar {
         self.matter.qb2()
     }
 
-    pub fn verfer(&self) -> Matter {
+    pub fn verfer(&self) -> Verfer {
         self.verfer.clone()
     }
 
-    pub fn set_verfer(&mut self, verfer: &Matter) {
+    pub fn set_verfer(&mut self, verfer: &Verfer) {
         self.verfer = verfer.clone();
     }
 }
@@ -85,14 +86,14 @@ impl Cigar {
 #[cfg(test)]
 mod test_cigar {
     use crate::core::cigar::Cigar;
-    use crate::core::matter::{tables as matter, Matter};
+    use crate::core::matter::tables as matter;
     use crate::core::verfer::Verfer;
 
     #[test]
     fn test_new_with_code_and_raw() {
         let vcode = matter::Codex::Ed25519.code();
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
-        let verfer = <Matter as Verfer>::new_with_code_and_raw(vcode, vraw).unwrap();
+        let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();
         let code = matter::Codex::Ed25519_Sig.code();
         let raw = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ[]";
 
@@ -109,7 +110,7 @@ mod test_cigar {
         let qsig64 = "0BCdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ";
         let vcode = matter::Codex::Ed25519.code();
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
-        let verfer = <Matter as Verfer>::new_with_code_and_raw(vcode, vraw).unwrap();
+        let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();
 
         let cigar = Cigar::new_with_qb64(&verfer, qsig64).unwrap();
 
@@ -125,7 +126,7 @@ mod test_cigar {
         let qsig64b = "0BCdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ".as_bytes();
         let vcode = matter::Codex::Ed25519.code();
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
-        let verfer = <Matter as Verfer>::new_with_code_and_raw(vcode, vraw).unwrap();
+        let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();
 
         let cigar = Cigar::new_with_qb64b(&verfer, qsig64b).unwrap();
 
@@ -146,7 +147,7 @@ mod test_cigar {
         ];
         let vcode = matter::Codex::Ed25519.code();
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
-        let verfer = <Matter as Verfer>::new_with_code_and_raw(vcode, vraw).unwrap();
+        let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();
 
         let cigar = Cigar::new_with_qb2(&verfer, &qb2).unwrap();
 
@@ -162,13 +163,13 @@ mod test_cigar {
         let qsig64 = "0BCdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ";
         let vcode = matter::Codex::Ed25519.code();
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
-        let verfer = <Matter as Verfer>::new_with_code_and_raw(vcode, vraw).unwrap();
+        let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();
 
         let mut cigar = Cigar::new_with_qb64(&verfer, qsig64).unwrap();
 
         let vcode2 = matter::Codex::Ed25519N.code();
         let vraw2 = b"abcdefghijklmnopqrstuvwxyz543210";
-        let verfer2 = <Matter as Verfer>::new_with_code_and_raw(vcode2, vraw2).unwrap();
+        let verfer2 = Verfer::new_with_code_and_raw(vcode2, vraw2).unwrap();
 
         assert_ne!(cigar.verfer().raw(), vraw2);
         cigar.set_verfer(&verfer2);
@@ -180,7 +181,7 @@ mod test_cigar {
         let qsig64 = "0BCdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ";
         let vcode = matter::Codex::Ed25519.code();
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
-        let verfer = <Matter as Verfer>::new_with_code_and_raw(vcode, vraw).unwrap();
+        let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();
 
         let cigar = Cigar::new_with_qb64(&verfer, qsig64).unwrap();
 
@@ -196,7 +197,7 @@ mod test_cigar {
     fn test_unhappy_paths() {
         let vcode = matter::Codex::Ed25519.code();
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
-        let verfer = <Matter as Verfer>::new_with_code_and_raw(vcode, vraw).unwrap();
+        let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();
 
         assert!(Cigar::new_with_code_and_raw(&verfer, "CESR", &[]).is_err());
     }
