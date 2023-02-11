@@ -7,10 +7,10 @@ mod core;
 mod error;
 mod python;
 
-use crate::core::matter::Matter; 
+use crate::core::diger::Diger; 
 
 #[pymodule]
 fn cesride(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_class::<Matter>()?;
+    m.add_class::<Diger>()?;
     Ok(())
 }
