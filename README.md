@@ -12,6 +12,26 @@ Cryptographic primitives for use with Composable Event Streaming Representation 
     - [#1 CESR Proof Signatures](https://medium.com/happy-blockchains/cesr-proof-signatures-are-the-segwit-of-authentic-data-in-keri-e891c83e070a)
     - [#2 CESR Overview](https://medium.com/happy-blockchains/cesr-one-of-sam-smiths-inventions-is-as-controversial-as-genius-d757f36b88f8)
 
+## Contributing
+
+If you want to contribute, check out the [issues](https://github.com/WebOfTrust/cesride/issues).
+Tags provide some guidance.
+
+When starting a new issue, ensure there are no others working on the same thing to avoid duplicated
+effort (although alternative implementations are always welcome and considered):
+- check that there is no open pull request
+- make sure no one has assigned themselves
+- look for comments on the issue
+- look for development integrations ('linked an issue that may be closed by this pull request')
+
+When you find an issue you want to take on:
+- make yourself an assignee, if possible
+- open a [Pull Request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests) against a branch you created against your fork - even if empty
+- paste a link to the PR in a comment on the issue you are working on for visibility
+
+For better coordination, join the `#cesr-dev` slack channel using the link at the bottom of
+this document.
+
 ## Development
 
 Install dependencies:
@@ -30,22 +50,14 @@ Commit your changes locally, and run these automated tests:
 make clean preflight
 ```
 
-If you've modified the python code, either add some python tests (you'll need to do that yourself,
-none have been added) or run this code (and additionally exercising the changes you made):
-```shell
-make python python-shell
-
-# in python shell
-from cesride import Matter
-m = Matter(qb64="BGlOiUdp5sMmfotHfCWQKEzWR91C72AH0lT84c0um-Qj")
-qb2 = m.qb2()
-print(qb2)
-m2 = Matter(qb2=bytes(qb2))
-m2.qb64()
-```
-and expect to see the initial `qb64` input as the output.
-
 You are now ready to open a pull request!
+
+### Python integration
+
+Explore at your own risk. This is unmaintained and really just a minimal POC, as we now consider
+moving to `uniffi`.
+
+For the curious: `make python python-shell` on `macOS`.
 
 ## Community
 
