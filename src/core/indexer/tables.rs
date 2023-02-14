@@ -425,6 +425,16 @@ mod index_tables_tests {
     }
 
     #[test]
+    fn test_sig_codex_from_code() {
+        assert!(SigCodex::from_code("ZZ").is_err());
+    }
+
+    #[test]
+    fn test_codex_from_code() {
+        assert!(Codex::from_code("ZZ").is_err());
+    }
+
+    #[test]
     fn test_current_sig_from_code() {
         assert!(CurrentSigCodex::from_code("ZZ").is_err());
     }
