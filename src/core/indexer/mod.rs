@@ -504,17 +504,6 @@ pub trait Indexer: Default {
     }
 }
 
-// impl Default for Indexer {
-//     fn default() -> Self {
-//         Indexer {
-//             raw: vec![],
-//             code: tables::Codex::Ed25519.code().to_string(),
-//             index: 0,
-//             ondex: Some(u32::MAX),
-//         }
-//     }
-// }
-
 #[cfg(test)]
 mod indexer_tests {
     use base64::{engine::general_purpose as b64_engine, Engine};
@@ -608,7 +597,9 @@ mod indexer_tests {
         let mut idx =
             TestIndexer::new_with_code_and_raw(Codex::Ed25519.code(), sig, 0, None).unwrap();
         assert_eq!(idx.code, Codex::Ed25519.code());
+        assert_eq!(idx.code(), Codex::Ed25519.code());
         assert_eq!(idx.raw, sig);
+        assert_eq!(idx.raw(), sig);
         assert_eq!(idx.index, 0);
         assert_eq!(idx.ondex, 0);
         assert_eq!(idx.qb64().unwrap(), sig64);
@@ -617,7 +608,9 @@ mod indexer_tests {
 
         idx = TestIndexer::new_with_qb64("AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ").unwrap();
         assert_eq!(idx.raw, sig);
+        assert_eq!(idx.raw(), sig);
         assert_eq!(idx.code, Codex::Ed25519.code());
+        assert_eq!(idx.code(), Codex::Ed25519.code());
         assert_eq!(idx.index, 0);
         assert_eq!(idx.ondex, 0);
         assert_eq!(idx.qb64().unwrap(), sig64);
@@ -626,7 +619,9 @@ mod indexer_tests {
 
         idx = TestIndexer::new_with_qb64b("AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ".as_bytes()).unwrap();
         assert_eq!(idx.raw, sig);
+        assert_eq!(idx.raw(), sig);
         assert_eq!(idx.code, Codex::Ed25519.code());
+        assert_eq!(idx.code(), Codex::Ed25519.code());
         assert_eq!(idx.index, 0);
         assert_eq!(idx.ondex, 0);
         assert_eq!(idx.qb64().unwrap(), sig64);
