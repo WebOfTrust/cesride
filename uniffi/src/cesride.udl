@@ -1,0 +1,170 @@
+namespace cesride {
+};
+
+[Error]
+enum CESRError {
+    "General",
+    "Matter",
+    "EmptyMaterial",
+    "Decode",
+    "UnexpectedCode",
+    "UnexpectedCountCode",
+    "UnexpectedOpCode",
+    "InvalidVarSize",
+    "InvalidVarRawSize",
+    "InvalidVarIndex",
+    "InvalidCodeSize",
+    "InvalidBase64Character",
+    "InvalidBase64Index",
+    "Shortage",
+    "EmptyQb64",
+    "UnknownSizage",
+    "UnknownHardage",
+    "UnknownBardage",
+    "UnsupportedSize",
+    "TooSmall",
+    "Prepad",
+    "NonZeroedPrepad",
+    "NonZeroedLeadByte",
+    "NonZeroedLeadBytes",
+    "NonZeroedPadBits",
+    "Parsing",
+    "ParseQb64",
+    "ParseQb2",
+    "Conversion",
+    "Value",
+    "Validation",
+};
+
+enum MatterCodex {
+    "Ed25519_Seed",
+    "Ed25519N",
+    "X25519",
+    "Ed25519",
+    "Blake3_256",
+    "Blake2b_256",
+    "Blake2s_256",
+    "SHA3_256",
+    "SHA2_256",
+    "ECDSA_256k1_Seed",
+    "Ed448_Seed",
+    "X448",
+    "Short",
+    "Big",
+    "X25519_Private",
+    "X25519_Cipher_Seed",
+    "Salt_128",
+    "Ed25519_Sig",
+    "ECDSA_256k1_Sig",
+    "Blake3_512",
+    "Blake2b_512",
+    "SHA3_512",
+    "SHA2_512",
+    "Long",
+    "ECDSA_256k1N",
+    "ECDSA_256k1",
+    "Ed448N",
+    "Ed448",
+    "Ed448_Sig",
+    "Tern",
+    "DateTime",
+    "X25519_Cipher_Salt",
+    "TBD1",
+    "TBD2",
+    "StrB64_L0",
+    "StrB64_L1",
+    "StrB64_L2",
+    "StrB64_Big_L0",
+    "StrB64_Big_L1",
+    "StrB64_Big_L2",
+    "Bytes_L0",
+    "Bytes_L1",
+    "Bytes_L2",
+    "Bytes_Big_L0",
+    "Bytes_Big_L1",
+    "Bytes_Big_L2",
+};
+
+interface Cigar {
+    [Throws=CESRError]
+    constructor(
+        Verfer verfer,
+        optional MatterCodex? variant = null,
+        optional string? code = null,
+        optional sequence<u8>? raw = null,
+        optional string? qb64 = null,
+        optional sequence<u8>? qb64b = null,
+        optional sequence<u8>? qb2 = null
+    );
+
+    // Verfer verfer();
+    // void set_verfer([ByRef] Verfer verfer);
+    sequence<u8> raw();
+    string code();
+};
+
+interface Dater {
+    [Throws=CESRError]
+    constructor(
+        optional MatterCodex? variant = null,
+        optional string? code = null,
+        optional string? dts = null,
+        optional sequence<u8>? dtsb = null,
+        optional sequence<u8>? raw = null,
+        optional string? qb64 = null,
+        optional sequence<u8>? qb64b = null,
+        optional sequence<u8>? qb2 = null
+    );
+
+    [Throws=CESRError]
+    string dts();
+
+    [Throws=CESRError]
+    sequence<u8> dtsb();
+
+    sequence<u8> raw();
+    string code();
+};
+
+interface Diger {
+    [Throws=CESRError]
+    constructor(
+        optional MatterCodex? variant = null,
+        optional string? code = null,
+        optional sequence<u8>? ser = null,
+        optional sequence<u8>? raw = null,
+        optional string? qb64 = null,
+        optional sequence<u8>? qb64b = null,
+        optional sequence<u8>? qb2 = null
+    );
+
+    [Throws=CESRError]
+    boolean verify([ByRef] sequence<u8> ser);
+
+    [Throws=CESRError]
+    boolean compare_dig([ByRef] sequence<u8> ser, [ByRef] sequence<u8> dig);
+
+    [Throws=CESRError]
+    boolean compare_diger([ByRef] sequence<u8> ser, [ByRef] Diger diger);
+
+    sequence<u8> raw();
+    string code();
+};
+
+interface Verfer {
+    [Throws=CESRError]
+    constructor(
+        optional MatterCodex? variant = null,
+        optional string? code = null,
+        optional sequence<u8>? raw = null,
+        optional string? qb64 = null,
+        optional sequence<u8>? qb64b = null,
+        optional sequence<u8>? qb2 = null
+    );
+
+    [Throws=CESRError]
+    boolean verify([ByRef] sequence<u8> sig, [ByRef] sequence<u8> ser);
+
+    sequence<u8> raw();
+    string code();
+};

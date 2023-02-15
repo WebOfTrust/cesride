@@ -36,6 +36,37 @@ fn validate_code(code: &str) -> Result<()> {
 }
 
 impl Verfer {
+    fn new_with_code(code: &str, raw: Option<Vec<u8>>) -> Result<Self> {
+        if let Some(raw) = raw {
+            Self::new_with_code_and_raw(code, &raw)
+        } else {
+            err!(Error::EmptyMaterial("code present, raw or ser missing".to_string()))
+        }
+    }
+
+    pub fn new(
+        variant: Option<matter::Codex>,
+        code: Option<String>,
+        raw: Option<Vec<u8>>,
+        qb64: Option<String>,
+        qb64b: Option<Vec<u8>>,
+        qb2: Option<Vec<u8>>,
+    ) -> Result<Self> {
+        if let Some(variant) = variant {
+            Self::new_with_code(variant.code(), raw)
+        } else if let Some(code) = code {
+            Self::new_with_code(&code, raw)
+        } else if let Some(qb64) = qb64 {
+            Self::new_with_qb64(&qb64)
+        } else if let Some(qb64b) = qb64b {
+            Self::new_with_qb64b(&qb64b)
+        } else if let Some(qb2) = qb2 {
+            Self::new_with_qb2(&qb2)
+        } else {
+            err!(Error::Matter("must specify some parameters".to_string()))
+        }
+    }
+
     pub fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Self> {
         validate_code(code)?;
         Matter::new_with_code_and_raw(code, raw)
@@ -59,7 +90,7 @@ impl Verfer {
         Ok(verfer)
     }
 
-    fn verify(&self, sig: &[u8], ser: &[u8]) -> Result<bool> {
+    pub fn verify(&self, sig: &[u8], ser: &[u8]) -> Result<bool> {
         let ev = matter::Codex::from_code(&self.code())?;
 
         match ev {

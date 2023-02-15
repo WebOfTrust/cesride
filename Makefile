@@ -1,19 +1,23 @@
-DEV_DEPENDENCIES_LINE = $(shell cat Cargo.toml | grep -n "\[dev-dependencies\]" | cut -d : -f 1)
-DELIMITING_LINE = $(shell echo $$(( $(DEV_DEPENDENCIES_LINE) - 2 )))
-TOTAL_LINES = $(shell cat Cargo.toml | wc -l)
-TAIL_LINES = $(shell echo $$(( $(TOTAL_LINES) - $(DELIMITING_LINE) )))
+uniffi-build:
+	@cd uniffi && cargo build --release
 
-python:
-	@head -n $(DELIMITING_LINE) Cargo.toml > cargo/$@/Cargo.toml
-	@echo "pyo3 = { version = \"~0.18\", features = [\"abi3\", \"extension-module\"] }" >> cargo/$@/Cargo.toml
-	@tail -n $(TAIL_LINES) Cargo.toml >> cargo/$@/Cargo.toml
-	@echo >> cargo/$@/Cargo.toml
-	@cat cargo/$@/Cargo.toml.tail >> cargo/$@/Cargo.toml
-	@cd cargo/$@ && cargo build --release --target-dir ../../target/$@
-	@mv target/$@/release/libcesride.dylib target/$@/release/cesride.so
+swift: uniffi-build
+	@cd uniffi && cargo run --release --bin cesride-bindgen generate src/cesride.udl --out-dir generated --language $@
 
-python-shell:
-	@cd target/python/release/ && python3
+kotlin: uniffi-build
+	@cd uniffi && cargo run --release --bin cesride-bindgen generate src/cesride.udl --out-dir generated --language $@
+
+ruby: uniffi-build
+	@cd uniffi && cargo run --release --bin cesride-bindgen generate src/cesride.udl --out-dir generated --language $@
+
+python: uniffi-build
+	@cd uniffi && cargo run --release --bin cesride-bindgen generate src/cesride.udl --out-dir generated --language $@
+
+bindings: swift kotlin ruby python
+
+python-shell: python
+	@cp uniffi/target/release/libcesride_uniffi.dylib uniffi/generated/libuniffi_cesride.dylib
+	@cd uniffi/generated/ && python3
 
 rust:
 	@cargo build --release

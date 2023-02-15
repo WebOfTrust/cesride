@@ -1,14 +1,11 @@
 use blake2::Digest;
 use lazy_static::lazy_static;
-#[cfg(feature = "python")]
-use pyo3::prelude::pyclass;
 
 use crate::core::matter::{tables as matter, Matter};
 use crate::error::{err, Error, Result};
 
 type Blake2b256 = blake2::Blake2b<blake2::digest::consts::U32>;
 
-#[cfg_attr(feature = "python", pyclass)]
 pub struct Diger {
     raw: Vec<u8>,
     code: String,
@@ -44,24 +41,58 @@ fn validate_code(code: &str) -> Result<()> {
 }
 
 impl Diger {
-    fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Self> {
+    fn new_with_code(code: &str, ser: Option<Vec<u8>>, raw: Option<Vec<u8>>) -> Result<Self> {
+        if let Some(ser) = ser {
+            Self::new_with_code_and_ser(code, &ser)
+        } else if let Some(raw) = raw {
+            Self::new_with_code_and_raw(code, &raw)
+        } else {
+            err!(Error::EmptyMaterial("code present, raw or ser missing".to_string()))
+        }
+    }
+
+    pub fn new(
+        variant: Option<matter::Codex>,
+        code: Option<String>,
+        ser: Option<Vec<u8>>,
+        raw: Option<Vec<u8>>,
+        qb64: Option<String>,
+        qb64b: Option<Vec<u8>>,
+        qb2: Option<Vec<u8>>,
+    ) -> Result<Self> {
+        if let Some(variant) = variant {
+            Self::new_with_code(variant.code(), ser, raw)
+        } else if let Some(code) = code {
+            Self::new_with_code(&code, ser, raw)
+        } else if let Some(qb64) = qb64 {
+            Self::new_with_qb64(&qb64)
+        } else if let Some(qb64b) = qb64b {
+            Self::new_with_qb64b(&qb64b)
+        } else if let Some(qb2) = qb2 {
+            Self::new_with_qb2(&qb2)
+        } else {
+            err!(Error::Matter("must specify some parameters".to_string()))
+        }
+    }
+
+    pub fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Self> {
         validate_code(code)?;
         Matter::new_with_code_and_raw(code, raw)
     }
 
-    fn new_with_qb64(qb64: &str) -> Result<Self> {
+    pub fn new_with_qb64(qb64: &str) -> Result<Self> {
         let diger = <Diger as Matter>::new_with_qb64(qb64)?;
         validate_code(&diger.code)?;
         Ok(diger)
     }
 
-    fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
         let diger = <Diger as Matter>::new_with_qb64b(qb64b)?;
         validate_code(&diger.code)?;
         Ok(diger)
     }
 
-    fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
         let diger = <Diger as Matter>::new_with_qb2(qb2)?;
         validate_code(&diger.code)?;
         Ok(diger)
@@ -70,23 +101,23 @@ impl Diger {
     pub fn new_with_code_and_ser(code: &str, ser: &[u8]) -> Result<Self> {
         validate_code(code)?;
         let ev = matter::Codex::from_code(code)?;
-        let dig = derive_digest(ev, ser)?;
+        let dig = derive_digest(&ev, ser)?;
 
         Matter::new_with_code_and_raw(code, &dig)
     }
 
-    fn verify(&self, ser: &[u8]) -> Result<bool> {
+    pub fn verify(&self, ser: &[u8]) -> Result<bool> {
         let ev = matter::Codex::from_code(&self.code)?;
-        let dig = derive_digest(ev, ser)?;
+        let dig = derive_digest(&ev, ser)?;
         Ok(dig == self.raw())
     }
 
-    fn compare_dig(&self, ser: &[u8], dig: &[u8]) -> Result<bool> {
+    pub fn compare_dig(&self, ser: &[u8], dig: &[u8]) -> Result<bool> {
         if dig == self.qb64b()? {
             return Ok(true);
         }
 
-        let diger = <Diger as Matter>::new_with_qb64b(dig)?;
+        let diger: Diger = Matter::new_with_qb64b(dig)?;
 
         if diger.code == self.code {
             return Ok(false);
@@ -99,7 +130,7 @@ impl Diger {
         Ok(false)
     }
 
-    fn compare_diger(&self, ser: &[u8], diger: &Diger) -> Result<bool> {
+    pub fn compare_diger(&self, ser: &[u8], diger: &Diger) -> Result<bool> {
         // reference implementation uses qb64b() but that's an extra conversion here
         if diger.qb64()? == self.qb64()? {
             return Ok(true);
@@ -143,7 +174,7 @@ impl Matter for Diger {
     }
 }
 
-fn derive_digest(ev: matter::Codex, ser: &[u8]) -> Result<Vec<u8>> {
+fn derive_digest(ev: &matter::Codex, ser: &[u8]) -> Result<Vec<u8>> {
     let out = match ev {
         matter::Codex::Blake3_256 => blake3::hash(ser).as_bytes().to_vec(),
         matter::Codex::Blake3_512 => {
@@ -210,7 +241,7 @@ mod test_diger {
     #[test]
     fn test_new_with_code_and_raw() {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
-        let code = matter::Codex::Blake3_256.code();
+        let code = &matter::Codex::Blake3_256.code();
 
         let d = Diger::new_with_code_and_raw(code, &raw).unwrap();
         assert_eq!(d.raw(), raw);
@@ -254,9 +285,9 @@ mod test_diger {
         let raw = b"abcdefghijklmnopqrstuvwxyz012345";
 
         let valid_diger: Diger =
-            Matter::new_with_code_and_raw(matter::Codex::Blake3_256.code(), raw).unwrap();
+            Matter::new_with_code_and_raw(&matter::Codex::Blake3_256.code(), raw).unwrap();
         let invalid_diger: Diger =
-            Matter::new_with_code_and_raw(matter::Codex::Ed25519.code(), raw).unwrap();
+            Matter::new_with_code_and_raw(&matter::Codex::Ed25519.code(), raw).unwrap();
 
         assert!(Diger::new_with_qb64(&valid_diger.qb64().unwrap()).is_ok());
         assert!(Diger::new_with_qb64(&invalid_diger.qb64().unwrap()).is_err());
@@ -267,9 +298,9 @@ mod test_diger {
         let raw = b"abcdefghijklmnopqrstuvwxyz012345";
 
         let valid_diger: Diger =
-            Matter::new_with_code_and_raw(matter::Codex::Blake3_256.code(), raw).unwrap();
+            Matter::new_with_code_and_raw(&matter::Codex::Blake3_256.code(), raw).unwrap();
         let invalid_diger: Diger =
-            Matter::new_with_code_and_raw(matter::Codex::Ed25519.code(), raw).unwrap();
+            Matter::new_with_code_and_raw(&matter::Codex::Ed25519.code(), raw).unwrap();
 
         assert!(Diger::new_with_qb64b(&valid_diger.qb64b().unwrap()).is_ok());
         assert!(Diger::new_with_qb64b(&invalid_diger.qb64b().unwrap()).is_err());
@@ -280,9 +311,9 @@ mod test_diger {
         let raw = b"abcdefghijklmnopqrstuvwxyz012345";
 
         let valid_diger: Diger =
-            Matter::new_with_code_and_raw(matter::Codex::Blake3_256.code(), raw).unwrap();
+            Matter::new_with_code_and_raw(&matter::Codex::Blake3_256.code(), raw).unwrap();
         let invalid_diger: Diger =
-            Matter::new_with_code_and_raw(matter::Codex::Ed25519.code(), raw).unwrap();
+            Matter::new_with_code_and_raw(&matter::Codex::Ed25519.code(), raw).unwrap();
 
         assert!(Diger::new_with_qb2(&valid_diger.qb2().unwrap()).is_ok());
         assert!(Diger::new_with_qb2(&invalid_diger.qb2().unwrap()).is_err());
@@ -293,13 +324,13 @@ mod test_diger {
         let raw = hex!("e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f"
                                  "5b49b82f805a538c68915c1ae8035c900fd1d4b13902920fd05e1450822f36de");
 
-        let d = Diger::new_with_code_and_raw(matter::Codex::Blake3_512.code(), &raw).unwrap();
+        let d = Diger::new_with_code_and_raw(&matter::Codex::Blake3_512.code(), &raw).unwrap();
         assert!(d.verify(&vec![0, 1, 2]).unwrap());
     }
 
     #[test]
     fn test_compare_dig() {
-        let code = matter::Codex::Blake3_256.code();
+        let code = &matter::Codex::Blake3_256.code();
         let raw = hex!("e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f");
         let ser = vec![0, 1, 2];
 
@@ -316,8 +347,8 @@ mod test_diger {
 
         // same ser, different algorithm - should return true
         let code2 = matter::Codex::Blake2b_256.code();
-        let ev = matter::Codex::from_code(code2).unwrap();
-        let raw2 = derive_digest(ev.clone(), &ser).unwrap();
+        let ev = &matter::Codex::from_code(code2).unwrap();
+        let raw2 = derive_digest(ev, &ser).unwrap();
         let m2: Diger = Matter::new_with_code_and_raw(code2, &raw2).unwrap();
         assert!(d.compare_dig(&ser, &m2.qb64b().unwrap()).unwrap());
 
@@ -329,7 +360,7 @@ mod test_diger {
 
     #[test]
     fn test_compare_diger() {
-        let code = matter::Codex::Blake3_256.code();
+        let code = &matter::Codex::Blake3_256.code();
         let raw = hex!("e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f");
         let ser = vec![0, 1, 2];
 
@@ -348,8 +379,8 @@ mod test_diger {
 
         // same ser, different algorithm - should return true
         let code2 = matter::Codex::Blake2b_256.code();
-        let ev = matter::Codex::from_code(code2).unwrap();
-        let raw2 = derive_digest(ev.clone(), &ser).unwrap();
+        let ev = &matter::Codex::from_code(code2).unwrap();
+        let raw2 = derive_digest(ev, &ser).unwrap();
         let d2 = Diger::new_with_code_and_raw(code2, &raw2).unwrap();
         assert!(d.compare_diger(&ser, &d2).unwrap());
 
@@ -364,9 +395,9 @@ mod test_diger {
         // compare() will exercise the most code
         let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
 
-        let diger0 = Diger::new_with_code_and_ser(matter::Codex::Blake3_256.code(), ser).unwrap();
-        let diger1 = Diger::new_with_code_and_ser(matter::Codex::SHA3_256.code(), ser).unwrap();
-        let diger2 = Diger::new_with_code_and_ser(matter::Codex::Blake2b_256.code(), ser).unwrap();
+        let diger0 = Diger::new_with_code_and_ser(&matter::Codex::Blake3_256.code(), ser).unwrap();
+        let diger1 = Diger::new_with_code_and_ser(&matter::Codex::SHA3_256.code(), ser).unwrap();
+        let diger2 = Diger::new_with_code_and_ser(&matter::Codex::Blake2b_256.code(), ser).unwrap();
 
         assert!(diger0.compare_diger(ser, &diger1).unwrap());
         assert!(diger0.compare_diger(ser, &diger2).unwrap());
@@ -377,12 +408,12 @@ mod test_diger {
         assert!(diger1.compare_dig(ser, &diger2.qb64b().unwrap()).unwrap());
 
         let ser1 = b"ABCDEFGHIJKLMNOPQSTUVWXYXZabcdefghijklmnopqrstuvwxyz0123456789";
-        let diger = Diger::new_with_code_and_ser(matter::Codex::Blake3_256.code(), ser1).unwrap();
+        let diger = Diger::new_with_code_and_ser(&matter::Codex::Blake3_256.code(), ser1).unwrap();
 
         assert!(!diger0.compare_diger(ser, &diger).unwrap()); // codes match
         assert!(!diger0.compare_dig(ser, &diger.qb64b().unwrap()).unwrap()); // codes match
 
-        let diger = Diger::new_with_code_and_ser(matter::Codex::SHA3_256.code(), ser1).unwrap();
+        let diger = Diger::new_with_code_and_ser(&matter::Codex::SHA3_256.code(), ser1).unwrap();
 
         assert!(!diger0.compare_diger(ser, &diger).unwrap()); // codes match
         assert!(!diger0.compare_dig(ser, &diger.qb64b().unwrap()).unwrap());
@@ -391,6 +422,6 @@ mod test_diger {
 
     #[test]
     fn test_unhappy_paths() {
-        assert!(derive_digest(matter::Codex::Big, &[]).is_err());
+        assert!(derive_digest(&matter::Codex::Big, &[]).is_err());
     }
 }

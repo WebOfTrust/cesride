@@ -48,7 +48,45 @@ fn now_as_b64() -> String {
 }
 
 impl Dater {
-    fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Self> {
+    fn new_with_code(code: &str, raw: Option<Vec<u8>>) -> Result<Self> {
+        if let Some(raw) = raw {
+            Self::new_with_code_and_raw(code, &raw)
+        } else {
+            Self::new_with_code_and_raw(code, b"")
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        variant: Option<matter::Codex>,
+        code: Option<String>,
+        dts: Option<String>,
+        dtsb: Option<Vec<u8>>,
+        raw: Option<Vec<u8>>,
+        qb64: Option<String>,
+        qb64b: Option<Vec<u8>>,
+        qb2: Option<Vec<u8>>,
+    ) -> Result<Self> {
+        if let Some(variant) = variant {
+            Self::new_with_code(variant.code(), raw)
+        } else if let Some(code) = code {
+            Self::new_with_code(&code, raw)
+        } else if let Some(dts) = dts {
+            Self::new_with_dts(&dts)
+        } else if let Some(dtsb) = dtsb {
+            Self::new_with_dtsb(&dtsb)
+        } else if let Some(qb64) = qb64 {
+            Self::new_with_qb64(&qb64)
+        } else if let Some(qb64b) = qb64b {
+            Self::new_with_qb64b(&qb64b)
+        } else if let Some(qb2) = qb2 {
+            Self::new_with_qb2(&qb2)
+        } else {
+            err!(Error::Matter("must specify some parameters".to_string()))
+        }
+    }
+
+    pub fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Self> {
         if !code.is_empty() {
             validate_code(code)?;
         }
@@ -60,41 +98,41 @@ impl Dater {
         }
     }
 
-    fn new_with_dts(dts: &str) -> Result<Self> {
+    pub fn new_with_dts(dts: &str) -> Result<Self> {
         let b64 = if dts.is_empty() { now_as_b64() } else { iso_8601_to_b64(dts) };
         let qb64 = format!("{}{}", matter::Codex::DateTime.code(), &b64);
         Matter::new_with_qb64(&qb64)
     }
 
-    fn new_with_dtsb(dts: &[u8]) -> Result<Self> {
+    pub fn new_with_dtsb(dts: &[u8]) -> Result<Self> {
         Dater::new_with_dts(&String::from_utf8(dts.to_vec())?)
     }
 
-    fn new_with_qb64(qb64: &str) -> Result<Self> {
+    pub fn new_with_qb64(qb64: &str) -> Result<Self> {
         let dater: Dater = Matter::new_with_qb64(qb64)?;
         validate_code(&dater.code())?;
         Ok(dater)
     }
 
-    fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
         let dater: Dater = Matter::new_with_qb64b(qb64b)?;
         validate_code(&dater.code())?;
         Ok(dater)
     }
 
-    fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
         let dater: Dater = Matter::new_with_qb2(qb2)?;
         validate_code(&dater.code())?;
         Ok(dater)
     }
 
-    fn dts(&self) -> Result<String> {
+    pub fn dts(&self) -> Result<String> {
         let hs = matter::sizage(&self.code)?.hs as usize;
         let qb64 = self.qb64()?;
         Ok(b64_to_iso_8601(&qb64[hs..]))
     }
 
-    fn dtsb(&self) -> Result<Vec<u8>> {
+    pub fn dtsb(&self) -> Result<Vec<u8>> {
         Ok(self.dts()?.as_bytes().to_vec())
     }
 }
@@ -129,6 +167,45 @@ impl Matter for Dater {
 mod test_dater {
     use super::{matter, Dater, Matter};
     use rstest::rstest;
+
+    #[rstest]
+    #[case(Some(matter::Codex::DateTime), None, None, None, None, None, None, None)]
+    #[case(None, Some(matter::Codex::DateTime.code().to_string()), None, None, None, None, None, None)]
+    fn test_new(
+        #[case] variant: Option<matter::Codex>,
+        #[case] code: Option<String>,
+        #[case] dts: Option<String>,
+        #[case] dtsb: Option<Vec<u8>>,
+        #[case] raw: Option<Vec<u8>>,
+        #[case] qb64: Option<String>,
+        #[case] qb64b: Option<Vec<u8>>,
+        #[case] qb2: Option<Vec<u8>>,
+    ) {
+        assert!(Dater::new(variant, code, dts, dtsb, raw, qb64, qb64b, qb2).is_ok());
+    }
+
+    #[rstest]
+    #[case(Some(matter::Codex::DateTime), None, None, None, Some(b"\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xcd4".to_vec()), None, None, None)]
+    #[case(None, None, Some("2020-08-22T17:50:09.988921-01:00".to_string()), None, None, None, None, None)]
+    #[case(None, None, None, Some("2020-08-22T17:50:09.988921-01:00".as_bytes().to_vec()), None, None, None, None)]
+    #[case(None, None, None, None, None, Some("1AAG2020-08-22T17c50c09d988921-01c00".to_string()), None, None)]
+    #[case(None, None, None, None, None, None, Some("1AAG2020-08-22T17c50c09d988921-01c00".as_bytes().to_vec()), None)]
+    #[case(None, None, None, None, None, None, None, Some(b"\xd4\x00\x06\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xcd4".to_vec()))]
+    fn test_new_with_inputs(
+        #[case] variant: Option<matter::Codex>,
+        #[case] code: Option<String>,
+        #[case] dts: Option<String>,
+        #[case] dtsb: Option<Vec<u8>>,
+        #[case] raw: Option<Vec<u8>>,
+        #[case] qb64: Option<String>,
+        #[case] qb64b: Option<Vec<u8>>,
+        #[case] qb2: Option<Vec<u8>>,
+    ) {
+        let expected_b64 = "1AAG2020-08-22T17c50c09d988921-01c00";
+        let expected_b2 = b"\xd4\x00\x06\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xcd4";
+        assert_eq!(Dater::new(variant.clone(), code.clone(), dts.clone(), dtsb.clone(), raw.clone(), qb64.clone(), qb64b.clone(), qb2.clone()).unwrap().qb64().unwrap(), expected_b64);
+        assert_eq!(Dater::new(variant, code, dts, dtsb, raw, qb64, qb64b, qb2).unwrap().qb2().unwrap(), expected_b2);
+    }
 
     #[rstest]
     fn test_new_default(
