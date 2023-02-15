@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 
-use crate::error::{Error, Result};
+use crate::error::{err, Error, Result};
 /// Codex is codex hard (stable) part of all indexer derivation codes.
 ///
 /// Codes indicate which list of keys, current and/or prior next, index is for:
@@ -61,6 +61,27 @@ impl Codex {
             Codex::TBD4 => "4z", // Test of index sig lead 1 big
         }
     }
+
+    pub(crate) fn from_code(code: &str) -> Result<Self> {
+        Ok(match code {
+            "A" => Codex::Ed25519,
+            "B" => Codex::Ed25519_Crt,
+            "C" => Codex::ECDSA_256k1,
+            "D" => Codex::ECDSA_256k1_Crt,
+            "0A" => Codex::Ed448,
+            "0B" => Codex::Ed448_Crt,
+            "2A" => Codex::Ed25519_Big,
+            "2B" => Codex::Ed25519_Big_Crt,
+            "2C" => Codex::ECDSA_256k1_Big,
+            "2D" => Codex::ECDSA_256k1_Big_Crt,
+            "3A" => Codex::Ed448_Big,
+            "3B" => Codex::Ed448_Big_Crt,
+            "0z" => Codex::TBD0,
+            "1z" => Codex::TBD1,
+            "4z" => Codex::TBD4,
+            _ => return err!(Error::UnexpectedCode(code.to_string())),
+        })
+    }
 }
 
 /// SigCodex is all indexed signature derivation codes
@@ -97,6 +118,24 @@ impl SigCodex {
             SigCodex::Ed448_Big => "3A",           // Ed448 signature appears in both lists.
             SigCodex::Ed448_Big_Crt => "3B",       // Ed448 signature appears in current list only.
         }
+    }
+
+    pub(crate) fn from_code(code: &str) -> Result<Self> {
+        Ok(match code {
+            "A" => SigCodex::Ed25519,
+            "B" => SigCodex::Ed25519_Crt,
+            "C" => SigCodex::ECDSA_256k1,
+            "D" => SigCodex::ECDSA_256k1_Crt,
+            "0A" => SigCodex::Ed448,
+            "0B" => SigCodex::Ed448_Crt,
+            "2A" => SigCodex::Ed25519_Big,
+            "2B" => SigCodex::Ed25519_Big_Crt,
+            "2C" => SigCodex::ECDSA_256k1_Big,
+            "2D" => SigCodex::ECDSA_256k1_Big_Crt,
+            "3A" => SigCodex::Ed448_Big,
+            "3B" => SigCodex::Ed448_Big_Crt,
+            _ => return err!(Error::UnexpectedCode(code.to_string())),
+        })
     }
 }
 
@@ -239,7 +278,7 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
     })
 }
 
-pub(crate) fn hardage(c: char) -> Result<i32> {
+pub(crate) fn hardage(c: char) -> Result<u32> {
     match c {
         'A'..='Z' | 'a'..='z' => Ok(1),
         '0'..='4' => Ok(2),
@@ -252,172 +291,103 @@ pub(crate) fn hardage(c: char) -> Result<i32> {
 #[cfg(test)]
 mod index_tables_tests {
     use crate::core::indexer::tables::{
-        hardage, sizage, BothSigCodex, Codex, CurrentSigCodex, SigCodex, Sizage,
+        hardage, sizage, BothSigCodex, Codex, CurrentSigCodex, SigCodex,
     };
+    use rstest::rstest;
 
-    #[test]
-    fn test_codex() {
-        assert_eq!(Codex::Ed25519.code(), "A");
-        assert_eq!(Codex::Ed25519_Crt.code(), "B");
-        assert_eq!(Codex::ECDSA_256k1.code(), "C");
-        assert_eq!(Codex::ECDSA_256k1_Crt.code(), "D");
-        assert_eq!(Codex::Ed448.code(), "0A");
-        assert_eq!(Codex::Ed448_Crt.code(), "0B");
-        assert_eq!(Codex::Ed25519_Big.code(), "2A");
-        assert_eq!(Codex::Ed25519_Big_Crt.code(), "2B");
-        assert_eq!(Codex::ECDSA_256k1_Big.code(), "2C");
-        assert_eq!(Codex::ECDSA_256k1_Big_Crt.code(), "2D");
-        assert_eq!(Codex::Ed448_Big.code(), "3A");
-        assert_eq!(Codex::Ed448_Big_Crt.code(), "3B");
-        assert_eq!(Codex::TBD0.code(), "0z");
-        assert_eq!(Codex::TBD1.code(), "1z");
-        assert_eq!(Codex::TBD4.code(), "4z");
+    #[rstest]
+    #[case(Codex::Ed25519, "A")]
+    #[case(Codex::Ed25519_Crt, "B")]
+    #[case(Codex::ECDSA_256k1, "C")]
+    #[case(Codex::ECDSA_256k1_Crt, "D")]
+    #[case(Codex::Ed448, "0A")]
+    #[case(Codex::Ed448_Crt, "0B")]
+    #[case(Codex::Ed25519_Big, "2A")]
+    #[case(Codex::Ed25519_Big_Crt, "2B")]
+    #[case(Codex::ECDSA_256k1_Big, "2C")]
+    #[case(Codex::ECDSA_256k1_Big_Crt, "2D")]
+    #[case(Codex::Ed448_Big, "3A")]
+    #[case(Codex::Ed448_Big_Crt, "3B")]
+    #[case(Codex::TBD0, "0z")]
+    #[case(Codex::TBD1, "1z")]
+    #[case(Codex::TBD4, "4z")]
+    fn test_codex(#[case] variant: Codex, #[case] code: &str) {
+        assert_eq!(variant.code(), code);
+        assert_eq!(Codex::from_code(code).unwrap(), variant);
     }
 
-    #[test]
-    fn test_code() {
-        assert_eq!(SigCodex::Ed25519.code(), "A");
-        assert_eq!(SigCodex::Ed25519_Crt.code(), "B");
-        assert_eq!(SigCodex::ECDSA_256k1.code(), "C");
-        assert_eq!(SigCodex::ECDSA_256k1_Crt.code(), "D");
-        assert_eq!(SigCodex::Ed448.code(), "0A");
-        assert_eq!(SigCodex::Ed448_Crt.code(), "0B");
-        assert_eq!(SigCodex::Ed25519_Big.code(), "2A");
-        assert_eq!(SigCodex::Ed25519_Big_Crt.code(), "2B");
-        assert_eq!(SigCodex::ECDSA_256k1_Big.code(), "2C");
-        assert_eq!(SigCodex::ECDSA_256k1_Big_Crt.code(), "2D");
-        assert_eq!(SigCodex::Ed448_Big.code(), "3A");
-        assert_eq!(SigCodex::Ed448_Big_Crt.code(), "3B");
+    #[rstest]
+    #[case(SigCodex::Ed25519, "A")]
+    #[case(SigCodex::Ed25519_Crt, "B")]
+    #[case(SigCodex::ECDSA_256k1, "C")]
+    #[case(SigCodex::ECDSA_256k1_Crt, "D")]
+    #[case(SigCodex::Ed448, "0A")]
+    #[case(SigCodex::Ed448_Crt, "0B")]
+    #[case(SigCodex::Ed25519_Big, "2A")]
+    #[case(SigCodex::Ed25519_Big_Crt, "2B")]
+    #[case(SigCodex::ECDSA_256k1_Big, "2C")]
+    #[case(SigCodex::ECDSA_256k1_Big_Crt, "2D")]
+    #[case(SigCodex::Ed448_Big, "3A")]
+    #[case(SigCodex::Ed448_Big_Crt, "3B")]
+    fn test_sig_code(#[case] variant: SigCodex, #[case] code: &str) {
+        assert_eq!(variant.code(), code);
+        assert_eq!(SigCodex::from_code(code).unwrap(), variant);
     }
 
-    #[test]
-    fn test_current_code() {
-        assert_eq!(CurrentSigCodex::Ed25519_Crt.code(), "B");
-        assert_eq!(CurrentSigCodex::ECDSA_256k1_Crt.code(), "D");
-        assert_eq!(CurrentSigCodex::Ed448_Crt.code(), "0B");
-        assert_eq!(CurrentSigCodex::Ed25519_Big_Crt.code(), "2B");
-        assert_eq!(CurrentSigCodex::ECDSA_256k1_Big_Crt.code(), "2D");
-        assert_eq!(CurrentSigCodex::Ed448_Big_Crt.code(), "3B");
+    #[rstest]
+    #[case(CurrentSigCodex::Ed25519_Crt, "B")]
+    #[case(CurrentSigCodex::ECDSA_256k1_Crt, "D")]
+    #[case(CurrentSigCodex::Ed448_Crt, "0B")]
+    #[case(CurrentSigCodex::Ed25519_Big_Crt, "2B")]
+    #[case(CurrentSigCodex::ECDSA_256k1_Big_Crt, "2D")]
+    #[case(CurrentSigCodex::Ed448_Big_Crt, "3B")]
+    fn test_current_code(#[case] variant: CurrentSigCodex, #[case] code: &str) {
+        assert_eq!(variant.code(), code);
+        assert_eq!(CurrentSigCodex::from_code(code).unwrap(), variant);
     }
 
-    #[test]
-    fn test_both_code() {
-        assert_eq!(BothSigCodex::Ed25519.code(), "A");
-        assert_eq!(BothSigCodex::ECDSA_256k1.code(), "C");
-        assert_eq!(BothSigCodex::Ed448.code(), "0A");
-        assert_eq!(BothSigCodex::Ed25519_Big.code(), "2A");
-        assert_eq!(BothSigCodex::ECDSA_256k1_Big.code(), "2C");
-        assert_eq!(BothSigCodex::Ed448_Big.code(), "3A");
+    #[rstest]
+    #[case(BothSigCodex::Ed25519, "A")]
+    #[case(BothSigCodex::ECDSA_256k1, "C")]
+    #[case(BothSigCodex::Ed448, "0A")]
+    #[case(BothSigCodex::Ed25519_Big, "2A")]
+    #[case(BothSigCodex::ECDSA_256k1_Big, "2C")]
+    #[case(BothSigCodex::Ed448_Big, "3A")]
+    fn test_both_code(#[case] variant: BothSigCodex, #[case] code: &str) {
+        assert_eq!(variant.code(), code);
+        assert_eq!(BothSigCodex::from_code(code).unwrap(), variant);
     }
 
-    #[test]
-    fn test_sizage() {
-        let mut s: Sizage;
-
-        s = sizage(Codex::Ed25519.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 1);
-        assert_eq!(s.os, 0);
-        assert_eq!(s.fs, 88);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Ed25519_Crt.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 1);
-        assert_eq!(s.os, 0);
-        assert_eq!(s.fs, 88);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::ECDSA_256k1.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 1);
-        assert_eq!(s.os, 0);
-        assert_eq!(s.fs, 88);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::ECDSA_256k1_Crt.code()).unwrap();
-        assert_eq!(s.hs, 1);
-        assert_eq!(s.ss, 1);
-        assert_eq!(s.os, 0);
-        assert_eq!(s.fs, 88);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Ed448.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.os, 1);
-        assert_eq!(s.fs, 156);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Ed448_Crt.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.os, 1);
-        assert_eq!(s.fs, 156);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Ed25519_Big.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 4);
-        assert_eq!(s.os, 2);
-        assert_eq!(s.fs, 92);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Ed25519_Big_Crt.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 4);
-        assert_eq!(s.os, 2);
-        assert_eq!(s.fs, 92);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::ECDSA_256k1_Big.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 4);
-        assert_eq!(s.os, 2);
-        assert_eq!(s.fs, 92);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::ECDSA_256k1_Big_Crt.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 4);
-        assert_eq!(s.os, 2);
-        assert_eq!(s.fs, 92);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Ed448_Big.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 6);
-        assert_eq!(s.os, 3);
-        assert_eq!(s.fs, 160);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::Ed448_Big_Crt.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 6);
-        assert_eq!(s.os, 3);
-        assert_eq!(s.fs, 160);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::TBD0.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.os, 0);
-        assert_eq!(s.fs, 0);
-        assert_eq!(s.ls, 0);
-
-        s = sizage(Codex::TBD1.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 2);
-        assert_eq!(s.os, 1);
-        assert_eq!(s.fs, 76);
-        assert_eq!(s.ls, 1);
-
-        s = sizage(Codex::TBD4.code()).unwrap();
-        assert_eq!(s.hs, 2);
-        assert_eq!(s.ss, 6);
-        assert_eq!(s.os, 3);
-        assert_eq!(s.fs, 80);
-        assert_eq!(s.ls, 1);
+    #[rstest]
+    #[case("A", 1, 1, 0, 88, 0)]
+    #[case("B", 1, 1, 0, 88, 0)]
+    #[case("C", 1, 1, 0, 88, 0)]
+    #[case("D", 1, 1, 0, 88, 0)]
+    #[case("0A", 2, 2, 1, 156, 0)]
+    #[case("0B", 2, 2, 1, 156, 0)]
+    #[case("2A", 2, 4, 2, 92, 0)]
+    #[case("2B", 2, 4, 2, 92, 0)]
+    #[case("2C", 2, 4, 2, 92, 0)]
+    #[case("2D", 2, 4, 2, 92, 0)]
+    #[case("3A", 2, 6, 3, 160, 0)]
+    #[case("3B", 2, 6, 3, 160, 0)]
+    #[case("0z", 2, 2, 0, 0, 0)]
+    #[case("1z", 2, 2, 1, 76, 1)]
+    #[case("4z", 2, 6, 3, 80, 1)]
+    fn test_sizage(
+        #[case] code: &str,
+        #[case] hs: u32,
+        #[case] ss: u32,
+        #[case] os: u32,
+        #[case] fs: u32,
+        #[case] ls: u32,
+    ) {
+        let s = sizage(code).unwrap();
+        assert_eq!(s.hs, hs);
+        assert_eq!(s.ss, ss);
+        assert_eq!(s.os, os);
+        assert_eq!(s.fs, fs);
+        assert_eq!(s.ls, ls);
     }
 
     #[test]
@@ -425,17 +395,18 @@ mod index_tables_tests {
         assert!(sizage("z").is_err());
     }
 
-    #[test]
-    fn test_hardage() {
-        assert_eq!(hardage('A').unwrap(), 1);
-        assert_eq!(hardage('G').unwrap(), 1);
-        assert_eq!(hardage('b').unwrap(), 1);
-        assert_eq!(hardage('z').unwrap(), 1);
-        assert_eq!(hardage('0').unwrap(), 2);
-        assert_eq!(hardage('1').unwrap(), 2);
-        assert_eq!(hardage('2').unwrap(), 2);
-        assert_eq!(hardage('3').unwrap(), 2);
-        assert_eq!(hardage('4').unwrap(), 2);
+    #[rstest]
+    #[case('A', 1)]
+    #[case('G', 1)]
+    #[case('b', 1)]
+    #[case('z', 1)]
+    #[case('0', 2)]
+    #[case('1', 2)]
+    #[case('2', 2)]
+    #[case('3', 2)]
+    #[case('4', 2)]
+    fn test_hardage(#[case] code: char, #[case] hdg: u32) {
+        assert_eq!(hardage(code).unwrap(), hdg);
     }
 
     #[test]
@@ -454,26 +425,22 @@ mod index_tables_tests {
     }
 
     #[test]
-    fn test_current_sig_from_code() {
-        assert_eq!(CurrentSigCodex::from_code("B").unwrap(), CurrentSigCodex::Ed25519_Crt);
-        assert_eq!(CurrentSigCodex::from_code("D").unwrap(), CurrentSigCodex::ECDSA_256k1_Crt);
-        assert_eq!(CurrentSigCodex::from_code("0B").unwrap(), CurrentSigCodex::Ed448_Crt);
-        assert_eq!(CurrentSigCodex::from_code("2B").unwrap(), CurrentSigCodex::Ed25519_Big_Crt);
-        assert_eq!(CurrentSigCodex::from_code("2D").unwrap(), CurrentSigCodex::ECDSA_256k1_Big_Crt);
-        assert_eq!(CurrentSigCodex::from_code("3B").unwrap(), CurrentSigCodex::Ed448_Big_Crt);
+    fn test_sig_codex_from_code() {
+        assert!(SigCodex::from_code("ZZ").is_err());
+    }
 
+    #[test]
+    fn test_codex_from_code() {
+        assert!(Codex::from_code("ZZ").is_err());
+    }
+
+    #[test]
+    fn test_current_sig_from_code() {
         assert!(CurrentSigCodex::from_code("ZZ").is_err());
     }
 
     #[test]
     fn test_both_sig_from_code() {
-        assert_eq!(BothSigCodex::from_code("A").unwrap(), BothSigCodex::Ed25519);
-        assert_eq!(BothSigCodex::from_code("C").unwrap(), BothSigCodex::ECDSA_256k1);
-        assert_eq!(BothSigCodex::from_code("0A").unwrap(), BothSigCodex::Ed448);
-        assert_eq!(BothSigCodex::from_code("2A").unwrap(), BothSigCodex::Ed25519_Big);
-        assert_eq!(BothSigCodex::from_code("2C").unwrap(), BothSigCodex::ECDSA_256k1_Big);
-        assert_eq!(BothSigCodex::from_code("3A").unwrap(), BothSigCodex::Ed448_Big);
-
         assert!(BothSigCodex::from_code("ZZ").is_err());
     }
 }
