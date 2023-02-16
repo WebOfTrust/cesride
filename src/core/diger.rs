@@ -9,6 +9,7 @@ use crate::error::{err, Error, Result};
 type Blake2b256 = blake2::Blake2b<blake2::digest::consts::U32>;
 
 #[cfg_attr(feature = "python", pyclass)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Diger {
     raw: Vec<u8>,
     code: String,

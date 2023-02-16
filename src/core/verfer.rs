@@ -3,7 +3,7 @@ use lazy_static::lazy_static;
 use crate::core::matter::{tables as matter, Matter};
 use crate::error::{err, Error, Result};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Verfer {
     raw: Vec<u8>,
     code: String,
