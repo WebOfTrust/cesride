@@ -296,9 +296,9 @@ mod counter_tests {
     use rstest::rstest;
 
     #[rstest]
-    #[case("-AAB", 1, "B", counter::Codex::ControllerIdxSigs.code())]
-    #[case("-AAF", 5, "F", counter::Codex::ControllerIdxSigs.code())]
-    #[case("-0VAAAQA", 1024, "QA", counter::Codex::BigAttachedMaterialQuadlets.code())]
+    #[case("-AAB", 1, "B", counter::Codex::ControllerIdxSigs)]
+    #[case("-AAF", 5, "F", counter::Codex::ControllerIdxSigs)]
+    #[case("-0VAAAQA", 1024, "QA", counter::Codex::BigAttachedMaterialQuadlets)]
     fn test_creation(
         #[case] qsc: &str,
         #[case] count: u32,
@@ -325,7 +325,7 @@ mod counter_tests {
     }
 
     #[rstest]
-    #[case(0, "AAA", 0, "AAA", counter::Codex::KERIProtocolStack.code())]
+    #[case(0, "AAA", 0, "AAA", counter::Codex::KERIProtocolStack)]
     fn test_versioned_creation(
         #[case] verint: u32,
         #[case] version: &str,
@@ -448,23 +448,18 @@ mod counter_tests {
     #[test]
     fn test_unhappy_paths() {
         assert!(Counter::new_with_code_and_count("", 1).is_err());
-        assert!(Counter::new_with_code_and_count(
-            counter::Codex::ControllerIdxSigs.code(),
-            64 * 64
-        )
-        .is_err());
+        assert!(
+            Counter::new_with_code_and_count(counter::Codex::ControllerIdxSigs, 64 * 64).is_err()
+        );
         assert!(Counter::sem_ver_str_to_b64("1.2.3.4").is_err());
         assert!(Counter::sem_ver_str_to_b64("bad.semantic.version").is_err());
-        assert!((Counter {
-            code: counter::Codex::ControllerIdxSigs.code().to_string(),
-            count: 64 * 64
-        })
-        .qb64()
-        .is_err());
+        assert!((Counter { code: counter::Codex::ControllerIdxSigs.to_string(), count: 64 * 64 })
+            .qb64()
+            .is_err());
         assert!(Counter::new_with_qb64("").is_err());
         assert!(Counter::new_with_qb64("--").is_err());
         assert!(Counter::new_with_qb64("__").is_err());
-        assert!(Counter::new_with_qb64(counter::Codex::ControllerIdxSigs.code()).is_err());
+        assert!(Counter::new_with_qb64(counter::Codex::ControllerIdxSigs).is_err());
         assert!(Counter::new_with_qb64b(&[]).is_err());
         assert!(Counter::new_with_qb2(&[]).is_err());
         assert!(Counter::new_with_qb2(&[0xf8, 0]).is_err());
@@ -473,7 +468,7 @@ mod counter_tests {
     }
 
     #[rstest]
-    #[case(counter::Codex::ControllerIdxSigs.code(), 1)]
+    #[case(counter::Codex::ControllerIdxSigs, 1)]
     fn test_qb64b(#[case] code: &str, #[case] count: u32) {
         let c = Counter { code: code.to_string(), count };
         assert!(Counter::new_with_qb64b(&c.qb64b().unwrap()).is_ok());

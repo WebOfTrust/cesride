@@ -12,19 +12,19 @@ pub struct Verfer {
 
 impl Default for Verfer {
     fn default() -> Self {
-        Verfer { raw: vec![], code: matter::Codex::Ed25519.code().to_string(), size: 0 }
+        Verfer { raw: vec![], code: matter::Codex::Ed25519.to_string(), size: 0 }
     }
 }
 
 fn validate_code(code: &str) -> Result<()> {
     lazy_static! {
         static ref CODES: Vec<&'static str> = vec![
-            matter::Codex::Ed25519N.code(),
-            matter::Codex::Ed25519.code(),
-            matter::Codex::ECDSA_256k1N.code(),
-            matter::Codex::ECDSA_256k1.code(),
-            // matter::Codex::Ed448N.code(),
-            // matter::Codex::Ed448.code(),
+            matter::Codex::Ed25519N,
+            matter::Codex::Ed25519,
+            matter::Codex::ECDSA_256k1N,
+            matter::Codex::ECDSA_256k1,
+            // matter::Codex::Ed448N,
+            // matter::Codex::Ed448,
         ];
     }
 
@@ -60,9 +60,7 @@ impl Verfer {
     }
 
     fn verify(&self, sig: &[u8], ser: &[u8]) -> Result<bool> {
-        let ev = matter::Codex::from_code(&self.code())?;
-
-        match ev {
+        match self.code().as_str() {
             matter::Codex::Ed25519N => self.verify_ed25519_signature(sig, ser),
             matter::Codex::Ed25519 => self.verify_ed25519_signature(sig, ser),
             matter::Codex::ECDSA_256k1N => self.verify_ecdsa_256k1_signature(sig, ser),
@@ -71,7 +69,7 @@ impl Verfer {
             // matter::Codex::Ed448 => verify_ed448_signature(verfer, sig, ser)?,
             _ => err!(Error::UnexpectedCode(format!(
                 "unexpected signature code: code = '{}'",
-                ev.code()
+                self.code()
             ))),
         }
     }
@@ -145,12 +143,12 @@ mod test_verfer {
     #[test]
     fn test_new_with_code_and_raw() {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
-        let code = matter::Codex::Ed25519N.code();
+        let code = matter::Codex::Ed25519N;
 
         let m = Verfer::new_with_code_and_raw(code, &raw).unwrap();
         assert_eq!(m.raw(), raw);
 
-        let code = matter::Codex::Blake3_256.code();
+        let code = matter::Codex::Blake3_256;
         assert!(Verfer::new_with_code_and_raw(code, &raw).is_err());
     }
 
@@ -158,10 +156,10 @@ mod test_verfer {
     fn test_new_with_qb64() {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
-        let good_code = matter::Codex::Ed25519N.code();
+        let good_code = matter::Codex::Ed25519N;
         let good_qb64 = Verfer::new_with_code_and_raw(good_code, &raw).unwrap().qb64().unwrap();
 
-        let bad_code = matter::Codex::Blake3_256.code();
+        let bad_code = matter::Codex::Blake3_256;
         let bad_qb64 =
             <Verfer as Matter>::new_with_code_and_raw(bad_code, &raw).unwrap().qb64().unwrap();
 
@@ -173,10 +171,10 @@ mod test_verfer {
     fn test_new_with_qb64b() {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
-        let good_code = matter::Codex::Ed25519N.code();
+        let good_code = matter::Codex::Ed25519N;
         let good_qb64b = Verfer::new_with_code_and_raw(good_code, &raw).unwrap().qb64b().unwrap();
 
-        let bad_code = matter::Codex::Blake3_256.code();
+        let bad_code = matter::Codex::Blake3_256;
         let bad_qb64b =
             <Verfer as Matter>::new_with_code_and_raw(bad_code, &raw).unwrap().qb64b().unwrap();
 
@@ -188,10 +186,10 @@ mod test_verfer {
     fn test_new_with_qb2() {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
-        let good_code = matter::Codex::Ed25519N.code();
+        let good_code = matter::Codex::Ed25519N;
         let good_qb2 = Verfer::new_with_code_and_raw(good_code, &raw).unwrap().qb2().unwrap();
 
-        let bad_code = matter::Codex::Blake3_256.code();
+        let bad_code = matter::Codex::Blake3_256;
         let bad_qb2 =
             <Verfer as Matter>::new_with_code_and_raw(bad_code, &raw).unwrap().qb2().unwrap();
 
@@ -217,14 +215,14 @@ mod test_verfer {
 
         let raw = keypair.public.as_bytes();
 
-        let mut m = Verfer::new_with_code_and_raw(matter::Codex::Ed25519.code(), raw).unwrap();
+        let mut m = Verfer::new_with_code_and_raw(matter::Codex::Ed25519, raw).unwrap();
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());
         assert!(m.verify(&[], &ser).is_err());
 
         // exercise control flows for non-transferrable variant
-        m.set_code(&matter::Codex::Ed25519N.code());
+        m.set_code(&matter::Codex::Ed25519N);
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());
@@ -248,13 +246,13 @@ mod test_verfer {
         let public_key = VerifyingKey::from(private_key);
         let raw = public_key.to_encoded_point(true).to_bytes();
 
-        let mut m = Verfer::new_with_code_and_raw(matter::Codex::ECDSA_256k1.code(), &raw).unwrap();
+        let mut m = Verfer::new_with_code_and_raw(matter::Codex::ECDSA_256k1, &raw).unwrap();
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());
         assert!(m.verify(&[], &ser).is_err());
 
-        m.set_code(&matter::Codex::ECDSA_256k1N.code());
+        m.set_code(&matter::Codex::ECDSA_256k1N);
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());
@@ -262,12 +260,8 @@ mod test_verfer {
 
     #[test]
     fn test_unhappy_paths() {
-        assert!(Verfer {
-            code: matter::Codex::Blake3_256.code().to_string(),
-            raw: vec![],
-            size: 0
-        }
-        .verify(&[], &[])
-        .is_err());
+        assert!(Verfer { code: matter::Codex::Blake3_256.to_string(), raw: vec![], size: 0 }
+            .verify(&[], &[])
+            .is_err());
     }
 }

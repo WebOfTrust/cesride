@@ -17,7 +17,7 @@ impl Default for Siger {
     fn default() -> Self {
         Siger {
             raw: vec![],
-            code: indexer::Codex::Ed25519.code().to_string(),
+            code: indexer::Codex::Ed25519.to_string(),
             index: 0,
             ondex: 0,
             verfer: Verfer::default(),
@@ -28,18 +28,18 @@ impl Default for Siger {
 fn validate_code(code: &str) -> Result<()> {
     lazy_static! {
         static ref CODES: Vec<&'static str> = vec![
-            indexer::Codex::Ed25519.code(),
-            indexer::Codex::Ed25519_Crt.code(),
-            indexer::Codex::ECDSA_256k1.code(),
-            indexer::Codex::ECDSA_256k1_Crt.code(),
-            indexer::Codex::Ed448.code(),
-            indexer::Codex::Ed448_Crt.code(),
-            indexer::Codex::Ed25519_Big.code(),
-            indexer::Codex::Ed25519_Big_Crt.code(),
-            indexer::Codex::ECDSA_256k1_Big.code(),
-            indexer::Codex::ECDSA_256k1_Big_Crt.code(),
-            indexer::Codex::Ed448_Big.code(),
-            indexer::Codex::Ed448_Big_Crt.code(),
+            indexer::Codex::Ed25519,
+            indexer::Codex::Ed25519_Crt,
+            indexer::Codex::ECDSA_256k1,
+            indexer::Codex::ECDSA_256k1_Crt,
+            indexer::Codex::Ed448,
+            indexer::Codex::Ed448_Crt,
+            indexer::Codex::Ed25519_Big,
+            indexer::Codex::Ed25519_Big_Crt,
+            indexer::Codex::ECDSA_256k1_Big,
+            indexer::Codex::ECDSA_256k1_Big_Crt,
+            indexer::Codex::Ed448_Big,
+            indexer::Codex::Ed448_Big_Crt,
         ];
     }
 
@@ -154,7 +154,7 @@ mod test_siger {
         let qsig64b = qsig64.as_bytes();
 
         let siger = Siger::new_with_qb64b(None, qsig64b).unwrap();
-        assert_eq!(siger.code(), indexer::Codex::Ed25519.code());
+        assert_eq!(siger.code(), indexer::Codex::Ed25519);
         assert_eq!(siger.index(), 0);
         assert_eq!(siger.ondex(), 0);
         assert_eq!(siger.qb64().unwrap(), qsig64);
@@ -162,7 +162,7 @@ mod test_siger {
         assert_eq!(siger.verfer(), Verfer::default());
 
         let mut siger = Siger::new_with_qb64(None, qsig64).unwrap();
-        assert_eq!(siger.code(), indexer::Codex::Ed25519.code());
+        assert_eq!(siger.code(), indexer::Codex::Ed25519);
         assert_eq!(siger.index(), 0);
         assert_eq!(siger.ondex(), 0);
         assert_eq!(siger.qb64().unwrap(), qsig64);
@@ -171,7 +171,7 @@ mod test_siger {
 
         let verfer_raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
-        let verfer_code = matter::Codex::Ed25519.code();
+        let verfer_code = matter::Codex::Ed25519;
         let verfer = Verfer::new_with_code_and_raw(verfer_code, &verfer_raw).unwrap();
 
         siger.set_verfer(&verfer);
@@ -182,7 +182,7 @@ mod test_siger {
 
         let raw = b"abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdef";
         let siger =
-            Siger::new_with_code_and_raw(None, indexer::Codex::Ed448.code(), raw, 4, None).unwrap();
+            Siger::new_with_code_and_raw(None, indexer::Codex::Ed448, raw, 4, None).unwrap();
         assert_eq!(siger.qb64().unwrap(), "0AEEYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVm");
     }
 
@@ -190,10 +190,10 @@ mod test_siger {
     fn test_new_with_code_and_raw() {
         let verfer_raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
-        let verfer_code = matter::Codex::Ed25519.code();
+        let verfer_code = matter::Codex::Ed25519;
         let verfer = Verfer::new_with_code_and_raw(verfer_code, &verfer_raw).unwrap();
 
-        let siger_code = indexer::Codex::Ed25519.code();
+        let siger_code = indexer::Codex::Ed25519;
         let siger_raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa"
                                        "0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
@@ -207,7 +207,7 @@ mod test_siger {
     fn test_new_with_qb64b() {
         let verfer_raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
-        let verfer_code = matter::Codex::Ed25519.code();
+        let verfer_code = matter::Codex::Ed25519;
         let verfer = Verfer::new_with_code_and_raw(verfer_code, &verfer_raw).unwrap();
 
         let qsig64 = "AACdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ";
@@ -221,7 +221,7 @@ mod test_siger {
     fn test_new_with_qb2() {
         let verfer_raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
-        let verfer_code = matter::Codex::Ed25519.code();
+        let verfer_code = matter::Codex::Ed25519;
         let verfer = Verfer::new_with_code_and_raw(verfer_code, &verfer_raw).unwrap();
 
         let qsig2 = b64_engine::URL_SAFE.decode("AACdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ").unwrap();

@@ -12,13 +12,13 @@ pub struct Dater {
 
 impl Default for Dater {
     fn default() -> Self {
-        Dater { raw: vec![], code: matter::Codex::DateTime.code().to_string(), size: 0 }
+        Dater { raw: vec![], code: matter::Codex::DateTime.to_string(), size: 0 }
     }
 }
 
 fn validate_code(code: &str) -> Result<()> {
     lazy_static! {
-        static ref CODES: Vec<&'static str> = vec![matter::Codex::DateTime.code(),];
+        static ref CODES: Vec<&'static str> = vec![matter::Codex::DateTime];
     }
 
     if !CODES.contains(&code) {
@@ -52,7 +52,7 @@ impl Dater {
             validate_code(code)?;
         }
         if raw.is_empty() {
-            let qb64 = format!("{}{}", matter::Codex::DateTime.code(), now_as_b64());
+            let qb64 = format!("{}{}", matter::Codex::DateTime, now_as_b64());
             Matter::new_with_qb64(&qb64)
         } else {
             Matter::new_with_code_and_raw(code, raw)
@@ -61,7 +61,7 @@ impl Dater {
 
     fn new_with_dts(dts: &str) -> Result<Self> {
         let b64 = if dts.is_empty() { now_as_b64() } else { iso_8601_to_b64(dts) };
-        let qb64 = format!("{}{}", matter::Codex::DateTime.code(), &b64);
+        let qb64 = format!("{}{}", matter::Codex::DateTime, &b64);
         Matter::new_with_qb64(&qb64)
     }
 
@@ -138,7 +138,7 @@ mod test_dater {
         )]
         dater: &Dater,
     ) {
-        assert_eq!(dater.code, matter::Codex::DateTime.code());
+        assert_eq!(dater.code, matter::Codex::DateTime);
         assert_eq!(dater.raw.len(), 24);
         assert_eq!(dater.qb64().unwrap().len(), 36);
         assert_eq!(dater.qb2().unwrap().len(), 27);
@@ -164,7 +164,7 @@ mod test_dater {
         #[case] dtraw: &[u8],
         #[case] dtqb2: &[u8],
         #[values(
-            &Dater::new_with_code_and_raw(matter::Codex::DateTime.code(), dtraw).unwrap(),
+            &Dater::new_with_code_and_raw(matter::Codex::DateTime, dtraw).unwrap(),
             &Dater::new_with_dts(dts).unwrap(),
             &Dater::new_with_dtsb(dts.as_bytes()).unwrap(),
             &Dater::new_with_qb64(dtqb64).unwrap(),
@@ -173,7 +173,7 @@ mod test_dater {
         )]
         dater: &Dater,
     ) {
-        assert_eq!(dater.code, matter::Codex::DateTime.code());
+        assert_eq!(dater.code, matter::Codex::DateTime);
         assert_eq!(dater.dts().unwrap(), dts);
         assert_eq!(dater.dtsb().unwrap(), dts.as_bytes());
         assert_eq!(dater.raw, dtraw);
@@ -183,17 +183,11 @@ mod test_dater {
     }
 
     #[rstest]
+    #[case(matter::Codex::Big, b"\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xcd4")]
+    #[case(matter::Codex::DateTime, b"\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5")]
     #[case(
-            matter::Codex::Big.code(),
-            b"\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xcd4",
-    )]
-    #[case(
-            matter::Codex::DateTime.code(),
-            b"\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5",
-    )]
-    #[case(
-            matter::Codex::DateTime.code(),
-            b"\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xff",
+        matter::Codex::DateTime,
+        b"\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xff"
     )]
     #[case("", b"\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xcd4")]
     fn test_unhappy_new_with_code_and_raw(#[case] code: &str, #[case] dtraw: &[u8]) {

@@ -476,7 +476,7 @@ mod matter_tests {
     }
     impl Default for TestMatter {
         fn default() -> Self {
-            TestMatter { raw: vec![], code: matter::Codex::Blake3_256.code().to_string(), size: 0 }
+            TestMatter { raw: vec![], code: matter::Codex::Blake3_256.to_string(), size: 0 }
         }
     }
     impl Matter for TestMatter {
@@ -506,18 +506,18 @@ mod matter_tests {
     }
 
     #[rstest]
-    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::StrB64_L0.code())]
-    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::StrB64_L1.code())]
-    #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::StrB64_L2.code())]
-    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::Bytes_L0.code())]
-    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::Bytes_L1.code())]
-    #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::Bytes_L2.code())]
-    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::StrB64_Big_L0.code())]
-    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::StrB64_Big_L1.code())]
-    #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::StrB64_Big_L2.code())]
-    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::Bytes_Big_L0.code())]
-    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::Bytes_Big_L1.code())]
-    #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::Bytes_Big_L2.code())]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::StrB64_L0)]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::StrB64_L1)]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::StrB64_L2)]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::Bytes_L0)]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::Bytes_L1)]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::Bytes_L2)]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::StrB64_Big_L0)]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::StrB64_Big_L1)]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::StrB64_Big_L2)]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::Bytes_Big_L0)]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::Bytes_Big_L1)]
+    #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::Bytes_Big_L2)]
     fn test_matter_new_variable_length(#[case] raw: &Vec<u8>, #[case] code: &str) {
         let m = TestMatter::new_with_code_and_raw(code, raw).unwrap();
         let m2 = TestMatter::new_with_qb64(&m.qb64().unwrap()).unwrap();
@@ -534,7 +534,7 @@ mod matter_tests {
     fn test_defaults_and_overrides() {
         // default
         let m = TestMatter::default();
-        assert_eq!(m.code, matter::Codex::Blake3_256.code());
+        assert_eq!(m.code, matter::Codex::Blake3_256);
 
         // partial override
         let m = TestMatter { size: 3, ..Default::default() };
@@ -543,12 +543,12 @@ mod matter_tests {
         // full override
         let m = TestMatter {
             raw: b"a".to_vec(),
-            code: matter::Codex::X25519_Cipher_Seed.code().to_string(),
+            code: matter::Codex::X25519_Cipher_Seed.to_string(),
             size: 1,
         };
 
         assert_eq!(m.raw, b"a".to_vec());
-        assert_eq!(m.code, matter::Codex::X25519_Cipher_Seed.code());
+        assert_eq!(m.code, matter::Codex::X25519_Cipher_Seed);
         assert_eq!(m.size, 1);
     }
 
@@ -558,7 +558,7 @@ mod matter_tests {
 
         // basic
         let m = TestMatter::new_with_qb64(qb64).unwrap();
-        assert_eq!(m.code, matter::Codex::Ed25519N.code());
+        assert_eq!(m.code, matter::Codex::Ed25519N);
 
         // qb64
         let m2 = TestMatter::new_with_code_and_raw(&m.code, &m.raw).unwrap();
@@ -585,17 +585,16 @@ mod matter_tests {
     #[test]
     fn test_big_boundary() {
         let m =
-            TestMatter::new_with_code_and_raw(matter::Codex::Bytes_L2.code(), &[0; 4095 * 3 + 1])
-                .unwrap();
+            TestMatter::new_with_code_and_raw(matter::Codex::Bytes_L2, &[0; 4095 * 3 + 1]).unwrap();
         assert_eq!(m.raw().len(), 4095 * 3 + 1);
-        assert_eq!(m.code(), matter::Codex::Bytes_Big_L2.code());
+        assert_eq!(m.code(), matter::Codex::Bytes_Big_L2);
     }
 
     #[test]
     fn test_unhappy_paths() {
         // empty material
         assert!(TestMatter::new_with_code_and_raw("", &[]).is_err());
-        assert!(TestMatter::new_with_code_and_raw(matter::Codex::Blake3_256.code(), &[]).is_err());
+        assert!(TestMatter::new_with_code_and_raw(matter::Codex::Blake3_256, &[]).is_err());
         assert!(TestMatter::new_with_qb64("").is_err());
         assert!(TestMatter::new_with_qb64b(&[]).is_err());
         assert!(TestMatter::new_with_qb2(&[]).is_err());
@@ -605,7 +604,7 @@ mod matter_tests {
 
         // invalid code/raw size combination
         assert!(TestMatter {
-            code: matter::Codex::Blake3_256.code().to_string(),
+            code: matter::Codex::Blake3_256.to_string(),
             size: 32,
             raw: [0; 31].to_vec(),
         }
@@ -626,39 +625,39 @@ mod matter_tests {
 
         // raw size too large
         assert!(TestMatter::new_with_code_and_raw(
-            matter::Codex::Bytes_Big_L2.code(),
+            matter::Codex::Bytes_Big_L2,
             &[0; (16777215 * 3 + 1)],
         )
         .is_err());
         assert!(TestMatter::new_with_code_and_raw(
-            matter::Codex::Bytes_L2.code(),
+            matter::Codex::Bytes_L2,
             &[0; (16777215 * 3 + 1)],
         )
         .is_err());
 
         assert!(TestMatter {
-            code: matter::Codex::Bytes_L2.code().to_string(),
+            code: matter::Codex::Bytes_L2.to_string(),
             size: 4096,
             raw: [0; 4096].to_vec()
         }
         .qb64()
         .is_err());
         assert!(TestMatter {
-            code: matter::Codex::Bytes_L2.code().to_string(),
+            code: matter::Codex::Bytes_L2.to_string(),
             size: 4096,
             raw: [0; 4096].to_vec(),
         }
         .qb2()
         .is_err());
         assert!(TestMatter {
-            code: matter::Codex::Bytes_L1.code().to_string(),
+            code: matter::Codex::Bytes_L1.to_string(),
             size: 4095,
             raw: [0; 3].to_vec(),
         }
         .qb64()
         .is_err());
         assert!(TestMatter {
-            code: matter::Codex::Bytes_L1.code().to_string(),
+            code: matter::Codex::Bytes_L1.to_string(),
             size: 4095,
             raw: [0; 3].to_vec(),
         }
