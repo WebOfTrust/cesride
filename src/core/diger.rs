@@ -42,24 +42,55 @@ fn validate_code(code: &str) -> Result<()> {
 }
 
 impl Diger {
-    fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Self> {
+    fn new_with_code(code: &str, ser: Option<Vec<u8>>, raw: Option<Vec<u8>>) -> Result<Self> {
+        if let Some(ser) = ser {
+            Self::new_with_code_and_ser(code, &ser)
+        } else if let Some(raw) = raw {
+            Self::new_with_code_and_raw(code, &raw)
+        } else {
+            err!(Error::EmptyMaterial("code present, raw or ser missing".to_string()))
+        }
+    }
+
+    pub fn new(
+        code: Option<String>,
+        ser: Option<Vec<u8>>,
+        raw: Option<Vec<u8>>,
+        qb64: Option<String>,
+        qb64b: Option<Vec<u8>>,
+        qb2: Option<Vec<u8>>,
+    ) -> Result<Self> {
+        if let Some(code) = code {
+            Self::new_with_code(&code, ser, raw)
+        } else if let Some(qb64) = qb64 {
+            Self::new_with_qb64(&qb64)
+        } else if let Some(qb64b) = qb64b {
+            Self::new_with_qb64b(&qb64b)
+        } else if let Some(qb2) = qb2 {
+            Self::new_with_qb2(&qb2)
+        } else {
+            err!(Error::Matter("must specify some parameters".to_string()))
+        }
+    }
+
+    pub fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Self> {
         validate_code(code)?;
         Matter::new_with_code_and_raw(code, raw)
     }
 
-    fn new_with_qb64(qb64: &str) -> Result<Self> {
+    pub fn new_with_qb64(qb64: &str) -> Result<Self> {
         let diger = <Diger as Matter>::new_with_qb64(qb64)?;
         validate_code(&diger.code)?;
         Ok(diger)
     }
 
-    fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
         let diger = <Diger as Matter>::new_with_qb64b(qb64b)?;
         validate_code(&diger.code)?;
         Ok(diger)
     }
 
-    fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
         let diger = <Diger as Matter>::new_with_qb2(qb2)?;
         validate_code(&diger.code)?;
         Ok(diger)
@@ -71,17 +102,17 @@ impl Diger {
         Matter::new_with_code_and_raw(code, &dig)
     }
 
-    fn verify(&self, ser: &[u8]) -> Result<bool> {
+    pub fn verify(&self, ser: &[u8]) -> Result<bool> {
         let dig = derive_digest(&self.code, ser)?;
         Ok(dig == self.raw())
     }
 
-    fn compare_dig(&self, ser: &[u8], dig: &[u8]) -> Result<bool> {
+    pub fn compare_dig(&self, ser: &[u8], dig: &[u8]) -> Result<bool> {
         if dig == self.qb64b()? {
             return Ok(true);
         }
 
-        let diger = <Diger as Matter>::new_with_qb64b(dig)?;
+        let diger: Diger = Matter::new_with_qb64b(dig)?;
 
         if diger.code == self.code {
             return Ok(false);
@@ -94,7 +125,7 @@ impl Diger {
         Ok(false)
     }
 
-    fn compare_diger(&self, ser: &[u8], diger: &Diger) -> Result<bool> {
+    pub fn compare_diger(&self, ser: &[u8], diger: &Diger) -> Result<bool> {
         // reference implementation uses qb64b() but that's an extra conversion here
         if diger.qb64()? == self.qb64()? {
             return Ok(true);
@@ -381,6 +412,6 @@ mod test_diger {
 
     #[test]
     fn test_unhappy_paths() {
-        assert!(derive_digest(matter::Codex::Big, &[]).is_err());
+        assert!(derive_digest(&matter::Codex::Big, &[]).is_err());
     }
 }

@@ -40,6 +40,35 @@ fn validate_code(code: &str) -> Result<()> {
 }
 
 impl Cigar {
+    pub fn new(
+        verfer: std::sync::Arc<Verfer>,
+        code: Option<String>,
+        raw: Option<Vec<u8>>,
+        qb64: Option<String>,
+        qb64b: Option<Vec<u8>>,
+        qb2: Option<Vec<u8>>,
+    ) -> Result<Self> {
+        if let Some(code) = code {
+            Self::new_with_code(&verfer, &code, raw)
+        } else if let Some(qb64) = qb64 {
+            Self::new_with_qb64(&verfer, &qb64)
+        } else if let Some(qb64b) = qb64b {
+            Self::new_with_qb64b(&verfer, &qb64b)
+        } else if let Some(qb2) = qb2 {
+            Self::new_with_qb2(&verfer, &qb2)
+        } else {
+            err!(Error::Matter("must specify some parameters".to_string()))
+        }
+    }
+
+    fn new_with_code(verfer: &Verfer, code: &str, raw: Option<Vec<u8>>) -> Result<Self> {
+        if let Some(raw) = raw {
+            Self::new_with_code_and_raw(verfer, code, &raw)
+        } else {
+            err!(Error::EmptyMaterial("code present, raw or ser missing".to_string()))
+        }
+    }
+
     pub fn new_with_code_and_raw(verfer: &Verfer, code: &str, raw: &[u8]) -> Result<Cigar> {
         validate_code(code)?;
         let mut cigar: Cigar = Matter::new_with_code_and_raw(code, raw)?;
@@ -108,6 +137,71 @@ mod test_cigar {
     use crate::core::cigar::Cigar;
     use crate::core::matter::{tables as matter, Matter};
     use crate::core::verfer::Verfer;
+    use rstest::rstest;
+
+
+    #[rstest]
+    #[case(
+        Some("0B".to_string()),
+        Some(b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ[]".to_vec()),
+        None,
+        None,
+        None
+    )]
+    #[case(
+        None,
+        None,
+        Some("0BCdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ".to_string()),
+        None,
+        None
+    )]
+    #[case(
+        None,
+        None,
+        None,
+        Some("0BCdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ".as_bytes().to_vec()),
+        None
+    )]
+    #[case(
+        None,
+        None,
+        None,
+        None,
+        Some([
+            208, 16, 157, 35, 195, 146, 66, 67, 9, 246, 191, 177, 138, 8, 196, 7, 33, 35, 34, 230,
+            187, 44, 113, 247, 0, 226, 118, 216, 244, 10, 170, 88, 204, 134, 232, 92, 130, 31, 103,
+            25, 23, 10, 158, 204, 249, 42, 242, 157, 236, 175, 199, 247, 237, 118, 247, 193, 120,
+            33, 221, 67, 198, 242, 40, 18, 96, 144,
+        ].to_vec()),
+    )]
+    fn test_new(
+        #[case] code: Option<String>,
+        #[case] raw: Option<Vec<u8>>,
+        #[case] qb64: Option<String>,
+        #[case] qb64b: Option<Vec<u8>>,
+        #[case] qb2: Option<Vec<u8>>,
+    ) {
+        let verfer_code = matter::Codex::Ed25519;
+        let verfer_raw = b"abcdefghijklmnopqrstuvwxyz012345";
+        let verfer = std::sync::Arc::new(Verfer::new_with_code_and_raw(verfer_code, verfer_raw).unwrap());
+        assert!(Cigar::new(verfer, code, raw, qb64, qb64b, qb2).is_ok());
+    }
+
+    #[rstest]
+    #[case(Some("0B".to_string()), None, None, None, None)]
+    #[case(None, None, None, None, None)]
+    fn test_new_errors(
+        #[case] code: Option<String>,
+        #[case] raw: Option<Vec<u8>>,
+        #[case] qb64: Option<String>,
+        #[case] qb64b: Option<Vec<u8>>,
+        #[case] qb2: Option<Vec<u8>>,
+    ) {
+        let verfer_code = matter::Codex::Ed25519;
+        let verfer_raw = b"abcdefghijklmnopqrstuvwxyz012345";
+        let verfer = std::sync::Arc::new(Verfer::new_with_code_and_raw(verfer_code, verfer_raw).unwrap());
+        assert!(Cigar::new(verfer, code, raw, qb64, qb64b, qb2).is_err());
+    }
 
     #[test]
     fn test_new_with_code_and_raw() {

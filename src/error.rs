@@ -3,6 +3,8 @@ pub type Result<T> = core::result::Result<T, BoxedError>;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
+    #[error("general error: {0}")]
+    General(String),
     #[error("matter error: {0}")]
     Matter(String),
     #[error("empty material: {0}")]
@@ -72,6 +74,14 @@ macro_rules! err {
 }
 
 pub(crate) use err;
+
+use std::convert::From;
+
+impl From<BoxedError> for Error {
+    fn from(item: BoxedError) -> Self {
+        Error::General(item.to_string())
+    }
+}
 
 #[cfg(test)]
 mod test {
