@@ -36,60 +36,10 @@ enum CESRError {
     "Validation",
 };
 
-enum MatterCodex {
-    "Ed25519_Seed",
-    "Ed25519N",
-    "X25519",
-    "Ed25519",
-    "Blake3_256",
-    "Blake2b_256",
-    "Blake2s_256",
-    "SHA3_256",
-    "SHA2_256",
-    "ECDSA_256k1_Seed",
-    "Ed448_Seed",
-    "X448",
-    "Short",
-    "Big",
-    "X25519_Private",
-    "X25519_Cipher_Seed",
-    "Salt_128",
-    "Ed25519_Sig",
-    "ECDSA_256k1_Sig",
-    "Blake3_512",
-    "Blake2b_512",
-    "SHA3_512",
-    "SHA2_512",
-    "Long",
-    "ECDSA_256k1N",
-    "ECDSA_256k1",
-    "Ed448N",
-    "Ed448",
-    "Ed448_Sig",
-    "Tern",
-    "DateTime",
-    "X25519_Cipher_Salt",
-    "TBD1",
-    "TBD2",
-    "StrB64_L0",
-    "StrB64_L1",
-    "StrB64_L2",
-    "StrB64_Big_L0",
-    "StrB64_Big_L1",
-    "StrB64_Big_L2",
-    "Bytes_L0",
-    "Bytes_L1",
-    "Bytes_L2",
-    "Bytes_Big_L0",
-    "Bytes_Big_L1",
-    "Bytes_Big_L2",
-};
-
 interface Cigar {
     [Throws=CESRError]
     constructor(
         Verfer verfer,
-        optional MatterCodex? variant = null,
         optional string? code = null,
         optional sequence<u8>? raw = null,
         optional string? qb64 = null,
@@ -106,7 +56,6 @@ interface Cigar {
 interface Dater {
     [Throws=CESRError]
     constructor(
-        optional MatterCodex? variant = null,
         optional string? code = null,
         optional string? dts = null,
         optional sequence<u8>? dtsb = null,
@@ -129,7 +78,6 @@ interface Dater {
 interface Diger {
     [Throws=CESRError]
     constructor(
-        optional MatterCodex? variant = null,
         optional string? code = null,
         optional sequence<u8>? ser = null,
         optional sequence<u8>? raw = null,
@@ -154,7 +102,6 @@ interface Diger {
 interface Verfer {
     [Throws=CESRError]
     constructor(
-        optional MatterCodex? variant = null,
         optional string? code = null,
         optional sequence<u8>? raw = null,
         optional string? qb64 = null,

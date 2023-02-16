@@ -102,7 +102,7 @@ impl Diger {
         Matter::new_with_code_and_raw(code, &dig)
     }
 
-    fn verify(&self, ser: &[u8]) -> Result<bool> {
+    pub fn verify(&self, ser: &[u8]) -> Result<bool> {
         let dig = derive_digest(&self.code, ser)?;
         Ok(dig == self.raw())
     }

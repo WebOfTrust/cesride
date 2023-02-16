@@ -96,18 +96,17 @@ make python-shell
 
 Inside the python shell:
 ```python
-from cesride import MatterCodex, Verfer
+from cesride import Verfer
 import pysodium
 
 seed = pysodium.randombytes(32)
 verkey, sigkey = pysodium.crypto_sign_seed_keypair(seed)
 
-verfer = Verfer(raw=verkey, variant=MatterCodex.ED25519_N)
+verfer = Verfer(raw=verkey, code="B")
 
 # create something to sign and verify
 ser = b'abcdefghijklmnopqrstuvwxyz0123456789'
-
-sig = pysodium.crypto_sign_detached(ser, seed + verkey)  # sigkey = seed + verkey
+sig = pysodium.crypto_sign_detached(ser, sigkey)
 
 verfer.verify(sig, ser)
 ```
@@ -121,18 +120,17 @@ Let's try.
      Running `target/release/cesride-bindgen generate src/cesride.udl --out-dir generated --language python`
 Python 3.10.10 (main, Feb  8 2023, 05:40:53) [Clang 14.0.0 (clang-1400.0.29.202)] on darwin
 Type "help", "copyright", "credits" or "license" for more information.
->>> from cesride import MatterCodex, Verfer
+>>> from cesride import Verfer
 >>> import pysodium
 >>> 
 >>> seed = pysodium.randombytes(32)
 >>> verkey, sigkey = pysodium.crypto_sign_seed_keypair(seed)
 >>> 
->>> verfer = Verfer(raw=verkey, variant=MatterCodex.ED25519_N)
+>>> verfer = Verfer(raw=verkey, code="B")
 >>> 
 >>> # create something to sign and verify
 >>> ser = b'abcdefghijklmnopqrstuvwxyz0123456789'
->>> 
->>> sig = pysodium.crypto_sign_detached(ser, seed + verkey)  # sigkey = seed + verkey
+>>> sig = pysodium.crypto_sign_detached(ser, sigkey)
 >>> 
 >>> verfer.verify(sig, ser)
 True
