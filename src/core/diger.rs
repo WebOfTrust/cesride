@@ -1,14 +1,11 @@
 use blake2::Digest;
 use lazy_static::lazy_static;
-#[cfg(feature = "python")]
-use pyo3::prelude::pyclass;
 
 use crate::core::matter::{tables as matter, Matter};
 use crate::error::{err, Error, Result};
 
 type Blake2b256 = blake2::Blake2b<blake2::digest::consts::U32>;
 
-#[cfg_attr(feature = "python", pyclass)]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Diger {
     raw: Vec<u8>,

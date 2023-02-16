@@ -52,13 +52,6 @@ make clean preflight
 
 You are now ready to open a pull request!
 
-### Python integration
-
-Explore at your own risk. This is unmaintained and really just a minimal POC, as we now consider
-moving to `uniffi`.
-
-For the curious: `make python python-shell` on `macOS`.
-
 ## Community
 
 ### Bi-weekly Meeting
