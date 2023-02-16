@@ -41,21 +41,10 @@ pub(crate) fn hardage(s: &str) -> Result<u32> {
 
 pub(crate) fn bardage(b: &[u8]) -> Result<u32> {
     match b {
-        [62, 0]
-        | [62, 1]
-        | [62, 2]
-        | [62, 3]
-        | [62, 4]
-        | [62, 5]
-        | [62, 6]
-        | [62, 7]
-        | [62, 8]
-        | [62, 9]
-        | [62, 10]
-        | [62, 11]
-        | [62, 21] => Ok(2),
-        [62, 52] => Ok(3),
-        [62, 62] => Ok(5),
+        b">\x00" | b">\x01" | b">\x02" | b">\x03" | b">\x04" | b">\x05" | b">\x06" | b">\x07"
+        | b">\x08" | b">\x09" | b">\x0a" | b">\x0b" | b">\x15" => Ok(2),
+        b">4" => Ok(3),
+        b">>" => Ok(5),
         _ => err!(Error::UnknownBardage(format!("{b:?}"))),
     }
 }
@@ -129,12 +118,42 @@ mod tables_tests {
 
     #[rstest]
     #[case("-A", 2)]
+    #[case("-B", 2)]
+    #[case("-C", 2)]
+    #[case("-D", 2)]
+    #[case("-E", 2)]
+    #[case("-F", 2)]
     #[case("-G", 2)]
+    #[case("-H", 2)]
+    #[case("-I", 2)]
+    #[case("-J", 2)]
+    #[case("-K", 2)]
+    #[case("-L", 2)]
     #[case("-V", 2)]
     #[case("-0", 3)]
     #[case("--", 5)]
     fn test_hardage(#[case] code: &str, #[case] hdg: u32) {
         assert_eq!(hardage(code).unwrap(), hdg);
+    }
+
+    #[rstest]
+    #[case(&[62, 0], 2)]
+    #[case(&[62, 1], 2)]
+    #[case(&[62, 2], 2)]
+    #[case(&[62, 3], 2)]
+    #[case(&[62, 4], 2)]
+    #[case(&[62, 5], 2)]
+    #[case(&[62, 6], 2)]
+    #[case(&[62, 7], 2)]
+    #[case(&[62, 8], 2)]
+    #[case(&[62, 9], 2)]
+    #[case(&[62, 10], 2)]
+    #[case(&[62, 11], 2)]
+    #[case(&[62, 21], 2)]
+    #[case(&[62, 52], 3)]
+    #[case(&[62, 62], 5)]
+    fn test_bardage(#[case] bard: &[u8], #[case] bdg: u32) {
+        assert_eq!(bardage(bard).unwrap(), bdg);
     }
 
     #[rstest]

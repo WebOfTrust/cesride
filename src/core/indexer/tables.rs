@@ -288,10 +288,20 @@ pub(crate) fn hardage(c: char) -> Result<u32> {
     }
 }
 
+pub(crate) fn bardage(b: u8) -> Result<u32> {
+    match b {
+        b'\x00'..=b'\x33' => Ok(1),
+        b'\x34'..=b'\x38' => Ok(2),
+        b'\x3e' => Err(Box::new(Error::UnexpectedCode("count code start".to_owned()))),
+        b'\x3f' => Err(Box::new(Error::UnexpectedCode("op code start".to_owned()))),
+        _ => Err(Box::new(Error::UnknownBardage(b.to_string()))),
+    }
+}
+
 #[cfg(test)]
 mod index_tables_tests {
     use crate::core::indexer::tables::{
-        hardage, sizage, BothSigCodex, Codex, CurrentSigCodex, SigCodex,
+        bardage, hardage, sizage, BothSigCodex, Codex, CurrentSigCodex, SigCodex,
     };
     use rstest::rstest;
 
@@ -422,6 +432,83 @@ mod index_tables_tests {
     #[test]
     fn test_unknown_hardage() {
         assert!(hardage('8').is_err());
+    }
+
+    #[rstest]
+    #[case(0x00, 1)]
+    #[case(0x01, 1)]
+    #[case(0x02, 1)]
+    #[case(0x03, 1)]
+    #[case(0x04, 1)]
+    #[case(0x05, 1)]
+    #[case(0x06, 1)]
+    #[case(0x07, 1)]
+    #[case(0x08, 1)]
+    #[case(0x09, 1)]
+    #[case(0x0a, 1)]
+    #[case(0x0b, 1)]
+    #[case(0x0c, 1)]
+    #[case(0x0d, 1)]
+    #[case(0x0e, 1)]
+    #[case(0x0f, 1)]
+    #[case(0x10, 1)]
+    #[case(0x11, 1)]
+    #[case(0x12, 1)]
+    #[case(0x13, 1)]
+    #[case(0x14, 1)]
+    #[case(0x15, 1)]
+    #[case(0x16, 1)]
+    #[case(0x17, 1)]
+    #[case(0x18, 1)]
+    #[case(0x19, 1)]
+    #[case(0x1a, 1)]
+    #[case(0x1b, 1)]
+    #[case(0x1c, 1)]
+    #[case(0x1d, 1)]
+    #[case(0x1e, 1)]
+    #[case(0x1f, 1)]
+    #[case(0x20, 1)]
+    #[case(0x21, 1)]
+    #[case(0x22, 1)]
+    #[case(0x23, 1)]
+    #[case(0x24, 1)]
+    #[case(0x25, 1)]
+    #[case(0x26, 1)]
+    #[case(0x27, 1)]
+    #[case(0x28, 1)]
+    #[case(0x29, 1)]
+    #[case(0x2a, 1)]
+    #[case(0x2b, 1)]
+    #[case(0x2c, 1)]
+    #[case(0x2d, 1)]
+    #[case(0x2e, 1)]
+    #[case(0x2f, 1)]
+    #[case(0x30, 1)]
+    #[case(0x31, 1)]
+    #[case(0x32, 1)]
+    #[case(0x33, 1)]
+    #[case(0x34, 2)]
+    #[case(0x35, 2)]
+    #[case(0x36, 2)]
+    #[case(0x37, 2)]
+    #[case(0x38, 2)]
+    fn test_bardage(#[case] code: u8, #[case] bdg: u32) {
+        assert_eq!(bardage(code).unwrap(), bdg);
+    }
+
+    #[test]
+    fn test_unexpected_bardage_count_code() {
+        assert!(bardage(0x3e).is_err());
+    }
+
+    #[test]
+    fn test_unexpected_bardage_op_code() {
+        assert!(bardage(0x3f).is_err());
+    }
+
+    #[test]
+    fn test_unknown_bardage() {
+        assert!(bardage(0x39).is_err());
     }
 
     #[test]

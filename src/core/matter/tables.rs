@@ -76,6 +76,17 @@ pub(crate) fn hardage(c: char) -> Result<u32> {
     }
 }
 
+pub(crate) fn bardage(b: u8) -> Result<u32> {
+    match b {
+        b'\x00'..=b'\x33' => Ok(1),
+        b'\x34' | b'\x38'..=b'\x3a' => Ok(2),
+        b'\x35'..=b'\x37' | b'\x3b'..=b'\x3d' => Ok(4),
+        b'\x3e' => err!(Error::UnexpectedCode("count code start".to_string())),
+        b'\x3f' => err!(Error::UnexpectedCode("op code start".to_string())),
+        _ => err!(Error::UnknownBardage(b.to_string())),
+    }
+}
+
 #[allow(non_camel_case_types)]
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Codex {
@@ -234,7 +245,7 @@ impl Codex {
 
 #[cfg(test)]
 mod tables_tests {
-    use crate::core::matter::tables::{hardage, sizage, Codex};
+    use crate::core::matter::tables::{bardage, hardage, sizage, Codex};
     use rstest::rstest;
 
     #[rstest]
@@ -300,11 +311,67 @@ mod tables_tests {
 
     #[rstest]
     #[case('A', 1)]
+    #[case('B', 1)]
+    #[case('C', 1)]
+    #[case('D', 1)]
+    #[case('E', 1)]
+    #[case('F', 1)]
     #[case('G', 1)]
+    #[case('H', 1)]
+    #[case('I', 1)]
+    #[case('J', 1)]
+    #[case('K', 1)]
+    #[case('L', 1)]
+    #[case('M', 1)]
+    #[case('N', 1)]
+    #[case('O', 1)]
+    #[case('P', 1)]
+    #[case('Q', 1)]
+    #[case('R', 1)]
+    #[case('S', 1)]
+    #[case('T', 1)]
+    #[case('U', 1)]
+    #[case('V', 1)]
+    #[case('W', 1)]
+    #[case('X', 1)]
+    #[case('Y', 1)]
+    #[case('Z', 1)]
+    #[case('a', 1)]
     #[case('b', 1)]
+    #[case('c', 1)]
+    #[case('d', 1)]
+    #[case('e', 1)]
+    #[case('f', 1)]
+    #[case('g', 1)]
+    #[case('h', 1)]
+    #[case('i', 1)]
+    #[case('j', 1)]
+    #[case('k', 1)]
+    #[case('l', 1)]
+    #[case('m', 1)]
+    #[case('n', 1)]
+    #[case('o', 1)]
+    #[case('p', 1)]
+    #[case('q', 1)]
+    #[case('r', 1)]
+    #[case('s', 1)]
+    #[case('t', 1)]
+    #[case('u', 1)]
+    #[case('v', 1)]
+    #[case('w', 1)]
+    #[case('x', 1)]
+    #[case('y', 1)]
     #[case('z', 1)]
-    #[case('1', 4)]
     #[case('0', 2)]
+    #[case('4', 2)]
+    #[case('5', 2)]
+    #[case('6', 2)]
+    #[case('1', 4)]
+    #[case('2', 4)]
+    #[case('3', 4)]
+    #[case('7', 4)]
+    #[case('8', 4)]
+    #[case('9', 4)]
     fn test_hardage(#[case] code: char, #[case] hdg: u32) {
         assert_eq!(hardage(code).unwrap(), hdg);
     }
@@ -366,6 +433,7 @@ mod tables_tests {
         assert!(hardage('-').is_err());
         assert!(hardage('_').is_err());
         assert!(hardage('#').is_err());
+        assert!(bardage(0x40).is_err());
         assert!(Codex::from_code("CESR").is_err());
     }
 }

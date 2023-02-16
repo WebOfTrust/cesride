@@ -3,8 +3,6 @@ use lazy_static::lazy_static;
 use crate::core::matter::{tables as matter, Matter};
 use crate::error::{err, Error, Result};
 
-type Blake2b256 = blake2::Blake2b<blake2::digest::consts::U32>;
-
 pub struct Dater {
     raw: Vec<u8>,
     code: String,
