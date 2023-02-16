@@ -379,28 +379,8 @@ pub trait Matter: Default {
             return err!(Error::EmptyMaterial("empty qualified base2".to_string()));
         }
 
-        let first_byte = util::nab_sextets(qb2, 1)?[0];
-        if first_byte > 0x3d {
-            if first_byte == 0x3e {
-                return err!(Error::UnexpectedCountCode(
-                    "unexpected start during extraction".to_string(),
-                ));
-            } else if first_byte == 0x3f {
-                return err!(Error::UnexpectedOpCode(
-                    "unexpected start during extraction".to_string(),
-                ));
-            } else {
-                // unreachable
-                // we just shifted a u8 right by 2, making it max 0x3f.
-                // we then validated it was > 0x3d and not 0x3f or 0x3e
-                return err!(Error::UnexpectedCode(format!(
-                    "unexpected code start: sextet = {first_byte}",
-                )));
-            }
-        }
-
-        let first = util::b64_index_to_char(first_byte)?;
-        let hs = tables::hardage(first)? as usize;
+        let first = util::nab_sextets(qb2, 1)?[0];
+        let hs = tables::bardage(first)? as usize;
         let bhs = (hs * 3 + 3) / 4;
         if qb2.len() < bhs {
             return err!(Error::Shortage(format!(
@@ -409,8 +389,7 @@ pub trait Matter: Default {
             )));
         }
 
-        let qb2_vec = qb2.to_vec();
-        let hard = util::code_b2_to_b64(&qb2_vec, hs)?;
+        let hard = util::code_b2_to_b64(qb2, hs)?;
         let mut szg = tables::sizage(&hard)?;
         let cs = szg.hs + szg.ss;
         let bcs = ((cs + 1) * 3) / 4;
@@ -431,7 +410,7 @@ pub trait Matter: Default {
                 )));
             }
 
-            let both = util::code_b2_to_b64(&qb2_vec, cs as usize)?;
+            let both = util::code_b2_to_b64(qb2, cs as usize)?;
             size = util::b64_to_u32(&both[szg.hs as usize..cs as usize])?;
             szg.fs = (size * 4) + cs
         }
@@ -471,8 +450,7 @@ pub trait Matter: Default {
 
         let raw = trim[(bcs + szg.ls) as usize..].to_vec();
         if raw.len() != (trim.len() - bcs as usize) - szg.ls as usize {
-            // unreachable
-            // rust prevents this by the definition of `raw` above. i did some algebra to clarify
+            // unreachable. rust prevents this by the definition of `raw` above.
             return err!(Error::Conversion(format!(
                 "improperly qualified material: qb2 = {qb2:?}",
             )));
@@ -540,7 +518,7 @@ mod matter_tests {
     #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::Bytes_Big_L0.code())]
     #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::Bytes_Big_L1.code())]
     #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::Bytes_Big_L2.code())]
-    fn test_matter_new(#[case] raw: &Vec<u8>, #[case] code: &str) {
+    fn test_matter_new_variable_length(#[case] raw: &Vec<u8>, #[case] code: &str) {
         let m = TestMatter::new_with_code_and_raw(code, raw).unwrap();
         let m2 = TestMatter::new_with_qb64(&m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
