@@ -41,85 +41,32 @@ pub(crate) fn hardage(s: &str) -> Result<u32> {
 
 pub(crate) fn bardage(b: &[u8]) -> Result<u32> {
     match b {
-        [62, 0]
-        | [62, 1]
-        | [62, 2]
-        | [62, 3]
-        | [62, 4]
-        | [62, 5]
-        | [62, 6]
-        | [62, 7]
-        | [62, 8]
-        | [62, 9]
-        | [62, 10]
-        | [62, 11]
-        | [62, 21] => Ok(2),
-        [62, 52] => Ok(3),
-        [62, 62] => Ok(5),
+        b">\x00" | b">\x01" | b">\x02" | b">\x03" | b">\x04" | b">\x05" | b">\x06" | b">\x07"
+        | b">\x08" | b">\x09" | b">\x0a" | b">\x0b" | b">\x15" => Ok(2),
+        b">4" => Ok(3),
+        b">>" => Ok(5),
         _ => err!(Error::UnknownBardage(format!("{b:?}"))),
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub enum Codex {
-    ControllerIdxSigs,
-    WitnessIdxSigs,
-    NonTransReceiptCouples,
-    TransReceiptQuadruples,
-    FirstSeenReplayCouples,
-    TransIdxSigGroups,
-    SealSourceCouples,
-    TransLastIdxSigGroups,
-    SealSourceTriples,
-    SadPathSig,
-    SadPathSigGroup,
-    PathedMaterialQuadlets,
-    AttachedMaterialQuadlets,
-    BigAttachedMaterialQuadlets,
-    KERIProtocolStack,
-}
-
-impl Codex {
-    pub(crate) fn code(&self) -> &'static str {
-        match self {
-            Codex::ControllerIdxSigs => "-A", // Qualified Base64 Indexed Signature.
-            Codex::WitnessIdxSigs => "-B",    // Qualified Base64 Indexed Signature.
-            Codex::NonTransReceiptCouples => "-C", // Composed Base64 Couple, pre+cig.
-            Codex::TransReceiptQuadruples => "-D", // Composed Base64 Quadruple, pre+snu+dig+sig.
-            Codex::FirstSeenReplayCouples => "-E", // Composed Base64 Couple, fnu+dts.
-            Codex::TransIdxSigGroups => "-F", // Composed Base64 Group, pre+snu+dig+ControllerIdxSigs group.
-            Codex::SealSourceCouples => "-G", // Composed Base64 couple, snu+dig of given delegators or issuers event
-            Codex::TransLastIdxSigGroups => "-H", // Composed Base64 Group, pre+ControllerIdxSigs group.
-            Codex::SealSourceTriples => "-I", // Composed Base64 triple, pre+snu+dig of anchoring source event
-            Codex::SadPathSig => "-J", // Composed Base64 Group path+TransIdxSigGroup of SAID of content
-            Codex::SadPathSigGroup => "-K", // Composed Base64 Group, root(path)+SaidPathCouples
-            Codex::PathedMaterialQuadlets => "-L", // Composed Grouped Pathed Material Quadlet (4 char each)
-            Codex::AttachedMaterialQuadlets => "-V", // Composed Grouped Attached Material Quadlet (4 char each)
-            Codex::BigAttachedMaterialQuadlets => "-0V", // Composed Grouped Attached Material Quadlet (4 char each)
-            Codex::KERIProtocolStack => "--AAA",         // KERI ACDC Protocol Stack CESR Version
-        }
-    }
-
-    pub(crate) fn from_code(code: &str) -> Result<Self> {
-        Ok(match code {
-            "-A" => Codex::ControllerIdxSigs,
-            "-B" => Codex::WitnessIdxSigs,
-            "-C" => Codex::NonTransReceiptCouples,
-            "-D" => Codex::TransReceiptQuadruples,
-            "-E" => Codex::FirstSeenReplayCouples,
-            "-F" => Codex::TransIdxSigGroups,
-            "-G" => Codex::SealSourceCouples,
-            "-H" => Codex::TransLastIdxSigGroups,
-            "-I" => Codex::SealSourceTriples,
-            "-J" => Codex::SadPathSig,
-            "-K" => Codex::SadPathSigGroup,
-            "-L" => Codex::PathedMaterialQuadlets,
-            "-V" => Codex::AttachedMaterialQuadlets,
-            "-0V" => Codex::BigAttachedMaterialQuadlets,
-            "--AAA" => Codex::KERIProtocolStack,
-            _ => return err!(Error::UnexpectedCode(code.to_string())),
-        })
-    }
+#[allow(non_snake_case)]
+#[allow(non_upper_case_globals)]
+pub mod Codex {
+    pub const ControllerIdxSigs: &str = "-A"; // Qualified Base64 Indexed Signature.
+    pub const WitnessIdxSigs: &str = "-B"; // Qualified Base64 Indexed Signature.
+    pub const NonTransReceiptCouples: &str = "-C"; // Composed Base64 Couple, pre+cig.
+    pub const TransReceiptQuadruples: &str = "-D"; // Composed Base64 Quadruple, pre+snu+dig+sig.
+    pub const FirstSeenReplayCouples: &str = "-E"; // Composed Base64 Couple, fnu+dts.
+    pub const TransIdxSigGroups: &str = "-F"; // Composed Base64 Group, pre+snu+dig+ControllerIdxSigs group.
+    pub const SealSourceCouples: &str = "-G"; // Composed Base64 couple, snu+dig of given delegators or issuers event
+    pub const TransLastIdxSigGroups: &str = "-H"; // Composed Base64 Group, pre+ControllerIdxSigs group.
+    pub const SealSourceTriples: &str = "-I"; // Composed Base64 triple, pre+snu+dig of anchoring source event
+    pub const SadPathSig: &str = "-J"; // Composed Base64 Group path+TransIdxSigGroup of SAID of content
+    pub const SadPathSigGroup: &str = "-K"; // Composed Base64 Group, root(path)+SaidPathCouples
+    pub const PathedMaterialQuadlets: &str = "-L"; // Composed Grouped Pathed Material Quadlet (4 char each)
+    pub const AttachedMaterialQuadlets: &str = "-V"; // Composed Grouped Attached Material Quadlet (4 char each)
+    pub const BigAttachedMaterialQuadlets: &str = "-0V"; // Composed Grouped Attached Material Quadlet (4 char each)
+    pub const KERIProtocolStack: &str = "--AAA"; // KERI ACDC Protocol Stack CESR Version
 }
 
 #[cfg(test)]
@@ -129,12 +76,42 @@ mod tables_tests {
 
     #[rstest]
     #[case("-A", 2)]
+    #[case("-B", 2)]
+    #[case("-C", 2)]
+    #[case("-D", 2)]
+    #[case("-E", 2)]
+    #[case("-F", 2)]
     #[case("-G", 2)]
+    #[case("-H", 2)]
+    #[case("-I", 2)]
+    #[case("-J", 2)]
+    #[case("-K", 2)]
+    #[case("-L", 2)]
     #[case("-V", 2)]
     #[case("-0", 3)]
     #[case("--", 5)]
     fn test_hardage(#[case] code: &str, #[case] hdg: u32) {
         assert_eq!(hardage(code).unwrap(), hdg);
+    }
+
+    #[rstest]
+    #[case(&[62, 0], 2)]
+    #[case(&[62, 1], 2)]
+    #[case(&[62, 2], 2)]
+    #[case(&[62, 3], 2)]
+    #[case(&[62, 4], 2)]
+    #[case(&[62, 5], 2)]
+    #[case(&[62, 6], 2)]
+    #[case(&[62, 7], 2)]
+    #[case(&[62, 8], 2)]
+    #[case(&[62, 9], 2)]
+    #[case(&[62, 10], 2)]
+    #[case(&[62, 11], 2)]
+    #[case(&[62, 21], 2)]
+    #[case(&[62, 52], 3)]
+    #[case(&[62, 62], 5)]
+    fn test_bardage(#[case] bard: &[u8], #[case] bdg: u32) {
+        assert_eq!(bardage(bard).unwrap(), bdg);
     }
 
     #[rstest]
@@ -183,15 +160,13 @@ mod tables_tests {
     #[case(Codex::AttachedMaterialQuadlets, "-V")]
     #[case(Codex::BigAttachedMaterialQuadlets, "-0V")]
     #[case(Codex::KERIProtocolStack, "--AAA")]
-    fn test_codex(#[case] variant: Codex, #[case] code: &str) {
-        assert_eq!(variant.code(), code);
-        assert_eq!(Codex::from_code(code).unwrap(), variant);
+    fn test_codex(#[case] code: &str, #[case] value: &str) {
+        assert_eq!(code, value);
     }
 
     #[test]
     fn test_unhappy_paths() {
         assert!(sizage("CESR").is_err());
         assert!(bardage(&[63, 0]).is_err());
-        assert!(Codex::from_code("CESR").is_err());
     }
 }

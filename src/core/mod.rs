@@ -4,5 +4,6 @@ pub mod dater;
 pub mod diger;
 pub mod indexer;
 pub mod matter;
+pub mod siger;
 pub mod util;
 pub mod verfer;

@@ -177,7 +177,7 @@ pub fn u32_to_b64(n: u32, length: usize) -> Result<String> {
         out.insert(0, 'A');
     }
 
-    Ok(out)
+    Ok(out[..length].to_string())
 }
 
 pub fn u64_to_b64(n: u64, length: usize) -> Result<String> {
@@ -193,10 +193,14 @@ pub fn u64_to_b64(n: u64, length: usize) -> Result<String> {
         out.insert(0, 'A');
     }
 
-    Ok(out)
+    Ok(out[..length].to_string())
 }
 
 pub fn code_b2_to_b64(b2: &[u8], length: usize) -> Result<String> {
+    if length == 0 {
+        return Ok("".to_string());
+    }
+
     let n = ((length + 1) * 3) / 4;
 
     if n > b2.len() {
@@ -265,6 +269,7 @@ mod util_tests {
     use rstest::rstest;
 
     #[rstest]
+    #[case(32, 0, "")]
     #[case(0, 1, "A")]
     #[case(1, 1, "B")]
     #[case(0, 2, "AA")]
@@ -325,6 +330,7 @@ mod util_tests {
     #[case(&vec![252], 1, "_")]
     #[case(&vec![255, 255, 255, 255, 255, 255], 8, "________")]
     #[case(&vec![244, 0, 1], 4, "9AAB")]
+    #[case(&vec![244, 0, 1], 0, "")]
     fn test_code_b2_to_b64(#[case] b2: &Vec<u8>, #[case] length: usize, #[case] b64: &str) {
         assert_eq!(util::code_b2_to_b64(b2, length).unwrap(), b64);
     }
