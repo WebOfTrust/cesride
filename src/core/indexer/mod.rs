@@ -45,14 +45,14 @@ pub trait Indexer: Default {
         let cs = szg.hs + szg.ss;
         let ms = szg.ss - szg.os;
 
-        if index > (64_u32.pow(ms - 1)) {
+        if index > (64_u32.pow(ms) - 1) {
             return err!(Error::InvalidVarIndex(format!(
                 "Invalid index '{index}' for code '{code}'"
             )));
         }
 
         if let Some(o) = ondex {
-            if szg.os > 0 && o > 64_u32.pow(szg.os - 1) {
+            if szg.os > 0 && o > 64_u32.pow(szg.os) - 1 {
                 return err!(Error::InvalidVarIndex(format!(
                     "Invalid ondex '{o}' for code '{code}'"
                 )));
@@ -176,7 +176,7 @@ pub trait Indexer: Default {
         let ps = (3 - (raw.len() % 3)) % 3;
         let szg = tables::sizage(code)?;
         let cs = szg.hs + szg.ss;
-        let ms = szg.ss + szg.os;
+        let ms = szg.ss - szg.os;
 
         let mut fs = szg.fs;
         if szg.fs == 0 {
@@ -197,13 +197,13 @@ pub trait Indexer: Default {
             fs = (index * 4) + cs
         }
 
-        if index > 64_u32.pow(ms - 1) {
+        if index > 64_u32.pow(ms) - 1 {
             return err!(Error::InvalidVarIndex(format!(
                 "Invalid index = '{index}' for code = '{code}'."
             )));
         }
 
-        if szg.os > 0 && ondex > 64_u32.pow(szg.os - 1) {
+        if szg.os > 0 && ondex > 64_u32.pow(szg.os) - 1 {
             return err!(Error::InvalidVarIndex(format!(
                 "Invalid ondex = '{ondex}' for os = '{os}' and code = '{code}'.",
                 os = szg.os
@@ -263,13 +263,13 @@ pub trait Indexer: Default {
         let cs = szg.hs + szg.ss;
         let ms = szg.ss - szg.os;
 
-        if index > 64_u32.pow(szg.ss - 1) {
+        if index > 64_u32.pow(szg.ss) - 1 {
             return err!(Error::InvalidVarIndex(format!(
                 "Invalid index = '{index}' for code = '{code}'."
             )));
         }
 
-        if szg.os == 1 && ondex > 64_u32.pow(szg.os - 1) {
+        if szg.os == 1 && ondex > 64_u32.pow(szg.os) - 1 {
             return err!(Error::InvalidVarIndex(format!(
                 "Invalid ondex = '{ondex}' for os = '{}' and code = '{code}'.",
                 szg.os

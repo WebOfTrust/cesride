@@ -4,7 +4,7 @@ use crate::core::matter::{tables as matter, Matter};
 use crate::core::verfer::Verfer;
 use crate::error::{err, Error, Result};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Cigar {
     raw: Vec<u8>,
     code: String,

@@ -3,7 +3,7 @@ pub mod tables;
 use crate::core::util;
 use crate::error::{err, Error, Result};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Counter {
     pub(crate) code: String,
     pub(crate) count: u32,
