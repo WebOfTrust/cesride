@@ -627,7 +627,7 @@ mod indexer_tests {
         fn default() -> Self {
             TestIndexer {
                 raw: vec![],
-                code: tables::Codex::Ed25519.code().to_string(),
+                code: tables::Codex::Ed25519.to_string(),
                 index: 0,
                 ondex: 0,
             }
@@ -683,7 +683,7 @@ mod indexer_tests {
         assert_eq!(sig64, "AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ");
         assert_eq!(sig64.len(), 88);
 
-        let code = Codex::Ed25519.code();
+        let code = Codex::Ed25519;
         let qsc = format!("{code}{}", util::u32_to_b64(0, 1).unwrap());
         assert_eq!(qsc, "AA");
 
@@ -695,10 +695,9 @@ mod indexer_tests {
         assert_eq!(qsig2b, b"\x00\x00\x99\xd2<9$$0\x9fk\xfb\x18\xa0\x8c@r\x122.k\xb2\xc7\x1fp\x0e'm\x8f@\xaa\xa5\x8c\xc8n\x85\xc8!\xf6q\x91p\xa9\xec\xcf\x92\xaf)\xde\xca\xfc\x7f~\xd7o|\x17\x82\x1d\xd4<o\"\x81&\t");
         assert_eq!(qsig2b.len(), 66);
 
-        let mut idx =
-            TestIndexer::new_with_code_and_raw(Codex::Ed25519.code(), sig, 0, None).unwrap();
-        assert_eq!(idx.code, Codex::Ed25519.code());
-        assert_eq!(idx.code(), Codex::Ed25519.code());
+        let mut idx = TestIndexer::new_with_code_and_raw(Codex::Ed25519, sig, 0, None).unwrap();
+        assert_eq!(idx.code, Codex::Ed25519);
+        assert_eq!(idx.code(), Codex::Ed25519);
         assert_eq!(idx.raw, sig);
         assert_eq!(idx.raw(), sig);
         assert_eq!(idx.index, 0);
@@ -710,8 +709,8 @@ mod indexer_tests {
         idx = TestIndexer::new_with_qb64("AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ").unwrap();
         assert_eq!(idx.raw, sig);
         assert_eq!(idx.raw(), sig);
-        assert_eq!(idx.code, Codex::Ed25519.code());
-        assert_eq!(idx.code(), Codex::Ed25519.code());
+        assert_eq!(idx.code, Codex::Ed25519);
+        assert_eq!(idx.code(), Codex::Ed25519);
         assert_eq!(idx.index, 0);
         assert_eq!(idx.ondex, 0);
         assert_eq!(idx.qb64().unwrap(), sig64);
@@ -721,8 +720,8 @@ mod indexer_tests {
         idx = TestIndexer::new_with_qb64b("AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ".as_bytes()).unwrap();
         assert_eq!(idx.raw, sig);
         assert_eq!(idx.raw(), sig);
-        assert_eq!(idx.code, Codex::Ed25519.code());
-        assert_eq!(idx.code(), Codex::Ed25519.code());
+        assert_eq!(idx.code, Codex::Ed25519);
+        assert_eq!(idx.code(), Codex::Ed25519);
         assert_eq!(idx.index, 0);
         assert_eq!(idx.ondex, 0);
         assert_eq!(idx.qb64().unwrap(), sig64);
@@ -732,8 +731,8 @@ mod indexer_tests {
         idx = TestIndexer::new_with_qb2(&qsig2b).unwrap();
         assert_eq!(idx.raw, sig);
         assert_eq!(idx.raw(), sig);
-        assert_eq!(idx.code, Codex::Ed25519.code());
-        assert_eq!(idx.code(), Codex::Ed25519.code());
+        assert_eq!(idx.code, Codex::Ed25519);
+        assert_eq!(idx.code(), Codex::Ed25519);
         assert_eq!(idx.index, 0);
         assert_eq!(idx.ondex, 0);
         assert_eq!(idx.qb64().unwrap(), sig64);
@@ -747,7 +746,7 @@ mod indexer_tests {
 
         // basic
         let m = TestIndexer::new_with_qb64(qb64).unwrap();
-        assert_eq!(m.code, Codex::Ed25519.code());
+        assert_eq!(m.code, Codex::Ed25519);
 
         // qb64
         let m2 = TestIndexer::new_with_code_and_raw(&m.code, &m.raw, 0, None).unwrap();
@@ -777,7 +776,7 @@ mod indexer_tests {
     #[test]
     fn test_zero_fs() {
         let indexer =
-            TestIndexer::new_with_code_and_raw(Codex::TBD0.code(), &[0, 0, 0], 1, Some(1)).unwrap();
+            TestIndexer::new_with_code_and_raw(Codex::TBD0, &[0, 0, 0], 1, Some(1)).unwrap();
         assert!(TestIndexer::new_with_qb64(&indexer.qb64().unwrap()).is_ok());
         assert!(TestIndexer::new_with_qb64b(&indexer.qb64b().unwrap()).is_ok());
         assert!(TestIndexer::new_with_qb2(&indexer.qb2().unwrap()).is_ok());
@@ -786,7 +785,7 @@ mod indexer_tests {
     #[test]
     fn test_unhappy_paths() {
         assert!(TestIndexer::new_with_code_and_raw("", &[], 0, None).is_err());
-        assert!(TestIndexer::new_with_code_and_raw(Codex::Ed25519.code(), &[], 0, None).is_err());
+        assert!(TestIndexer::new_with_code_and_raw(Codex::Ed25519, &[], 0, None).is_err());
         assert!(TestIndexer::new_with_qb64("").is_err());
         assert!(TestIndexer::new_with_qb64b(&[]).is_err());
         assert!(TestIndexer::new_with_qb2(&[]).is_err());
@@ -798,27 +797,21 @@ mod indexer_tests {
         assert!(TestIndexer::new_with_qb64("0").is_err());
 
         // index too large
-        assert!(
-            TestIndexer::new_with_code_and_raw(Codex::Ed25519.code(), &[], 65536, None).is_err()
-        );
+        assert!(TestIndexer::new_with_code_and_raw(Codex::Ed25519, &[], 65536, None).is_err());
 
         // ondex too large
-        assert!(
-            TestIndexer::new_with_code_and_raw(Codex::Ed448.code(), &[], 0, Some(65535)).is_err()
-        );
+        assert!(TestIndexer::new_with_code_and_raw(Codex::Ed448, &[], 0, Some(65535)).is_err());
 
         // non-none ondex
-        assert!(
-            TestIndexer::new_with_code_and_raw(Codex::Ed25519_Crt.code(), &[], 0, Some(1)).is_err()
-        );
+        assert!(TestIndexer::new_with_code_and_raw(Codex::Ed25519_Crt, &[], 0, Some(1)).is_err());
 
         // non-matching index/ondex
-        assert!(TestIndexer::new_with_code_and_raw(Codex::TBD0.code(), &[], 0, Some(1)).is_err());
+        assert!(TestIndexer::new_with_code_and_raw(Codex::TBD0, &[], 0, Some(1)).is_err());
 
         // index overflow
         let indexer = TestIndexer {
             raw: b"".to_vec(),
-            code: Codex::TBD0.code().to_string(),
+            code: Codex::TBD0.to_string(),
             index: 65536,
             ondex: 0,
         };
@@ -828,7 +821,7 @@ mod indexer_tests {
         // ondex overflow
         let indexer = TestIndexer {
             raw: b"".to_vec(),
-            code: Codex::Ed448.code().to_string(),
+            code: Codex::Ed448.to_string(),
             index: 0,
             ondex: 65536,
         };
@@ -838,7 +831,7 @@ mod indexer_tests {
         // pad size incorrect
         let indexer = TestIndexer {
             raw: b"ab".to_vec(),
-            code: Codex::Ed25519.code().to_string(),
+            code: Codex::Ed25519.to_string(),
             index: 0,
             ondex: 0,
         };
@@ -848,7 +841,7 @@ mod indexer_tests {
         // raw not long enough
         let indexer = TestIndexer {
             raw: b"a".to_vec(),
-            code: Codex::Ed25519_Big.code().to_string(),
+            code: Codex::Ed25519_Big.to_string(),
             index: 0,
             ondex: 0,
         };
@@ -856,7 +849,7 @@ mod indexer_tests {
         assert!(indexer.qb2().is_err());
 
         // hard complete, code not
-        assert!(TestIndexer::new_with_qb64(Codex::Ed25519.code()).is_err());
+        assert!(TestIndexer::new_with_qb64(Codex::Ed25519).is_err());
 
         // invalid ondex for current sig
         let qb64 = "0BAB";
