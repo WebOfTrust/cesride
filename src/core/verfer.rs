@@ -59,7 +59,7 @@ impl Verfer {
         Ok(verfer)
     }
 
-    fn verify(&self, sig: &[u8], ser: &[u8]) -> Result<bool> {
+    pub fn verify(&self, sig: &[u8], ser: &[u8]) -> Result<bool> {
         match self.code().as_str() {
             matter::Codex::Ed25519N => self.verify_ed25519_signature(sig, ser),
             matter::Codex::Ed25519 => self.verify_ed25519_signature(sig, ser),

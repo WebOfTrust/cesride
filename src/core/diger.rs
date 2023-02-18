@@ -48,19 +48,19 @@ impl Diger {
     }
 
     fn new_with_qb64(qb64: &str) -> Result<Self> {
-        let diger = <Diger as Matter>::new_with_qb64(qb64)?;
+        let diger: Diger = Matter::new_with_qb64(qb64)?;
         validate_code(&diger.code)?;
         Ok(diger)
     }
 
     fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
-        let diger = <Diger as Matter>::new_with_qb64b(qb64b)?;
+        let diger: Diger = Matter::new_with_qb64b(qb64b)?;
         validate_code(&diger.code)?;
         Ok(diger)
     }
 
     fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
-        let diger = <Diger as Matter>::new_with_qb2(qb2)?;
+        let diger: Diger = Matter::new_with_qb2(qb2)?;
         validate_code(&diger.code)?;
         Ok(diger)
     }
