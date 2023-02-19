@@ -164,9 +164,9 @@ pub(crate) fn bardage(b: u8) -> Result<u32> {
 }
 
 #[cfg(test)]
-mod index_tables_tests {
+mod test {
     use crate::core::indexer::tables::{
-        bardage, hardage, sizage, BothSigCodex, Codex, CurrentSigCodex, SigCodex,
+        self as indexer, BothSigCodex, Codex, CurrentSigCodex, SigCodex,
     };
     use rstest::rstest;
 
@@ -186,7 +186,7 @@ mod index_tables_tests {
     #[case(Codex::TBD0, "0z")]
     #[case(Codex::TBD1, "1z")]
     #[case(Codex::TBD4, "4z")]
-    fn test_codex(#[case] code: &str, #[case] value: &str) {
+    fn codex(#[case] code: &str, #[case] value: &str) {
         assert_eq!(code, value);
     }
 
@@ -203,7 +203,7 @@ mod index_tables_tests {
     #[case(SigCodex::ECDSA_256k1_Big_Crt, "2D")]
     #[case(SigCodex::Ed448_Big, "3A")]
     #[case(SigCodex::Ed448_Big_Crt, "3B")]
-    fn test_sig_codex(#[case] code: &str, #[case] value: &str) {
+    fn sig_codex(#[case] code: &str, #[case] value: &str) {
         assert_eq!(code, value);
     }
 
@@ -214,7 +214,7 @@ mod index_tables_tests {
     #[case(CurrentSigCodex::Ed25519_Big_Crt, "2B")]
     #[case(CurrentSigCodex::ECDSA_256k1_Big_Crt, "2D")]
     #[case(CurrentSigCodex::Ed448_Big_Crt, "3B")]
-    fn test_current_sig_codex(#[case] code: &str, #[case] value: &str) {
+    fn current_sig_codex(#[case] code: &str, #[case] value: &str) {
         assert_eq!(code, value);
     }
 
@@ -225,7 +225,7 @@ mod index_tables_tests {
     #[case(BothSigCodex::Ed25519_Big, "2A")]
     #[case(BothSigCodex::ECDSA_256k1_Big, "2C")]
     #[case(BothSigCodex::Ed448_Big, "3A")]
-    fn test_both_sig_codex(#[case] code: &str, #[case] value: &str) {
+    fn both_sig_codex(#[case] code: &str, #[case] value: &str) {
         assert_eq!(code, value);
     }
 
@@ -245,7 +245,7 @@ mod index_tables_tests {
     #[case("0z", 2, 2, 0, 0, 0)]
     #[case("1z", 2, 2, 1, 76, 1)]
     #[case("4z", 2, 6, 3, 80, 1)]
-    fn test_sizage(
+    fn sizage(
         #[case] code: &str,
         #[case] hs: u32,
         #[case] ss: u32,
@@ -253,7 +253,7 @@ mod index_tables_tests {
         #[case] fs: u32,
         #[case] ls: u32,
     ) {
-        let s = sizage(code).unwrap();
+        let s = indexer::sizage(code).unwrap();
         assert_eq!(s.hs, hs);
         assert_eq!(s.ss, ss);
         assert_eq!(s.os, os);
@@ -262,8 +262,8 @@ mod index_tables_tests {
     }
 
     #[test]
-    fn test_unkown_size() {
-        assert!(sizage("z").is_err());
+    fn unkown_size() {
+        assert!(indexer::sizage("z").is_err());
     }
 
     #[rstest]
@@ -276,23 +276,23 @@ mod index_tables_tests {
     #[case('2', 2)]
     #[case('3', 2)]
     #[case('4', 2)]
-    fn test_hardage(#[case] code: char, #[case] hdg: u32) {
-        assert_eq!(hardage(code).unwrap(), hdg);
+    fn hardage(#[case] code: char, #[case] hdg: u32) {
+        assert_eq!(indexer::hardage(code).unwrap(), hdg);
     }
 
     #[test]
-    fn test_unexpected_count_code() {
-        assert!(hardage('-').is_err());
+    fn unexpected_count_code() {
+        assert!(indexer::hardage('-').is_err());
     }
 
     #[test]
-    fn test_unexpected_op_code() {
-        assert!(hardage('_').is_err());
+    fn unexpected_op_code() {
+        assert!(indexer::hardage('_').is_err());
     }
 
     #[test]
-    fn test_unknown_hardage() {
-        assert!(hardage('8').is_err());
+    fn unknown_hardage() {
+        assert!(indexer::hardage('8').is_err());
     }
 
     #[rstest]
@@ -353,22 +353,22 @@ mod index_tables_tests {
     #[case(0x36, 2)]
     #[case(0x37, 2)]
     #[case(0x38, 2)]
-    fn test_bardage(#[case] code: u8, #[case] bdg: u32) {
-        assert_eq!(bardage(code).unwrap(), bdg);
+    fn bardage(#[case] code: u8, #[case] bdg: u32) {
+        assert_eq!(indexer::bardage(code).unwrap(), bdg);
     }
 
     #[test]
-    fn test_unexpected_bardage_count_code() {
-        assert!(bardage(0x3e).is_err());
+    fn unexpected_bardage_count_code() {
+        assert!(indexer::bardage(0x3e).is_err());
     }
 
     #[test]
-    fn test_unexpected_bardage_op_code() {
-        assert!(bardage(0x3f).is_err());
+    fn unexpected_bardage_op_code() {
+        assert!(indexer::bardage(0x3f).is_err());
     }
 
     #[test]
-    fn test_unknown_bardage() {
-        assert!(bardage(0x39).is_err());
+    fn unknown_bardage() {
+        assert!(indexer::bardage(0x39).is_err());
     }
 }

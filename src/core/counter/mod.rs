@@ -70,8 +70,8 @@ impl Counter {
     }
 
     pub fn count_as_b64(&self, length: usize) -> Result<String> {
-        let length = if length == 0 { tables::sizage(&self.code)?.ss as usize } else { length };
-        util::u32_to_b64(self.count, length)
+        let length = if length == 0 { tables::sizage(&self.code())?.ss as usize } else { length };
+        util::u32_to_b64(self.count(), length)
     }
 
     fn sem_ver_parts_to_b64(parts: &[u8]) -> Result<String> {
@@ -152,8 +152,8 @@ impl Counter {
     }
 
     fn infil(&self) -> Result<String> {
-        let code = &self.code;
-        let count = self.count;
+        let code = &self.code();
+        let count = self.count();
 
         let szg = tables::sizage(code)?;
         let cs = szg.hs + szg.ss;
@@ -290,7 +290,7 @@ impl Default for Counter {
 }
 
 #[cfg(test)]
-mod counter_tests {
+mod test {
     use crate::core::counter::{tables as counter, Counter};
     use base64::{engine::general_purpose as b64_engine, Engine};
     use rstest::rstest;
@@ -299,7 +299,7 @@ mod counter_tests {
     #[case("-AAB", 1, "B", counter::Codex::ControllerIdxSigs)]
     #[case("-AAF", 5, "F", counter::Codex::ControllerIdxSigs)]
     #[case("-0VAAAQA", 1024, "QA", counter::Codex::BigAttachedMaterialQuadlets)]
-    fn test_creation(
+    fn creation(
         #[case] qsc: &str,
         #[case] count: u32,
         #[case] count_b64: &str,
@@ -326,7 +326,7 @@ mod counter_tests {
 
     #[rstest]
     #[case(0, "AAA", 0, "AAA", counter::Codex::KERIProtocolStack)]
-    fn test_versioned_creation(
+    fn versioned_creation(
         #[case] verint: u32,
         #[case] version: &str,
         #[case] count: u32,
@@ -361,7 +361,7 @@ mod counter_tests {
     }
 
     #[rstest]
-    fn test_b64_overflow_and_underflow(#[values("-AAB")] qsc: &str) {
+    fn b64_overflow_and_underflow(#[values("-AAB")] qsc: &str) {
         // add some chars
         let longqsc64 = &format!("{qsc}ABCD");
         let counter = Counter::new_with_qb64(longqsc64).unwrap();
@@ -376,7 +376,7 @@ mod counter_tests {
     }
 
     #[rstest]
-    fn test_binary_overflow_and_underflow(#[values(vec![248, 0, 1])] qscb2: Vec<u8>) {
+    fn binary_overflow_and_underflow(#[values(vec![248, 0, 1])] qscb2: Vec<u8>) {
         // add some bytes
         let mut longqscb2 = qscb2.clone();
         longqscb2.resize(longqscb2.len() + 5, 1);
@@ -393,7 +393,7 @@ mod counter_tests {
     }
 
     #[rstest]
-    fn test_exfil_infil_bexfil_binfil(#[values("-0VAAAQA")] qsc: &str) {
+    fn exfil_infil_bexfil_binfil(#[values("-0VAAAQA")] qsc: &str) {
         let counter1 = Counter::new_with_qb64(qsc).unwrap();
         let counter2 = Counter::new_with_qb2(&counter1.qb2().unwrap()).unwrap();
         assert_eq!(counter1.code(), counter2.code());
@@ -410,7 +410,7 @@ mod counter_tests {
     #[case("1.2.", "BCA")]
     #[case("..", "AAA")]
     #[case("1..3", "BAD")]
-    fn test_semantic_versioning_strings(#[case] version: &str, #[case] b64: &str) {
+    fn semantic_versioning_strings(#[case] version: &str, #[case] b64: &str) {
         assert_eq!(Counter::sem_ver_str_to_b64(version).unwrap(), b64);
     }
 
@@ -419,7 +419,7 @@ mod counter_tests {
     #[case(0, 1, 0, "ABA")]
     #[case(0, 0, 1, "AAB")]
     #[case(3, 4, 5, "DEF")]
-    fn test_semantic_versioning_u8s(
+    fn semantic_versioning_u8s(
         #[case] major: u8,
         #[case] minor: u8,
         #[case] patch: u8,
@@ -429,24 +429,18 @@ mod counter_tests {
     }
 
     #[rstest]
-    fn test_semantic_versioning_unhappy_strings(
-        #[values("64.0.1", "-1.0.1", "0.0.64")] version: &str,
-    ) {
+    fn semantic_versioning_unhappy_strings(#[values("64.0.1", "-1.0.1", "0.0.64")] version: &str) {
         assert!(Counter::sem_ver_str_to_b64(version).is_err());
     }
 
     #[rstest]
     #[case(64, 0, 0)]
-    fn test_semantic_versioning_unhappy_u32s(
-        #[case] major: u8,
-        #[case] minor: u8,
-        #[case] patch: u8,
-    ) {
+    fn semantic_versioning_unhappy_u32s(#[case] major: u8, #[case] minor: u8, #[case] patch: u8) {
         assert!(Counter::sem_ver_to_b64(major, minor, patch).is_err());
     }
 
     #[test]
-    fn test_unhappy_paths() {
+    fn unhappy_paths() {
         assert!(Counter::new_with_code_and_count("", 1).is_err());
         assert!(
             Counter::new_with_code_and_count(counter::Codex::ControllerIdxSigs, 64 * 64).is_err()
@@ -469,7 +463,7 @@ mod counter_tests {
 
     #[rstest]
     #[case(counter::Codex::ControllerIdxSigs, 1)]
-    fn test_qb64b(#[case] code: &str, #[case] count: u32) {
+    fn qb64b(#[case] code: &str, #[case] count: u32) {
         let c = Counter { code: code.to_string(), count };
         assert!(Counter::new_with_qb64b(&c.qb64b().unwrap()).is_ok());
     }

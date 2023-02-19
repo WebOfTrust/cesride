@@ -70,8 +70,8 @@ pub mod Codex {
 }
 
 #[cfg(test)]
-mod tables_tests {
-    use crate::core::counter::tables::{bardage, hardage, sizage, Codex};
+mod test {
+    use crate::core::counter::tables as matter;
     use rstest::rstest;
 
     #[rstest]
@@ -90,8 +90,8 @@ mod tables_tests {
     #[case("-V", 2)]
     #[case("-0", 3)]
     #[case("--", 5)]
-    fn test_hardage(#[case] code: &str, #[case] hdg: u32) {
-        assert_eq!(hardage(code).unwrap(), hdg);
+    fn hardage(#[case] code: &str, #[case] hdg: u32) {
+        assert_eq!(matter::hardage(code).unwrap(), hdg);
     }
 
     #[rstest]
@@ -110,8 +110,8 @@ mod tables_tests {
     #[case(&[62, 21], 2)]
     #[case(&[62, 52], 3)]
     #[case(&[62, 62], 5)]
-    fn test_bardage(#[case] bard: &[u8], #[case] bdg: u32) {
-        assert_eq!(bardage(bard).unwrap(), bdg);
+    fn bardage(#[case] bard: &[u8], #[case] bdg: u32) {
+        assert_eq!(matter::bardage(bard).unwrap(), bdg);
     }
 
     #[rstest]
@@ -130,14 +130,14 @@ mod tables_tests {
     #[case("-V", 2, 2, 4, 0)]
     #[case("-0V", 3, 5, 8, 0)]
     #[case("--AAA", 5, 3, 8, 0)]
-    fn test_sizage(
+    fn sizage(
         #[case] code: &str,
         #[case] hs: u32,
         #[case] ss: u32,
         #[case] fs: u32,
         #[case] ls: u32,
     ) {
-        let s = sizage(code).unwrap();
+        let s = matter::sizage(code).unwrap();
         assert_eq!(s.hs, hs);
         assert_eq!(s.ss, ss);
         assert_eq!(s.fs, fs);
@@ -145,28 +145,28 @@ mod tables_tests {
     }
 
     #[rstest]
-    #[case(Codex::ControllerIdxSigs, "-A")]
-    #[case(Codex::WitnessIdxSigs, "-B")]
-    #[case(Codex::NonTransReceiptCouples, "-C")]
-    #[case(Codex::TransReceiptQuadruples, "-D")]
-    #[case(Codex::FirstSeenReplayCouples, "-E")]
-    #[case(Codex::TransIdxSigGroups, "-F")]
-    #[case(Codex::SealSourceCouples, "-G")]
-    #[case(Codex::TransLastIdxSigGroups, "-H")]
-    #[case(Codex::SealSourceTriples, "-I")]
-    #[case(Codex::SadPathSig, "-J")]
-    #[case(Codex::SadPathSigGroup, "-K")]
-    #[case(Codex::PathedMaterialQuadlets, "-L")]
-    #[case(Codex::AttachedMaterialQuadlets, "-V")]
-    #[case(Codex::BigAttachedMaterialQuadlets, "-0V")]
-    #[case(Codex::KERIProtocolStack, "--AAA")]
-    fn test_codex(#[case] code: &str, #[case] value: &str) {
+    #[case(matter::Codex::ControllerIdxSigs, "-A")]
+    #[case(matter::Codex::WitnessIdxSigs, "-B")]
+    #[case(matter::Codex::NonTransReceiptCouples, "-C")]
+    #[case(matter::Codex::TransReceiptQuadruples, "-D")]
+    #[case(matter::Codex::FirstSeenReplayCouples, "-E")]
+    #[case(matter::Codex::TransIdxSigGroups, "-F")]
+    #[case(matter::Codex::SealSourceCouples, "-G")]
+    #[case(matter::Codex::TransLastIdxSigGroups, "-H")]
+    #[case(matter::Codex::SealSourceTriples, "-I")]
+    #[case(matter::Codex::SadPathSig, "-J")]
+    #[case(matter::Codex::SadPathSigGroup, "-K")]
+    #[case(matter::Codex::PathedMaterialQuadlets, "-L")]
+    #[case(matter::Codex::AttachedMaterialQuadlets, "-V")]
+    #[case(matter::Codex::BigAttachedMaterialQuadlets, "-0V")]
+    #[case(matter::Codex::KERIProtocolStack, "--AAA")]
+    fn codex(#[case] code: &str, #[case] value: &str) {
         assert_eq!(code, value);
     }
 
     #[test]
-    fn test_unhappy_paths() {
-        assert!(sizage("CESR").is_err());
-        assert!(bardage(&[63, 0]).is_err());
+    fn unhappy_paths() {
+        assert!(matter::sizage("CESR").is_err());
+        assert!(matter::bardage(&[63, 0]).is_err());
     }
 }

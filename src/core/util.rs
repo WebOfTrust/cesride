@@ -66,9 +66,7 @@ pub fn b64_char_to_index(c: char) -> Result<u8> {
         '9' => 61,
         '-' => 62,
         '_' => 63,
-        _ => {
-            return err!(Error::InvalidBase64Character(c));
-        }
+        _ => return err!(Error::InvalidBase64Character(c)),
     })
 }
 
@@ -138,9 +136,7 @@ pub fn b64_index_to_char(i: u8) -> Result<char> {
         61 => '9',
         62 => '-',
         63 => '_',
-        _ => {
-            return err!(Error::InvalidBase64Index(i));
-        }
+        _ => return err!(Error::InvalidBase64Index(i)),
     })
 }
 
@@ -264,7 +260,7 @@ pub fn nab_sextets(binary: &[u8], count: usize) -> Result<Vec<u8>> {
 }
 
 #[cfg(test)]
-mod util_tests {
+mod test {
     use crate::core::util;
     use rstest::rstest;
 
@@ -276,7 +272,7 @@ mod util_tests {
     #[case(1, 2, "AB")]
     #[case(4095, 2, "__")]
     #[case(16777215, 4, "____")]
-    fn test_u32_to_b64(#[case] n: u32, #[case] length: usize, #[case] b64: &str) {
+    fn u32_to_b64(#[case] n: u32, #[case] length: usize, #[case] b64: &str) {
         assert_eq!(util::u32_to_b64(n, length).unwrap(), b64);
     }
 
@@ -287,7 +283,7 @@ mod util_tests {
     #[case(1, "AB")]
     #[case(4095, "__")]
     #[case(16777215, "____")]
-    fn test_b64_to_u32(#[case] n: u32, #[case] b64: &str) {
+    fn b64_to_u32(#[case] n: u32, #[case] b64: &str) {
         assert_eq!(util::b64_to_u32(b64).unwrap(), n);
     }
 
@@ -299,12 +295,12 @@ mod util_tests {
     #[case(4095, "__")]
     #[case(16777215, "____")]
     #[case(281474976710655, "________")]
-    fn test_b64_to_u64(#[case] n: u64, #[case] b64: &str) {
+    fn b64_to_u64(#[case] n: u64, #[case] b64: &str) {
         assert_eq!(util::b64_to_u64(b64).unwrap(), n);
     }
 
     #[test]
-    fn test_b64_char_to_index() {
+    fn b64_char_to_index() {
         let s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
         let mut i = 0;
@@ -315,7 +311,7 @@ mod util_tests {
     }
 
     #[test]
-    fn test_b64_index_to_char() {
+    fn b64_index_to_char() {
         let mut chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".chars();
         for i in 0..63 {
             assert_eq!(util::b64_index_to_char(i).unwrap(), chars.next().unwrap());
@@ -331,7 +327,7 @@ mod util_tests {
     #[case(&vec![255, 255, 255, 255, 255, 255], 8, "________")]
     #[case(&vec![244, 0, 1], 4, "9AAB")]
     #[case(&vec![244, 0, 1], 0, "")]
-    fn test_code_b2_to_b64(#[case] b2: &Vec<u8>, #[case] length: usize, #[case] b64: &str) {
+    fn code_b2_to_b64(#[case] b2: &Vec<u8>, #[case] length: usize, #[case] b64: &str) {
         assert_eq!(util::code_b2_to_b64(b2, length).unwrap(), b64);
     }
 
@@ -343,7 +339,7 @@ mod util_tests {
     #[case(vec![252], "_")]
     #[case(vec![255, 255, 255, 255, 255, 255], "________")]
     #[case(vec![244, 0, 1], "9AAB")]
-    fn test_code_b64_to_b2(#[case] b2: Vec<u8>, #[case] b64: &str) {
+    fn code_b64_to_b2(#[case] b2: Vec<u8>, #[case] b64: &str) {
         assert_eq!(util::code_b64_to_b2(b64).unwrap(), b2);
     }
 
@@ -353,7 +349,7 @@ mod util_tests {
     #[case(&[255, 255, 255, 0, 0, 0], 8, vec![63, 63, 63, 63, 0, 0, 0, 0])]
     #[case(&[255], 1, vec![63])]
     #[case(&[127, 127], 2, vec![31, 55])]
-    fn test_nab_sextets(#[case] binary: &[u8], #[case] length: usize, #[case] result: Vec<u8>) {
+    fn nab_sextets(#[case] binary: &[u8], #[case] length: usize, #[case] result: Vec<u8>) {
         assert_eq!(util::nab_sextets(binary, length).unwrap(), result);
         assert_eq!(
             util::nab_sextets(&[255, 255, 255, 0, 0, 0], 8).unwrap(),
@@ -364,7 +360,7 @@ mod util_tests {
     }
 
     #[test]
-    fn test_unhappy_paths() {
+    fn unhappy_paths() {
         assert!(util::b64_char_to_index('#').is_err());
         assert!(util::b64_index_to_char(64).is_err());
         assert!(util::code_b2_to_b64(&[0], 2).is_err());

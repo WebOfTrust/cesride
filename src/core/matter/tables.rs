@@ -139,8 +139,8 @@ pub mod Codex {
 }
 
 #[cfg(test)]
-mod tables_tests {
-    use crate::core::matter::tables::{bardage, hardage, sizage, Codex};
+mod test {
+    use crate::core::matter::tables::{self as matter, Codex};
     use rstest::rstest;
 
     #[rstest]
@@ -190,14 +190,14 @@ mod tables_tests {
     #[case("7AAB", 4, 4, 0, 0)]
     #[case("8AAB", 4, 4, 0, 1)]
     #[case("9AAB", 4, 4, 0, 2)]
-    fn test_sizage(
+    fn sizage(
         #[case] code: &str,
         #[case] hs: u32,
         #[case] ss: u32,
         #[case] fs: u32,
         #[case] ls: u32,
     ) {
-        let s = sizage(code).unwrap();
+        let s = matter::sizage(code).unwrap();
         assert_eq!(s.hs, hs);
         assert_eq!(s.ss, ss);
         assert_eq!(s.fs, fs);
@@ -267,8 +267,8 @@ mod tables_tests {
     #[case('7', 4)]
     #[case('8', 4)]
     #[case('9', 4)]
-    fn test_hardage(#[case] code: char, #[case] hdg: u32) {
-        assert_eq!(hardage(code).unwrap(), hdg);
+    fn hardage(#[case] code: char, #[case] hdg: u32) {
+        assert_eq!(matter::hardage(code).unwrap(), hdg);
     }
 
     #[rstest]
@@ -318,15 +318,15 @@ mod tables_tests {
     #[case(Codex::Bytes_Big_L0, "7AAB")]
     #[case(Codex::Bytes_Big_L1, "8AAB")]
     #[case(Codex::Bytes_Big_L2, "9AAB")]
-    fn test_codes(#[case] code: &str, #[case] value: &str) {
+    fn codes(#[case] code: &str, #[case] value: &str) {
         assert_eq!(code, value);
     }
 
     #[test]
-    fn test_unhappy_paths() {
-        assert!(hardage('-').is_err());
-        assert!(hardage('_').is_err());
-        assert!(hardage('#').is_err());
-        assert!(bardage(0x40).is_err());
+    fn unhappy_paths() {
+        assert!(matter::hardage('-').is_err());
+        assert!(matter::hardage('_').is_err());
+        assert!(matter::hardage('#').is_err());
+        assert!(matter::bardage(0x40).is_err());
     }
 }

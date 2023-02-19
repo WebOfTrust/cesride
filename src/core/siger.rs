@@ -140,14 +140,14 @@ impl Indexer for Siger {
 }
 
 #[cfg(test)]
-mod test_siger {
+mod test {
     use super::{indexer, Indexer, Siger, Verfer};
     use crate::core::matter::tables as matter;
     use base64::{engine::general_purpose as b64_engine, Engine};
     use hex_literal::hex;
 
     #[test]
-    fn test_python_interop() {
+    fn python_interop() {
         assert!(Siger::new_with_code_and_raw(None, "", b"", 0, Some(0)).is_err());
 
         let qsig64 = "AACdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ";
@@ -187,7 +187,7 @@ mod test_siger {
     }
 
     #[test]
-    fn test_new_with_code_and_raw() {
+    fn new_with_code_and_raw() {
         let verfer_raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let verfer_code = matter::Codex::Ed25519;
@@ -204,7 +204,7 @@ mod test_siger {
     }
 
     #[test]
-    fn test_new_with_qb64b() {
+    fn new_with_qb64b() {
         let verfer_raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let verfer_code = matter::Codex::Ed25519;
@@ -218,7 +218,7 @@ mod test_siger {
     }
 
     #[test]
-    fn test_new_with_qb2() {
+    fn new_with_qb2() {
         let verfer_raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let verfer_code = matter::Codex::Ed25519;
@@ -231,7 +231,7 @@ mod test_siger {
     }
 
     #[test]
-    fn test_unhappy_paths() {
+    fn unhappy_paths() {
         // invalid code
         assert!(Siger::new_with_code_and_raw(None, "CESR", &[], 0, None).is_err());
     }

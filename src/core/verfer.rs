@@ -1,6 +1,7 @@
 use lazy_static::lazy_static;
 
 use crate::core::matter::{tables as matter, Matter};
+use crate::crypto::sign;
 use crate::error::{err, Error, Result};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -60,47 +61,8 @@ impl Verfer {
     }
 
     pub fn verify(&self, sig: &[u8], ser: &[u8]) -> Result<bool> {
-        match self.code().as_str() {
-            matter::Codex::Ed25519N => self.verify_ed25519_signature(sig, ser),
-            matter::Codex::Ed25519 => self.verify_ed25519_signature(sig, ser),
-            matter::Codex::ECDSA_256k1N => self.verify_ecdsa_256k1_signature(sig, ser),
-            matter::Codex::ECDSA_256k1 => self.verify_ecdsa_256k1_signature(sig, ser),
-            // matter::Codex::Ed448N => verify_ed448_signature(verfer, sig, ser)?,
-            // matter::Codex::Ed448 => verify_ed448_signature(verfer, sig, ser)?,
-            _ => err!(Error::UnexpectedCode(format!(
-                "unexpected signature code: code = '{}'",
-                self.code()
-            ))),
-        }
-    }
-
-    fn verify_ed25519_signature(&self, sig: &[u8], ser: &[u8]) -> Result<bool> {
-        use ed25519_dalek::{PublicKey, Signature, Verifier};
-
-        let public_key = PublicKey::from_bytes(self.raw().as_slice())?;
-        let signature = Signature::from_bytes(sig)?;
-
-        match public_key.verify(ser, &signature) {
-            Ok(_) => Ok(true),
-            Err(_) => Ok(false),
-        }
-    }
-
-    fn verify_ecdsa_256k1_signature(&self, sig: &[u8], ser: &[u8]) -> Result<bool> {
-        use k256::ecdsa::{signature::Verifier, Signature, VerifyingKey};
-
-        let public_key = VerifyingKey::from_sec1_bytes(self.raw().as_slice())?;
-        let signature = match Signature::try_from(sig) {
-            Ok(s) => s,
-            Err(e) => {
-                return err!(e);
-            }
-        };
-
-        match public_key.verify(ser, &signature) {
-            Ok(_) => Ok(true),
-            Err(_) => Ok(false),
-        }
+        validate_code(&self.code())?;
+        sign::verify(&self.code(), &self.raw(), sig, ser)
     }
 }
 
@@ -135,13 +97,13 @@ impl Matter for Verfer {
 // }
 
 #[cfg(test)]
-mod test_verfer {
+mod test {
     use crate::core::matter::{tables as matter, Matter};
     use crate::core::verfer::Verfer;
     use hex_literal::hex;
 
     #[test]
-    fn test_new_with_code_and_raw() {
+    fn new_with_code_and_raw() {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
         let code = matter::Codex::Ed25519N;
 
@@ -153,7 +115,7 @@ mod test_verfer {
     }
 
     #[test]
-    fn test_new_with_qb64() {
+    fn new_with_qb64() {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let good_code = matter::Codex::Ed25519N;
@@ -168,7 +130,7 @@ mod test_verfer {
     }
 
     #[test]
-    fn test_new_with_qb64b() {
+    fn new_with_qb64b() {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let good_code = matter::Codex::Ed25519N;
@@ -183,7 +145,7 @@ mod test_verfer {
     }
 
     #[test]
-    fn test_new_with_qb2() {
+    fn new_with_qb2() {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let good_code = matter::Codex::Ed25519N;
@@ -198,7 +160,7 @@ mod test_verfer {
     }
 
     #[test]
-    fn test_verify_ed25519() {
+    fn verify_ed25519() {
         use ed25519_dalek::Signer;
 
         let ser = hex!("e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f"
@@ -229,7 +191,7 @@ mod test_verfer {
     }
 
     #[test]
-    fn test_verify_ecdsa_256k1() {
+    fn verify_ecdsa_256k1() {
         use k256::ecdsa::{signature::Signer, Signature, SigningKey, VerifyingKey};
 
         let ser = hex!("e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f"
@@ -259,7 +221,7 @@ mod test_verfer {
     }
 
     #[test]
-    fn test_unhappy_paths() {
+    fn unhappy_paths() {
         assert!(Verfer { code: matter::Codex::Blake3_256.to_string(), raw: vec![], size: 0 }
             .verify(&[], &[])
             .is_err());
