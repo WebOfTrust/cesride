@@ -1,4 +1,4 @@
-pub(crate) mod tables;
+pub mod tables;
 
 use base64::{engine::general_purpose as b64_engine, Engine};
 
