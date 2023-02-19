@@ -7,6 +7,7 @@ use crate::core::{
     siger::Siger,
     verfer::Verfer,
 };
+use crate::crypto::sign;
 use crate::error::{err, Error, Result};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -45,59 +46,73 @@ fn validate_code(code: &str) -> Result<()> {
 }
 
 impl Signer {
+    pub fn verfer(&self) -> Verfer {
+        self.verfer.clone()
+    }
+
     pub fn new_with_code_and_raw(code: &str, raw: &[u8], transferable: bool) -> Result<Self> {
         validate_code(code)?;
 
-        let raw = if raw.is_empty() { generate_seed(code)? } else { raw.to_vec() };
+        let raw = if raw.is_empty() { sign::generate(code)? } else { raw.to_vec() };
 
         let mut signer: Signer = Matter::new_with_code_and_raw(code, &raw)?;
-        signer.derive_verfer(transferable)?;
+        signer.derive_and_assign_verfer(transferable)?;
         Ok(signer)
     }
 
     pub fn new_with_qb64(qb64: &str, transferable: bool) -> Result<Self> {
         let mut signer: Signer = Matter::new_with_qb64(qb64)?;
         validate_code(&signer.code)?;
-        signer.derive_verfer(transferable)?;
+        signer.derive_and_assign_verfer(transferable)?;
         Ok(signer)
     }
 
     pub fn new_with_qb64b(qb64b: &[u8], transferable: bool) -> Result<Self> {
         let mut signer: Signer = Matter::new_with_qb64b(qb64b)?;
         validate_code(&signer.code)?;
-        signer.derive_verfer(transferable)?;
+        signer.derive_and_assign_verfer(transferable)?;
         Ok(signer)
     }
 
     pub fn new_with_qb2(qb2: &[u8], transferable: bool) -> Result<Self> {
         let mut signer: Signer = Matter::new_with_qb2(qb2)?;
         validate_code(&signer.code)?;
-        signer.derive_verfer(transferable)?;
+        signer.derive_and_assign_verfer(transferable)?;
         Ok(signer)
     }
 
-    fn derive_verfer(&mut self, transferable: bool) -> Result<()> {
-        self.verfer = derive_verfer(&self.code, &self.raw, transferable)?;
+    fn derive_and_assign_verfer(&mut self, transferable: bool) -> Result<()> {
+        self.verfer = Self::derive_verfer(&self.code(), &self.raw(), transferable)?;
         Ok(())
     }
 
-    pub fn verfer(&self) -> Verfer {
-        self.verfer.clone()
+    fn derive_verfer(code: &str, private_key: &[u8], transferable: bool) -> Result<Verfer> {
+        let verfer_code = match transferable {
+            true => match code {
+                matter::Codex::Ed25519_Seed => matter::Codex::Ed25519,
+                matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1,
+                _ => return err!(Error::UnexpectedCode(code.to_string())),
+            },
+            false => match code {
+                matter::Codex::Ed25519_Seed => matter::Codex::Ed25519N,
+                matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1N,
+                _ => return err!(Error::UnexpectedCode(code.to_string())),
+            },
+        };
+
+        let verfer_raw = sign::public_key(code, private_key)?;
+        Verfer::new_with_code_and_raw(verfer_code, &verfer_raw)
     }
 
     pub fn sign_unindexed(&self, ser: &[u8]) -> Result<Cigar> {
-        let code = self.code();
-        match code.as_str() {
-            matter::Codex::Ed25519_Seed => {
-                let sig = self.sign_ed25519(ser)?;
-                Cigar::new_with_code_and_raw(&self.verfer(), matter::Codex::Ed25519_Sig, &sig)
-            }
-            matter::Codex::ECDSA_256k1_Seed => {
-                let sig = self.sign_ecdsa_256k1(ser)?;
-                Cigar::new_with_code_and_raw(&self.verfer(), matter::Codex::ECDSA_256k1_Sig, &sig)
-            }
-            _ => err!(Error::UnexpectedCode(code)),
-        }
+        let code = match self.code().as_str() {
+            matter::Codex::Ed25519_Seed => matter::Codex::Ed25519_Sig,
+            matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1_Sig,
+            _ => return err!(Error::UnexpectedCode(self.code())),
+        };
+
+        let sig = sign::sign(&self.code(), &self.raw(), ser)?;
+        Cigar::new_with_code_and_raw(&self.verfer(), code, &sig)
     }
 
     pub fn sign_indexed(
@@ -110,135 +125,43 @@ impl Signer {
         let (code, ondex) = if only {
             let ondex = None;
             let code = if index < 64 {
-                match self.code.as_str() {
+                match self.code().as_str() {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Crt,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Crt,
-                    _ => {
-                        return err!(Error::UnexpectedCode(self.code()));
-                    }
+                    _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             } else {
-                match self.code.as_str() {
+                match self.code().as_str() {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Big_Crt,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Big_Crt,
-                    _ => {
-                        return err!(Error::UnexpectedCode(self.code()));
-                    }
+                    _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             };
 
             (code, ondex)
         } else {
-            let ondex = if let Some(ondex) = ondex { ondex } else { index };
+            let ondex = ondex.unwrap_or(index);
 
             let code = if index == ondex && index < 64 {
-                match self.code.as_str() {
+                match self.code().as_str() {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1,
-                    _ => {
-                        return err!(Error::UnexpectedCode(self.code()));
-                    }
+                    _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             } else {
-                match self.code.as_str() {
+                match self.code().as_str() {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Big,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Big,
-                    _ => {
-                        return err!(Error::UnexpectedCode(self.code()));
-                    }
+                    _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             };
 
             (code, Some(ondex))
         };
 
-        let sig = match self.code.as_str() {
-            matter::Codex::Ed25519_Seed => self.sign_ed25519(ser)?,
-            matter::Codex::ECDSA_256k1_Seed => self.sign_ecdsa_256k1(ser)?,
-            _ => {
-                return err!(Error::UnexpectedCode(self.code()));
-            }
-        };
-
+        let sig = sign::sign(&self.code(), &self.raw(), ser)?;
         Siger::new_with_code_and_raw(code, &sig, index, ondex)
     }
-
-    fn sign_ed25519(&self, ser: &[u8]) -> Result<Vec<u8>> {
-        use ed25519_dalek::{ed25519::signature::Signer, Keypair, PublicKey, SecretKey};
-
-        let private_key = SecretKey::from_bytes(&self.raw)?;
-        let public_key: PublicKey = (&private_key).into();
-        Ok(Keypair { secret: private_key, public: public_key }.sign(ser).to_bytes().to_vec())
-    }
-
-    fn sign_ecdsa_256k1(&self, ser: &[u8]) -> Result<Vec<u8>> {
-        use k256::ecdsa::{signature::Signer, Signature, SigningKey};
-
-        let private_key = SigningKey::from_bytes(&self.raw)?;
-        Ok(<SigningKey as Signer<Signature>>::sign(&private_key, ser).to_bytes().to_vec())
-    }
-}
-
-fn generate_seed(code: &str) -> Result<Vec<u8>> {
-    match code {
-        matter::Codex::Ed25519_Seed => {
-            use ed25519_dalek::SecretKey;
-            use rand::rngs::OsRng;
-
-            let mut csprng = OsRng {};
-            let private_key: SecretKey = SecretKey::generate(&mut csprng);
-            Ok(private_key.as_bytes().to_vec())
-        }
-        matter::Codex::ECDSA_256k1_Seed => {
-            use k256::ecdsa::SigningKey;
-            use rand_core::OsRng;
-
-            let mut csprng = OsRng {};
-            let private_key = SigningKey::random(&mut csprng);
-
-            Ok(private_key.to_bytes().to_vec())
-        }
-        _ => err!(Error::UnexpectedCode(code.to_string())),
-    }
-}
-
-fn derive_verifying_key(code: &str, private_key_bytes: &[u8]) -> Result<Vec<u8>> {
-    match code {
-        matter::Codex::Ed25519_Seed => {
-            use ed25519_dalek::{PublicKey, SecretKey};
-
-            let private_key = SecretKey::from_bytes(private_key_bytes)?;
-            let public_key: PublicKey = (&private_key).into();
-            Ok(public_key.as_bytes().to_vec())
-        }
-        matter::Codex::ECDSA_256k1_Seed => {
-            use k256::ecdsa::{SigningKey, VerifyingKey};
-
-            let private_key = SigningKey::from_bytes(private_key_bytes)?;
-            let public_key = VerifyingKey::from(private_key);
-
-            Ok(public_key.to_encoded_point(true).as_bytes().to_vec())
-        }
-        _ => err!(Error::UnexpectedCode(code.to_string())),
-    }
-}
-
-fn derive_verfer(code: &str, private_key_bytes: &[u8], transferable: bool) -> Result<Verfer> {
-    let verfer_raw = derive_verifying_key(code, private_key_bytes)?;
-    let verfer_code = match transferable {
-        true => match code {
-            matter::Codex::Ed25519_Seed => matter::Codex::Ed25519,
-            matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1,
-            _ => return err!(Error::UnexpectedCode(code.to_string())),
-        },
-        false => match code {
-            matter::Codex::Ed25519_Seed => matter::Codex::Ed25519N,
-            matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1N,
-            _ => return err!(Error::UnexpectedCode(code.to_string())),
-        },
-    };
-
-    Verfer::new_with_code_and_raw(verfer_code, &verfer_raw)
 }
 
 impl Matter for Signer {
@@ -268,12 +191,12 @@ impl Matter for Signer {
 }
 
 #[cfg(test)]
-mod test_signer {
+mod test {
     use super::{indexer, matter, Indexer, Matter, Signer};
     use rstest::rstest;
 
     #[test]
-    fn test_conversions() {
+    fn conversions() {
         let signer =
             Signer::new_with_code_and_raw(matter::Codex::Ed25519_Seed, &[], false).unwrap();
 
@@ -290,7 +213,7 @@ mod test_signer {
     }
 
     #[test]
-    fn test_sign_ed25519_unindexed() {
+    fn sign_ed25519_unindexed() {
         use rand_core::CryptoRngCore;
 
         let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
@@ -310,7 +233,7 @@ mod test_signer {
     }
 
     #[test]
-    fn test_sign_ecdsa_256k1_unindexed() {
+    fn sign_ecdsa_256k1_unindexed() {
         let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
         let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
 
@@ -333,7 +256,7 @@ mod test_signer {
     #[case(true, 4, Some(6), 0, indexer::Codex::Ed25519_Crt)]
     #[case(true, 65, None, 0, indexer::Codex::Ed25519_Big_Crt)]
     #[case(true, 65, Some(67), 0, indexer::Codex::Ed25519_Big_Crt)]
-    fn test_sign_ed25519_indexed(
+    fn sign_ed25519_indexed(
         #[case] only: bool,
         #[case] index: u32,
         #[case] input_ondex: Option<u32>,
@@ -370,7 +293,7 @@ mod test_signer {
     #[case(true, 4, Some(6), 0, indexer::Codex::ECDSA_256k1_Crt)]
     #[case(true, 65, None, 0, indexer::Codex::ECDSA_256k1_Big_Crt)]
     #[case(true, 65, Some(67), 0, indexer::Codex::ECDSA_256k1_Big_Crt)]
-    fn test_sign_ecdsa_256k1_indexed(
+    fn sign_ecdsa_256k1_indexed(
         #[case] only: bool,
         #[case] index: u32,
         #[case] input_ondex: Option<u32>,
@@ -392,7 +315,7 @@ mod test_signer {
     }
 
     #[test]
-    fn test_unhappy_paths() {
+    fn unhappy_paths() {
         let raw: [u8; 32] = [0; 32];
         assert!(Signer::new_with_code_and_raw(matter::Codex::Ed25519N, &raw, false).is_err());
         assert!(Signer::new_with_code_and_raw(matter::Codex::Ed25519N, &[], false).is_err());

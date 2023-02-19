@@ -104,13 +104,13 @@ impl Matter for Cigar {
 }
 
 #[cfg(test)]
-mod test_cigar {
+mod test {
     use crate::core::cigar::Cigar;
     use crate::core::matter::{tables as matter, Matter};
     use crate::core::verfer::Verfer;
 
     #[test]
-    fn test_new_with_code_and_raw() {
+    fn new_with_code_and_raw() {
         let vcode = matter::Codex::Ed25519;
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
         let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();
@@ -126,7 +126,7 @@ mod test_cigar {
 
     // this test was ported from KERIpy
     #[test]
-    fn test_new_with_qb64() {
+    fn new_with_qb64() {
         let qsig64 = "0BCdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ";
         let vcode = matter::Codex::Ed25519;
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
@@ -142,7 +142,7 @@ mod test_cigar {
     }
 
     #[test]
-    fn test_new_with_qb64b() {
+    fn new_with_qb64b() {
         let qsig64b = "0BCdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ".as_bytes();
         let vcode = matter::Codex::Ed25519;
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
@@ -158,7 +158,7 @@ mod test_cigar {
     }
 
     #[test]
-    fn test_new_with_qb2() {
+    fn new_with_qb2() {
         let qb2 = [
             208, 16, 157, 35, 195, 146, 66, 67, 9, 246, 191, 177, 138, 8, 196, 7, 33, 35, 34, 230,
             187, 44, 113, 247, 0, 226, 118, 216, 244, 10, 170, 88, 204, 134, 232, 92, 130, 31, 103,
@@ -179,7 +179,7 @@ mod test_cigar {
     }
 
     #[test]
-    fn test_set_verfer() {
+    fn set_verfer() {
         let qsig64 = "0BCdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ";
         let vcode = matter::Codex::Ed25519;
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
@@ -197,7 +197,7 @@ mod test_cigar {
     }
 
     #[test]
-    fn test_unhappy_paths() {
+    fn unhappy_paths() {
         let vcode = matter::Codex::Ed25519;
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
         let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();

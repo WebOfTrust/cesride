@@ -5,6 +5,8 @@
 
 Cryptographic primitives for use with Composable Event Streaming Representation (CESR).
 
+This library is **currently under construction**. If you want to help build, see [contributing](#contributing) below.
+
 ## Important Reference Material
 - WebOfTrust/[ietf-cesr](https://github.com/WebOfTrust/ietf-cesr) repository - IETF draft specification for CESR
 - Design Assumptions, Use Cases, and ToDo list - [HackMD link](https://hackmd.io/W2Z39cuSSTmD2TovVLvAPg?view)

@@ -88,7 +88,7 @@ impl Dater {
     }
 
     fn dts(&self) -> Result<String> {
-        let hs = matter::sizage(&self.code)?.hs as usize;
+        let hs = matter::sizage(&self.code())?.hs as usize;
         let qb64 = self.qb64()?;
         Ok(b64_to_iso_8601(&qb64[hs..]))
     }
@@ -125,12 +125,12 @@ impl Matter for Dater {
 }
 
 #[cfg(test)]
-mod test_dater {
+mod test {
     use super::{matter, Dater, Matter};
     use rstest::rstest;
 
     #[rstest]
-    fn test_new_default(
+    fn new_default(
         #[values(
             &Dater::new_with_code_and_raw("", &[]).unwrap(),
             &Dater::new_with_dts("").unwrap(),
@@ -158,7 +158,7 @@ mod test_dater {
         b"\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xcd4",
         b"\xd4\x00\x06\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xcd4"
     )]
-    fn test_new_with_data(
+    fn new_with_data(
         #[case] dts: &str,
         #[case] dtqb64: &str,
         #[case] dtraw: &[u8],
@@ -190,20 +190,18 @@ mod test_dater {
         b"\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xff"
     )]
     #[case("", b"\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xcd4")]
-    fn test_unhappy_new_with_code_and_raw(#[case] code: &str, #[case] dtraw: &[u8]) {
+    fn unhappy_new_with_code_and_raw(#[case] code: &str, #[case] dtraw: &[u8]) {
         assert!(Dater::new_with_code_and_raw(code, dtraw).is_err());
     }
 
     #[rstest]
-    fn test_unhappy_new_with_dts(
-        #[values("not a date", "2020-08-22T17:50:09.988921-01")] dts: &str,
-    ) {
+    fn unhappy_new_with_dts(#[values("not a date", "2020-08-22T17:50:09.988921-01")] dts: &str) {
         assert!(Dater::new_with_dts(dts).is_err());
         assert!(Dater::new_with_dtsb(dts.as_bytes()).is_err());
     }
 
     #[rstest]
-    fn test_unhappy_new_with_qb64(
+    fn unhappy_new_with_qb64(
         #[values(
             "1ABG2020-08-22T17c50c09d988921-01c00",
             "1AAG2020-08-22T17c50c09d988921-01c",
@@ -216,7 +214,7 @@ mod test_dater {
     }
 
     #[rstest]
-    fn test_unhappy_new_with_qb2(
+    fn unhappy_new_with_qb2(
         #[values(
             b"\xd4\x01\x06\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xcd4",
             b"\xd4\x00\x06\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5",

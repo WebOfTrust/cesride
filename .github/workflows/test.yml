@@ -14,18 +14,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Install stable toolchain
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
 
+      - name: Format
+        run: cargo fmt --all -- --check
+
       - name: Check
         run: cargo check
 
       - name: Clippy
-        run: RUSTFLAGS="-Dwarnings" cargo clippy -- -D warnings
+        run: cargo clippy -- -D warnings
 
       - name: Build
         run: cargo build --release
@@ -33,13 +38,10 @@ jobs:
       - name: Test
         run: cargo test --release
 
-      - name: Format
-        run: cargo fmt --all -- --check
-
-      - name: Security Audit
+      - name: Audit
         run: cargo audit
 
-      - name: Run cargo-tarpaulin
+      - name: Tarpaulin
         uses: actions-rs/tarpaulin@v0.1
         with:
           version: '0.22.0'

@@ -461,12 +461,11 @@ pub trait Indexer: Default {
             }
 
             if li != 0 {
-                return if szg.ls == 1 {
-                    err!(Error::NonZeroedLeadByte())
-                } else {
-                    // unreachable - no sizage has ls > 1
-                    err!(Error::NonZeroedLeadBytes())
-                };
+                match szg.ls {
+                    1 => return err!(Error::NonZeroedLeadByte()),
+                    // unreachable since sizage has no ls > 1
+                    _ => return err!(Error::NonZeroedLeadBytes()),
+                }
             }
 
             raw = paw[ps as usize..].to_owned();
@@ -578,12 +577,11 @@ pub trait Indexer: Default {
         } else {
             for value in trim.iter().take((bcs + szg.ls) as usize).skip(bcs as usize) {
                 if *value != 0 {
-                    return if szg.ls == 1 {
-                        err!(Error::NonZeroedLeadByte())
-                    } else {
-                        // unreachable - no sizage has ls > 1
-                        err!(Error::NonZeroedLeadBytes())
-                    };
+                    match szg.ls {
+                        1 => return err!(Error::NonZeroedLeadByte()),
+                        // unreachable since size has no ls > 1
+                        _ => return err!(Error::NonZeroedLeadBytes()),
+                    }
                 }
             }
         }
@@ -606,7 +604,7 @@ pub trait Indexer: Default {
 }
 
 #[cfg(test)]
-mod indexer_tests {
+mod test {
     use base64::{engine::general_purpose as b64_engine, Engine};
 
     use crate::core::{
@@ -668,7 +666,7 @@ mod indexer_tests {
     }
 
     #[test]
-    fn test_python_interop() {
+    fn python_interop() {
         let sig =  b"\x99\xd2<9$$0\x9fk\xfb\x18\xa0\x8c@r\x122.k\xb2\xc7\x1fp\x0e'm\x8f@\xaa\xa5\x8c\xc8n\x85\xc8!\xf6q\x91p\xa9\xec\xcf\x92\xaf)\xde\xca\xfc\x7f~\xd7o|\x17\x82\x1d\xd4<o\"\x81&\t";
         assert_eq!(sig.len(), 64);
 
@@ -741,7 +739,7 @@ mod indexer_tests {
     }
 
     #[test]
-    fn test_exfil_infil_bexfil_binfil() {
+    fn exfil_infil_bexfil_binfil() {
         let qb64 = "AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ";
 
         // basic
@@ -774,7 +772,7 @@ mod indexer_tests {
     }
 
     #[test]
-    fn test_zero_fs() {
+    fn zero_fs() {
         let indexer =
             TestIndexer::new_with_code_and_raw(Codex::TBD0, &[0, 0, 0], 1, Some(1)).unwrap();
         assert!(TestIndexer::new_with_qb64(&indexer.qb64().unwrap()).is_ok());
@@ -783,7 +781,7 @@ mod indexer_tests {
     }
 
     #[test]
-    fn test_unhappy_paths() {
+    fn unhappy_paths() {
         assert!(TestIndexer::new_with_code_and_raw("", &[], 0, None).is_err());
         assert!(TestIndexer::new_with_code_and_raw(Codex::Ed25519, &[], 0, None).is_err());
         assert!(TestIndexer::new_with_qb64("").is_err());

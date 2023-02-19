@@ -357,11 +357,10 @@ pub trait Matter: Default {
             }
 
             if li != 0 {
-                return if szg.ls == 1 {
-                    err!(Error::NonZeroedLeadByte())
-                } else {
-                    err!(Error::NonZeroedLeadBytes())
-                };
+                match szg.ls {
+                    1 => return err!(Error::NonZeroedLeadByte()),
+                    _ => return err!(Error::NonZeroedLeadBytes()),
+                }
             }
             raw = paw[szg.ls as usize..].to_vec();
             paw.clear();
@@ -437,12 +436,8 @@ pub trait Matter: Default {
             for value in trim.iter().take((bcs + szg.ls) as usize).skip(bcs as usize) {
                 if *value != 0 {
                     match szg.ls {
-                        1 => {
-                            return err!(Error::NonZeroedLeadByte());
-                        }
-                        _ => {
-                            return err!(Error::NonZeroedLeadBytes());
-                        }
+                        1 => return err!(Error::NonZeroedLeadByte()),
+                        _ => return err!(Error::NonZeroedLeadBytes()),
                     }
                 }
             }
@@ -465,7 +460,7 @@ pub trait Matter: Default {
 }
 
 #[cfg(test)]
-mod matter_tests {
+mod test {
     use crate::core::matter::{tables as matter, Matter};
     use rstest::rstest;
 
@@ -518,7 +513,7 @@ mod matter_tests {
     #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::Bytes_Big_L0)]
     #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::Bytes_Big_L1)]
     #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::Bytes_Big_L2)]
-    fn test_matter_new_variable_length(#[case] raw: &Vec<u8>, #[case] code: &str) {
+    fn matter_new_variable_length(#[case] raw: &Vec<u8>, #[case] code: &str) {
         let m = TestMatter::new_with_code_and_raw(code, raw).unwrap();
         let m2 = TestMatter::new_with_qb64(&m.qb64().unwrap()).unwrap();
         assert_eq!(m.code, m2.code);
@@ -531,7 +526,7 @@ mod matter_tests {
     }
 
     #[test]
-    fn test_defaults_and_overrides() {
+    fn defaults_and_overrides() {
         // default
         let m = TestMatter::default();
         assert_eq!(m.code, matter::Codex::Blake3_256);
@@ -553,7 +548,7 @@ mod matter_tests {
     }
 
     #[test]
-    fn test_exfil_infil_bexfil_binfil() {
+    fn exfil_infil_bexfil_binfil() {
         let qb64 = "BGlOiUdp5sMmfotHfCWQKEzWR91C72AH0lT84c0um-Qj";
 
         // basic
@@ -583,7 +578,7 @@ mod matter_tests {
     }
 
     #[test]
-    fn test_big_boundary() {
+    fn big_boundary() {
         let m =
             TestMatter::new_with_code_and_raw(matter::Codex::Bytes_L2, &[0; 4095 * 3 + 1]).unwrap();
         assert_eq!(m.raw().len(), 4095 * 3 + 1);
@@ -591,7 +586,7 @@ mod matter_tests {
     }
 
     #[test]
-    fn test_unhappy_paths() {
+    fn unhappy_paths() {
         // empty material
         assert!(TestMatter::new_with_code_and_raw("", &[]).is_err());
         assert!(TestMatter::new_with_code_and_raw(matter::Codex::Blake3_256, &[]).is_err());
