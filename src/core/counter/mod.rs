@@ -1,6 +1,8 @@
 pub mod tables;
 
+use self::tables::sizage;
 use crate::core::util;
+use crate::counter::Sizage;
 use crate::error::{err, Error, Result};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -302,6 +304,10 @@ impl Counter {
         self.count = count;
 
         Ok(())
+    }
+
+    pub fn sizage(&self) -> Result<Sizage> {
+        sizage(&self.code)
     }
 }
 
