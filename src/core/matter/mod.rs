@@ -5,7 +5,7 @@ use crate::error::{err, Error, Result};
 
 pub mod tables;
 
-pub(crate) trait Matter: Default {
+pub trait Matter: Default {
     fn code(&self) -> String;
     fn size(&self) -> u32;
     fn raw(&self) -> Vec<u8>;
@@ -498,6 +498,16 @@ pub(crate) trait Matter: Default {
         self.set_raw(&raw);
 
         Ok(())
+    }
+
+    fn raw_size(&self) -> Result<u32> {
+        let sizes = tables::sizage(&self.code())?;
+        if sizes.fs != 0 {
+            Ok(sizes.fs)
+        } else {
+            let fs = sizes.hs + sizes.ss + (self.size() * 4);
+            Ok(fs)
+        }
     }
 }
 

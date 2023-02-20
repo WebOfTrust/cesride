@@ -1,7 +1,7 @@
 use crate::error::{err, Error, Result};
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct Sizage {
+pub struct Sizage {
     pub hs: u32,
     pub ss: u32,
     pub ls: u32,
