@@ -7,6 +7,7 @@ pub mod indexer;
 pub mod matter;
 pub mod sadder;
 pub mod saider;
+pub mod seqner;
 pub mod siger;
 pub mod signer;
 pub mod util;
