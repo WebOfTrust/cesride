@@ -2,7 +2,7 @@ use lazy_static::lazy_static;
 
 use crate::core::{
     cigar::Cigar,
-    indexer::{tables as indexer, Indexer},
+    indexer::tables as indexer,
     matter::{tables as matter, Matter},
     siger::Siger,
     verfer::Verfer,
@@ -46,62 +46,34 @@ fn validate_code(code: &str) -> Result<()> {
 }
 
 impl Signer {
+    pub fn new(
+        transferable: Option<bool>,
+        code: Option<&str>,
+        raw: Option<&[u8]>,
+        qb64b: Option<&mut Vec<u8>>,
+        qb64: Option<&str>,
+        qb2: Option<&mut Vec<u8>>,
+        strip: Option<bool>,
+    ) -> Result<Self> {
+        let transferable = transferable.unwrap_or(true);
+
+        let mut signer: Signer = if qb64b.is_none() && qb64.is_none() && qb2.is_none() {
+            let code = code.unwrap_or(matter::Codex::Ed25519_Seed);
+            validate_code(code)?;
+            let raw = if let Some(raw) = raw { raw.to_vec() } else { sign::generate(code)? };
+            Matter::new(Some(code), Some(&raw), None, None, None, None)?
+        } else {
+            let signer: Self = Matter::new(code, raw, qb64b, qb64, qb2, strip)?;
+            validate_code(&signer.code())?;
+            signer
+        };
+        signer.derive_and_assign_verfer(transferable)?;
+
+        Ok(signer)
+    }
+
     pub fn verfer(&self) -> Verfer {
         self.verfer.clone()
-    }
-
-    pub fn new_with_code_and_raw(code: &str, raw: &[u8], transferable: bool) -> Result<Self> {
-        validate_code(code)?;
-
-        let raw = if raw.is_empty() { sign::generate(code)? } else { raw.to_vec() };
-
-        let mut signer: Signer = Matter::new_with_code_and_raw(code, &raw)?;
-        signer.derive_and_assign_verfer(transferable)?;
-        Ok(signer)
-    }
-
-    pub fn new_with_qb64(qb64: &str, transferable: bool) -> Result<Self> {
-        let mut signer: Signer = Matter::new_with_qb64(qb64)?;
-        validate_code(&signer.code)?;
-        signer.derive_and_assign_verfer(transferable)?;
-        Ok(signer)
-    }
-
-    pub fn new_with_qb64b(qb64b: &[u8], transferable: bool) -> Result<Self> {
-        let mut signer: Signer = Matter::new_with_qb64b(qb64b)?;
-        validate_code(&signer.code)?;
-        signer.derive_and_assign_verfer(transferable)?;
-        Ok(signer)
-    }
-
-    pub fn new_with_qb2(qb2: &[u8], transferable: bool) -> Result<Self> {
-        let mut signer: Signer = Matter::new_with_qb2(qb2)?;
-        validate_code(&signer.code)?;
-        signer.derive_and_assign_verfer(transferable)?;
-        Ok(signer)
-    }
-
-    fn derive_and_assign_verfer(&mut self, transferable: bool) -> Result<()> {
-        self.verfer = Self::derive_verfer(&self.code(), &self.raw(), transferable)?;
-        Ok(())
-    }
-
-    fn derive_verfer(code: &str, private_key: &[u8], transferable: bool) -> Result<Verfer> {
-        let verfer_code = match transferable {
-            true => match code {
-                matter::Codex::Ed25519_Seed => matter::Codex::Ed25519,
-                matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1,
-                _ => return err!(Error::UnexpectedCode(code.to_string())),
-            },
-            false => match code {
-                matter::Codex::Ed25519_Seed => matter::Codex::Ed25519N,
-                matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1N,
-                _ => return err!(Error::UnexpectedCode(code.to_string())),
-            },
-        };
-
-        let verfer_raw = sign::public_key(code, private_key)?;
-        Verfer::new_with_code_and_raw(verfer_code, &verfer_raw)
     }
 
     pub fn sign_unindexed(&self, ser: &[u8]) -> Result<Cigar> {
@@ -112,7 +84,7 @@ impl Signer {
         };
 
         let sig = sign::sign(&self.code(), &self.raw(), ser)?;
-        Cigar::new_with_code_and_raw(&self.verfer(), code, &sig)
+        Cigar::new(Some(&self.verfer()), Some(code), Some(&sig), None, None, None, None)
     }
 
     pub fn sign_indexed(
@@ -160,7 +132,30 @@ impl Signer {
         };
 
         let sig = sign::sign(&self.code(), &self.raw(), ser)?;
-        Siger::new_with_code_and_raw(code, &sig, index, ondex)
+        Siger::new(None, Some(index), ondex, Some(code), Some(&sig), None, None, None, None)
+    }
+
+    fn derive_and_assign_verfer(&mut self, transferable: bool) -> Result<()> {
+        self.verfer = Self::derive_verfer(&self.code(), &self.raw(), transferable)?;
+        Ok(())
+    }
+
+    fn derive_verfer(code: &str, private_key: &[u8], transferable: bool) -> Result<Verfer> {
+        let verfer_code = match transferable {
+            true => match code {
+                matter::Codex::Ed25519_Seed => matter::Codex::Ed25519,
+                matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1,
+                _ => return err!(Error::UnexpectedCode(code.to_string())),
+            },
+            false => match code {
+                matter::Codex::Ed25519_Seed => matter::Codex::Ed25519N,
+                matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1N,
+                _ => return err!(Error::UnexpectedCode(code.to_string())),
+            },
+        };
+
+        let verfer_raw = sign::public_key(code, private_key)?;
+        Verfer::new(Some(verfer_code), Some(&verfer_raw), None, None, None, None)
     }
 }
 
@@ -192,24 +187,57 @@ impl Matter for Signer {
 
 #[cfg(test)]
 mod test {
-    use super::{indexer, matter, Indexer, Matter, Signer};
+    use crate::core::{
+        indexer::{tables as indexer, Indexer},
+        matter::{tables as matter, Matter},
+        signer::Signer,
+    };
     use rstest::rstest;
 
     #[test]
-    fn conversions() {
-        let signer =
-            Signer::new_with_code_and_raw(matter::Codex::Ed25519_Seed, &[], false).unwrap();
+    fn new() {
+        let signer = Signer::new(None, None, None, None, None, None, None).unwrap();
+        assert!(
+            Signer::new(None, None, None, None, Some(&signer.qb64().unwrap()), None, None).is_ok()
+        );
+    }
 
-        assert!(Signer::new_with_qb2(&signer.qb2().unwrap(), true).is_ok());
-        assert!(Signer::new_with_qb64(&signer.qb64().unwrap(), true).is_ok());
-        assert!(Signer::new_with_qb64b(&signer.qb64b().unwrap(), true).is_ok());
+    #[rstest]
+    fn conversions(
+        #[values(matter::Codex::Ed25519_Seed, matter::Codex::ECDSA_256k1_Seed)] code: &str,
+    ) {
+        let signer = Signer::new(Some(false), Some(code), None, None, None, None, None).unwrap();
 
-        let signer =
-            Signer::new_with_code_and_raw(matter::Codex::ECDSA_256k1_Seed, &[], false).unwrap();
-
-        assert!(Signer::new_with_qb2(&signer.qb2().unwrap(), true).is_ok());
-        assert!(Signer::new_with_qb64(&signer.qb64().unwrap(), true).is_ok());
-        assert!(Signer::new_with_qb64b(&signer.qb64b().unwrap(), true).is_ok());
+        assert!(Signer::new(
+            Some(true),
+            None,
+            None,
+            Some(&mut signer.qb64b().unwrap()),
+            None,
+            None,
+            None
+        )
+        .is_ok());
+        assert!(Signer::new(
+            Some(true),
+            None,
+            None,
+            None,
+            Some(&signer.qb64().unwrap()),
+            None,
+            None
+        )
+        .is_ok());
+        assert!(Signer::new(
+            Some(true),
+            None,
+            None,
+            None,
+            None,
+            Some(&mut signer.qb2().unwrap()),
+            None
+        )
+        .is_ok());
     }
 
     #[test]
@@ -221,10 +249,19 @@ mod test {
 
         let mut seed: [u8; 32] = [0; 32];
         let mut csprng = rand_core::OsRng {};
+        // one can use any 32 octet value for an ed25519 key
         csprng.as_rngcore().fill_bytes(&mut seed);
 
-        let signer =
-            Signer::new_with_code_and_raw(matter::Codex::Ed25519_Seed, &seed, true).unwrap();
+        let signer = Signer::new(
+            Some(true),
+            Some(matter::Codex::Ed25519_Seed),
+            Some(&seed),
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
 
         let cigar = signer.sign_unindexed(ser).unwrap();
         assert_eq!(cigar.code(), matter::Codex::Ed25519_Sig);
@@ -237,8 +274,16 @@ mod test {
         let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
         let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
 
-        let signer =
-            Signer::new_with_code_and_raw(matter::Codex::ECDSA_256k1_Seed, &[], true).unwrap();
+        let signer = Signer::new(
+            Some(true),
+            Some(matter::Codex::ECDSA_256k1_Seed),
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
 
         let cigar = signer.sign_unindexed(ser).unwrap();
         assert_eq!(cigar.code(), matter::Codex::ECDSA_256k1_Sig);
@@ -272,8 +317,16 @@ mod test {
         let mut csprng = rand_core::OsRng {};
         csprng.as_rngcore().fill_bytes(&mut seed);
 
-        let signer =
-            Signer::new_with_code_and_raw(matter::Codex::Ed25519_Seed, &seed, true).unwrap();
+        let signer = Signer::new(
+            Some(true),
+            Some(matter::Codex::Ed25519_Seed),
+            Some(&seed),
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
 
         let siger = signer.sign_indexed(ser, only, index, input_ondex).unwrap();
         assert_eq!(siger.code(), siger_code);
@@ -303,8 +356,16 @@ mod test {
         let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
         let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
 
-        let signer =
-            Signer::new_with_code_and_raw(matter::Codex::ECDSA_256k1_Seed, &[], true).unwrap();
+        let signer = Signer::new(
+            Some(true),
+            Some(matter::Codex::ECDSA_256k1_Seed),
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
 
         let siger = signer.sign_indexed(ser, only, index, input_ondex).unwrap();
         assert_eq!(siger.code(), siger_code);
@@ -317,7 +378,25 @@ mod test {
     #[test]
     fn unhappy_paths() {
         let raw: [u8; 32] = [0; 32];
-        assert!(Signer::new_with_code_and_raw(matter::Codex::Ed25519N, &raw, false).is_err());
-        assert!(Signer::new_with_code_and_raw(matter::Codex::Ed25519N, &[], false).is_err());
+        assert!(Signer::new(
+            Some(false),
+            Some(matter::Codex::Ed25519N),
+            Some(&raw),
+            None,
+            None,
+            None,
+            None
+        )
+        .is_err());
+        assert!(Signer::new(
+            Some(false),
+            Some(matter::Codex::Ed25519N),
+            None,
+            None,
+            None,
+            None,
+            None
+        )
+        .is_err());
     }
 }

@@ -40,30 +40,19 @@ fn validate_code(code: &str) -> Result<()> {
 }
 
 impl Cigar {
-    pub fn new_with_code_and_raw(verfer: &Verfer, code: &str, raw: &[u8]) -> Result<Cigar> {
-        validate_code(code)?;
-        let mut cigar: Cigar = Matter::new_with_code_and_raw(code, raw)?;
-        cigar.set_verfer(verfer);
-        Ok(cigar)
-    }
-
-    pub fn new_with_qb64(verfer: &Verfer, qb64: &str) -> Result<Cigar> {
-        let mut cigar: Cigar = Matter::new_with_qb64(qb64)?;
-        cigar.set_verfer(verfer);
-        validate_code(&cigar.code())?;
-        Ok(cigar)
-    }
-
-    pub fn new_with_qb64b(verfer: &Verfer, qb64b: &[u8]) -> Result<Cigar> {
-        let mut cigar: Cigar = Matter::new_with_qb64b(qb64b)?;
-        cigar.set_verfer(verfer);
-        validate_code(&cigar.code())?;
-        Ok(cigar)
-    }
-
-    pub fn new_with_qb2(verfer: &Verfer, qb2: &[u8]) -> Result<Cigar> {
-        let mut cigar: Cigar = Matter::new_with_qb2(qb2)?;
-        cigar.set_verfer(verfer);
+    pub fn new(
+        verfer: Option<&Verfer>,
+        code: Option<&str>,
+        raw: Option<&[u8]>,
+        qb64b: Option<&mut Vec<u8>>,
+        qb64: Option<&str>,
+        qb2: Option<&mut Vec<u8>>,
+        strip: Option<bool>,
+    ) -> Result<Self> {
+        let mut cigar: Self = Matter::new(code, raw, qb64b, qb64, qb2, strip)?;
+        if let Some(verfer) = verfer {
+            cigar.set_verfer(verfer);
+        }
         validate_code(&cigar.code())?;
         Ok(cigar)
     }
@@ -72,7 +61,7 @@ impl Cigar {
         self.verfer.clone()
     }
 
-    pub fn set_verfer(&mut self, verfer: &Verfer) {
+    fn set_verfer(&mut self, verfer: &Verfer) {
         self.verfer = verfer.clone()
     }
 }
@@ -110,31 +99,42 @@ mod test {
     use crate::core::verfer::Verfer;
 
     #[test]
-    fn new_with_code_and_raw() {
+    fn new() {
         let vcode = matter::Codex::Ed25519;
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
-        let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();
+        let verfer = Verfer::new(Some(vcode), Some(vraw), None, None, None, None).unwrap();
         let code = matter::Codex::Ed25519_Sig;
         let raw = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ[]";
 
-        let cigar = Cigar::new_with_code_and_raw(&verfer, code, raw).unwrap();
+        assert!(Cigar::new(Some(&verfer), Some(code), Some(raw), None, None, None, None).is_ok());
+        assert!(Cigar::new(None, Some(code), Some(raw), None, None, None, None).is_ok());
+    }
+
+    #[test]
+    fn new_with_code_and_raw() {
+        let vcode = matter::Codex::Ed25519;
+        let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
+        let verfer = Verfer::new(Some(vcode), Some(vraw), None, None, None, None).unwrap();
+        let code = matter::Codex::Ed25519_Sig;
+        let raw = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ[]";
+
+        let cigar =
+            Cigar::new(Some(&verfer), Some(code), Some(raw), None, None, None, None).unwrap();
         assert_eq!(cigar.code(), code);
         assert_eq!(cigar.raw(), raw);
         assert_eq!(cigar.verfer().raw(), verfer.raw());
         assert_eq!(cigar.verfer().code(), verfer.code());
     }
 
-    // this test was ported from KERIpy
     #[test]
     fn new_with_qb64() {
         let qsig64 = "0BCdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ";
         let vcode = matter::Codex::Ed25519;
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
-        let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();
+        let verfer = Verfer::new(Some(vcode), Some(vraw), None, None, None, None).unwrap();
 
-        let cigar = Cigar::new_with_qb64(&verfer, qsig64).unwrap();
+        let cigar = Cigar::new(Some(&verfer), None, None, None, Some(qsig64), None, None).unwrap();
 
-        // this is probably the most critical line (the previous is obviously important too)
         assert_eq!(cigar.code(), matter::Codex::Ed25519_Sig);
         assert_eq!(cigar.qb64().unwrap(), qsig64);
         assert_eq!(cigar.verfer().raw(), verfer.raw());
@@ -146,11 +146,12 @@ mod test {
         let qsig64b = "0BCdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ".as_bytes();
         let vcode = matter::Codex::Ed25519;
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
-        let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();
+        let verfer = Verfer::new(Some(vcode), Some(vraw), None, None, None, None).unwrap();
 
-        let cigar = Cigar::new_with_qb64b(&verfer, qsig64b).unwrap();
+        let cigar =
+            Cigar::new(Some(&verfer), None, None, Some(&mut qsig64b.to_vec()), None, None, None)
+                .unwrap();
 
-        // this is probably the most critical line (the previous is obviously important too)
         assert_eq!(cigar.code(), matter::Codex::Ed25519_Sig);
         assert_eq!(cigar.qb64b().unwrap(), qsig64b);
         assert_eq!(cigar.verfer().raw(), verfer.raw());
@@ -167,9 +168,11 @@ mod test {
         ];
         let vcode = matter::Codex::Ed25519;
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
-        let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();
+        let verfer = Verfer::new(Some(vcode), Some(vraw), None, None, None, None).unwrap();
 
-        let cigar = Cigar::new_with_qb2(&verfer, &qb2).unwrap();
+        let cigar =
+            Cigar::new(Some(&verfer), None, None, None, None, Some(&mut qb2.to_vec()), None)
+                .unwrap();
 
         // this is probably the most critical line (the previous is obviously important too)
         assert_eq!(cigar.code(), matter::Codex::Ed25519_Sig);
@@ -183,13 +186,14 @@ mod test {
         let qsig64 = "0BCdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ";
         let vcode = matter::Codex::Ed25519;
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
-        let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();
+        let verfer = Verfer::new(Some(vcode), Some(vraw), None, None, None, None).unwrap();
 
-        let mut cigar = Cigar::new_with_qb64(&verfer, qsig64).unwrap();
+        let mut cigar =
+            Cigar::new(Some(&verfer), None, None, None, Some(qsig64), None, None).unwrap();
 
         let vcode2 = matter::Codex::Ed25519N;
         let vraw2 = b"abcdefghijklmnopqrstuvwxyz543210";
-        let verfer2 = Verfer::new_with_code_and_raw(vcode2, vraw2).unwrap();
+        let verfer2 = Verfer::new(Some(vcode2), Some(vraw2), None, None, None, None).unwrap();
 
         assert_ne!(cigar.verfer().raw(), vraw2);
         cigar.set_verfer(&verfer2);
@@ -200,8 +204,8 @@ mod test {
     fn unhappy_paths() {
         let vcode = matter::Codex::Ed25519;
         let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
-        let verfer = Verfer::new_with_code_and_raw(vcode, vraw).unwrap();
+        let verfer = Verfer::new(Some(vcode), Some(vraw), None, None, None, None).unwrap();
 
-        assert!(Cigar::new_with_code_and_raw(&verfer, "CESR", &[]).is_err());
+        assert!(Cigar::new(Some(&verfer), Some("CESR"), Some(&[]), None, None, None, None).is_err());
     }
 }

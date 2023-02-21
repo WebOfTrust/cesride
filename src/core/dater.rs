@@ -47,53 +47,36 @@ fn now_as_b64() -> String {
 }
 
 impl Dater {
-    fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Self> {
-        if !code.is_empty() {
-            validate_code(code)?;
-        }
-        if raw.is_empty() {
-            let qb64 = format!("{}{}", matter::Codex::DateTime, now_as_b64());
-            Matter::new_with_qb64(&qb64)
+    pub fn new(
+        dts: Option<&str>,
+        code: Option<&str>,
+        raw: Option<&[u8]>,
+        qb64b: Option<&mut Vec<u8>>,
+        qb64: Option<&str>,
+        qb2: Option<&mut Vec<u8>>,
+        strip: Option<bool>,
+    ) -> Result<Self> {
+        let code = if let Some(code) = code { Some(code) } else { Some(matter::Codex::DateTime) };
+
+        let dater: Self = if raw.is_none() && qb64b.is_none() && qb64.is_none() && qb2.is_none() {
+            let b64 = if let Some(dts) = dts { iso_8601_to_b64(dts) } else { now_as_b64() };
+            let qb64 = format!("{}{}", matter::Codex::DateTime, &b64);
+            Matter::new(code, raw, qb64b, Some(&qb64), qb2, strip)?
         } else {
-            Matter::new_with_code_and_raw(code, raw)
-        }
-    }
+            Matter::new(code, raw, qb64b, qb64, qb2, strip)?
+        };
 
-    fn new_with_dts(dts: &str) -> Result<Self> {
-        let b64 = if dts.is_empty() { now_as_b64() } else { iso_8601_to_b64(dts) };
-        let qb64 = format!("{}{}", matter::Codex::DateTime, &b64);
-        Matter::new_with_qb64(&qb64)
-    }
-
-    fn new_with_dtsb(dts: &[u8]) -> Result<Self> {
-        Dater::new_with_dts(&String::from_utf8(dts.to_vec())?)
-    }
-
-    fn new_with_qb64(qb64: &str) -> Result<Self> {
-        let dater: Dater = Matter::new_with_qb64(qb64)?;
         validate_code(&dater.code())?;
         Ok(dater)
     }
 
-    fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
-        let dater: Dater = Matter::new_with_qb64b(qb64b)?;
-        validate_code(&dater.code())?;
-        Ok(dater)
-    }
-
-    fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
-        let dater: Dater = Matter::new_with_qb2(qb2)?;
-        validate_code(&dater.code())?;
-        Ok(dater)
-    }
-
-    fn dts(&self) -> Result<String> {
+    pub fn dts(&self) -> Result<String> {
         let hs = matter::sizage(&self.code())?.hs as usize;
         let qb64 = self.qb64()?;
         Ok(b64_to_iso_8601(&qb64[hs..]))
     }
 
-    fn dtsb(&self) -> Result<Vec<u8>> {
+    pub fn dtsb(&self) -> Result<Vec<u8>> {
         Ok(self.dts()?.as_bytes().to_vec())
     }
 }
@@ -129,16 +112,23 @@ mod test {
     use super::{matter, Dater, Matter};
     use rstest::rstest;
 
+    #[test]
+    fn new() {
+        let dts = "2020-08-22T17:50:09.988921-01:00";
+        let qb64 =
+            Dater::new(Some(dts), None, None, None, None, None, None).unwrap().qb64().unwrap();
+        assert!(Dater::new(Some(dts), None, None, None, None, None, None).is_ok());
+        assert!(Dater::new(None, None, None, None, Some(&qb64), None, None).is_ok());
+    }
+
     #[rstest]
     fn new_default(
         #[values(
-            &Dater::new_with_code_and_raw("", &[]).unwrap(),
-            &Dater::new_with_dts("").unwrap(),
-            &Dater::new_with_dtsb(b"").unwrap(),
+            &Dater::new(None, None, None, None, None, None, None).unwrap(),
         )]
         dater: &Dater,
     ) {
-        assert_eq!(dater.code, matter::Codex::DateTime);
+        assert_eq!(dater.code(), matter::Codex::DateTime);
         assert_eq!(dater.raw.len(), 24);
         assert_eq!(dater.qb64().unwrap().len(), 36);
         assert_eq!(dater.qb2().unwrap().len(), 27);
@@ -164,12 +154,12 @@ mod test {
         #[case] dtraw: &[u8],
         #[case] dtqb2: &[u8],
         #[values(
-            &Dater::new_with_code_and_raw(matter::Codex::DateTime, dtraw).unwrap(),
-            &Dater::new_with_dts(dts).unwrap(),
-            &Dater::new_with_dtsb(dts.as_bytes()).unwrap(),
-            &Dater::new_with_qb64(dtqb64).unwrap(),
-            &Dater::new_with_qb64b(dtqb64.as_bytes()).unwrap(),
-            &Dater::new_with_qb2(dtqb2).unwrap(),
+            &Dater::new(Some(dts), None, None, None, None, None, None).unwrap(),
+            &Dater::new(None, Some(matter::Codex::DateTime), Some(dtraw), None, None, None, None).unwrap(),
+            &Dater::new(None, None, Some(dtraw), None, None, None, None).unwrap(),
+            &Dater::new(None, None, None, Some(&mut dtqb64.as_bytes().to_vec()), None, None, None).unwrap(),
+            &Dater::new(None, None, None, None, Some(dtqb64), None, None).unwrap(),
+            &Dater::new(None, None, None, None, None, Some(&mut dtqb2.to_vec()), None).unwrap(),
         )]
         dater: &Dater,
     ) {
@@ -191,13 +181,12 @@ mod test {
     )]
     #[case("", b"\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xcd4")]
     fn unhappy_new_with_code_and_raw(#[case] code: &str, #[case] dtraw: &[u8]) {
-        assert!(Dater::new_with_code_and_raw(code, dtraw).is_err());
+        assert!(Dater::new(None, Some(code), Some(dtraw), None, None, None, None).is_err());
     }
 
     #[rstest]
     fn unhappy_new_with_dts(#[values("not a date", "2020-08-22T17:50:09.988921-01")] dts: &str) {
-        assert!(Dater::new_with_dts(dts).is_err());
-        assert!(Dater::new_with_dtsb(dts.as_bytes()).is_err());
+        assert!(Dater::new(Some(dts), None, None, None, None, None, None).is_err());
     }
 
     #[rstest]
@@ -209,8 +198,17 @@ mod test {
         )]
         qb64: &str,
     ) {
-        assert!(Dater::new_with_qb64(qb64).is_err());
-        assert!(Dater::new_with_qb64b(qb64.as_bytes()).is_err());
+        assert!(Dater::new(None, None, None, None, Some(qb64), None, None).is_err());
+        assert!(Dater::new(
+            None,
+            None,
+            None,
+            Some(&mut qb64.as_bytes().to_vec()),
+            None,
+            None,
+            None
+        )
+        .is_err());
     }
 
     #[rstest]
@@ -222,6 +220,6 @@ mod test {
         )]
         qb2: &[u8],
     ) {
-        assert!(Dater::new_with_qb2(qb2).is_err());
+        assert!(Dater::new(None, None, None, None, None, Some(&mut qb2.to_vec()), None).is_err());
     }
 }
