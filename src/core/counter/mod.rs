@@ -10,55 +10,48 @@ pub struct Counter {
 }
 
 impl Counter {
-    pub fn new_with_code_and_count_b64(code: &str, count_b64: &str) -> Result<Counter> {
-        let count = if count_b64.is_empty() { 1_u32 } else { util::b64_to_u32(count_b64)? };
+    pub fn new(
+        count: Option<u32>,
+        count_b64: Option<&str>,
+        code: Option<&str>,
+        qb64b: Option<&mut Vec<u8>>,
+        qb64: Option<&str>,
+        qb2: Option<&mut Vec<u8>>,
+        strip: Option<bool>,
+    ) -> Result<Self> {
+        let strip = strip.unwrap_or(false);
 
-        Counter::new_with_code_and_count(code, count)
-    }
+        if let Some(code) = code {
+            let count = if let Some(count) = count {
+                count
+            } else if let Some(count_b64) = count_b64 {
+                util::b64_to_u32(count_b64)?
+            } else {
+                1
+            };
 
-    pub fn new_with_code_and_count(code: &str, count: u32) -> Result<Counter> {
-        if code.is_empty() {
-            return err!(Error::EmptyMaterial("empty code".to_string()));
+            Self::new_with_code_and_count(code, count)
+        } else if let Some(qb64b) = qb64b {
+            let counter = Self::new_with_qb64b(qb64b)?;
+            if strip {
+                let szg = tables::sizage(&counter.code())?;
+                let length = szg.fs as usize;
+                qb64b.resize(length, b'\x00');
+            }
+            Ok(counter)
+        } else if let Some(qb64) = qb64 {
+            Self::new_with_qb64(qb64)
+        } else if let Some(qb2) = qb2 {
+            let counter = Self::new_with_qb2(qb2)?;
+            if strip {
+                let szg = tables::sizage(&counter.code())?;
+                let length = (szg.fs * 3 / 4) as usize;
+                qb2.resize(length, b'\x00');
+            }
+            Ok(counter)
+        } else {
+            err!(Error::Validation("need either code and count, qb64b, qb64 or qb2".to_string()))
         }
-
-        let szg = tables::sizage(code)?;
-        let cs = szg.hs + szg.ss;
-        if szg.fs != cs || cs % 4 != 0 {
-            // unreachable
-            // code validated and unless sizages are broken this cannot be reached
-            return err!(Error::InvalidCodeSize(format!(
-                "whole code size not a multiple of 4: cs = {cs}, fs = {}",
-                szg.fs
-            )));
-        }
-
-        if count > 64_u32.pow(szg.ss) - 1 {
-            return err!(Error::InvalidVarIndex(format!(
-                "invalid count for code: count = {count}, code = '{code}'"
-            )));
-        }
-
-        Ok(Counter { code: code.to_string(), count })
-    }
-
-    pub fn new_with_qb64(qb64: &str) -> Result<Counter> {
-        let mut counter: Counter = Default::default();
-        counter.exfil(qb64)?;
-        Ok(counter)
-    }
-
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<Counter> {
-        let qb64 = String::from_utf8(qb64b.to_vec())?;
-
-        let mut counter: Counter = Default::default();
-        counter.exfil(&qb64)?;
-        Ok(counter)
-    }
-
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<Counter> {
-        let mut counter: Counter = Default::default();
-        counter.bexfil(qb2)?;
-        Ok(counter)
     }
 
     pub fn code(&self) -> String {
@@ -74,25 +67,16 @@ impl Counter {
         util::u32_to_b64(self.count(), length)
     }
 
-    fn sem_ver_parts_to_b64(parts: &[u8]) -> Result<String> {
-        for p in parts.iter().copied() {
-            if p > 63 {
-                return err!(Error::Parsing(format!(
-                    "semantic version out of bounds: parts = {parts:?}"
-                )));
-            }
-        }
+    pub fn qb64(&self) -> Result<String> {
+        self.infil()
+    }
 
-        Ok(parts
-            .iter()
-            .map(|p| {
-                match util::u32_to_b64(*p as u32, 1) {
-                    Ok(s) => s,
-                    Err(_) => unreachable!(), // this is programmer error, since *p < 64
-                }
-            })
-            .collect::<Vec<String>>()
-            .join(""))
+    pub fn qb64b(&self) -> Result<Vec<u8>> {
+        Ok(self.qb64()?.as_bytes().to_vec())
+    }
+
+    pub fn qb2(&self) -> Result<Vec<u8>> {
+        self.binfil()
     }
 
     pub fn sem_ver_str_to_b64(version: &str) -> Result<String> {
@@ -139,16 +123,69 @@ impl Counter {
         Counter::sem_ver_parts_to_b64(parts)
     }
 
-    pub fn qb64(&self) -> Result<String> {
-        self.infil()
+    fn new_with_code_and_count(code: &str, count: u32) -> Result<Self> {
+        if code.is_empty() {
+            return err!(Error::EmptyMaterial("empty code".to_string()));
+        }
+
+        let szg = tables::sizage(code)?;
+        let cs = szg.hs + szg.ss;
+        if szg.fs != cs || cs % 4 != 0 {
+            // unreachable
+            // code validated and unless sizages are broken this cannot be reached
+            return err!(Error::InvalidCodeSize(format!(
+                "whole code size not a multiple of 4: cs = {cs}, fs = {}",
+                szg.fs
+            )));
+        }
+
+        if count > 64_u32.pow(szg.ss) - 1 {
+            return err!(Error::InvalidVarIndex(format!(
+                "invalid count for code: count = {count}, code = '{code}'"
+            )));
+        }
+
+        Ok(Counter { code: code.to_string(), count })
     }
 
-    pub fn qb64b(&self) -> Result<Vec<u8>> {
-        Ok(self.qb64()?.as_bytes().to_vec())
+    fn new_with_qb64(qb64: &str) -> Result<Self> {
+        let mut counter: Counter = Default::default();
+        counter.exfil(qb64)?;
+        Ok(counter)
     }
 
-    pub fn qb2(&self) -> Result<Vec<u8>> {
-        self.binfil()
+    fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
+        let qb64 = String::from_utf8(qb64b.to_vec())?;
+
+        let mut counter: Counter = Default::default();
+        counter.exfil(&qb64)?;
+        Ok(counter)
+    }
+
+    fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
+        let mut counter: Counter = Default::default();
+        counter.bexfil(qb2)?;
+        Ok(counter)
+    }
+    fn sem_ver_parts_to_b64(parts: &[u8]) -> Result<String> {
+        for p in parts.iter().copied() {
+            if p > 63 {
+                return err!(Error::Parsing(format!(
+                    "semantic version out of bounds: parts = {parts:?}"
+                )));
+            }
+        }
+
+        Ok(parts
+            .iter()
+            .map(|p| {
+                match util::u32_to_b64(*p as u32, 1) {
+                    Ok(s) => s,
+                    Err(_) => unreachable!(), // this is programmer error, since *p < 64
+                }
+            })
+            .collect::<Vec<String>>()
+            .join(""))
     }
 
     fn infil(&self) -> Result<String> {
@@ -299,6 +336,45 @@ mod test {
     #[case("-AAB", 1, "B", counter::Codex::ControllerIdxSigs)]
     #[case("-AAF", 5, "F", counter::Codex::ControllerIdxSigs)]
     #[case("-0VAAAQA", 1024, "QA", counter::Codex::BigAttachedMaterialQuadlets)]
+    fn new(#[case] qsc: &str, #[case] count: u32, #[case] count_b64: &str, #[case] code: &str) {
+        assert!(Counter::new(None, None, None, None, None, None, None).is_err());
+        let counter = Counter::new(None, None, Some(code), None, None, None, None).unwrap();
+        assert_eq!(counter.count(), 1);
+
+        let counter1 = Counter::new(Some(count), None, Some(code), None, None, None, None).unwrap();
+        let counter2 =
+            Counter::new(None, Some(count_b64), Some(code), None, None, None, None).unwrap();
+        let counter3 = Counter::new(None, None, None, None, Some(qsc), None, None).unwrap();
+
+        assert_eq!(counter1.code(), code);
+        assert_eq!(counter2.code(), code);
+        assert_eq!(counter3.code(), code);
+        assert_eq!(counter1.count(), count);
+        assert_eq!(counter2.count(), count);
+        assert_eq!(counter3.count(), count);
+
+        let mut qb64b = counter1.qb64b().unwrap();
+        let mut qb2 = counter1.qb2().unwrap();
+
+        assert!(Counter::new(None, None, None, Some(&mut qb64b), None, None, None).is_ok());
+        let length = qb64b.len();
+        qb64b.resize(length + 256, b'\x00');
+        assert_eq!(qb64b.len(), length + 256);
+        assert!(Counter::new(None, None, None, Some(&mut qb64b), None, None, Some(true)).is_ok());
+        assert_eq!(qb64b.len(), length);
+
+        assert!(Counter::new(None, None, None, None, None, Some(&mut qb2), None).is_ok());
+        let length = qb2.len();
+        qb2.resize(length + 256, b'\x00');
+        assert_eq!(qb2.len(), length + 256);
+        assert!(Counter::new(None, None, None, None, None, Some(&mut qb2), Some(true)).is_ok());
+        assert_eq!(qb2.len(), length);
+    }
+
+    #[rstest]
+    #[case("-AAB", 1, "B", counter::Codex::ControllerIdxSigs)]
+    #[case("-AAF", 5, "F", counter::Codex::ControllerIdxSigs)]
+    #[case("-0VAAAQA", 1024, "QA", counter::Codex::BigAttachedMaterialQuadlets)]
     fn creation(
         #[case] qsc: &str,
         #[case] count: u32,
@@ -306,13 +382,15 @@ mod test {
         #[case] code: &str,
     ) {
         let qscb = qsc.as_bytes();
-        let qscb2 = &b64_engine::URL_SAFE.decode(qsc).unwrap();
+        let mut qscb2 = b64_engine::URL_SAFE.decode(qsc).unwrap();
 
-        let counter1 = Counter::new_with_code_and_count(code, count).unwrap();
-        let counter2 = Counter::new_with_code_and_count_b64(code, count_b64).unwrap();
-        let counter3 = Counter::new_with_qb64(qsc).unwrap();
-        let counter4 = Counter::new_with_qb64b(qscb).unwrap();
-        let counter5 = Counter::new_with_qb2(qscb2).unwrap();
+        let counter1 = Counter::new(Some(count), None, Some(code), None, None, None, None).unwrap();
+        let counter2 =
+            Counter::new(None, Some(count_b64), Some(code), None, None, None, None).unwrap();
+        let counter3 = Counter::new(None, None, None, None, Some(qsc), None, None).unwrap();
+        let counter4 =
+            Counter::new(None, None, None, Some(&mut qscb.to_vec()), None, None, None).unwrap();
+        let counter5 = Counter::new(None, None, None, None, None, Some(&mut qscb2), None).unwrap();
 
         assert_eq!(counter1.code(), counter2.code());
         assert_eq!(counter1.count(), counter2.count());
@@ -335,13 +413,15 @@ mod test {
     ) {
         let qsc = &format!("{code}{version}");
         let qscb = qsc.as_bytes();
-        let qscb2 = &b64_engine::URL_SAFE.decode(qsc).unwrap();
+        let mut qscb2 = b64_engine::URL_SAFE.decode(qsc).unwrap();
 
-        let counter1 = Counter::new_with_code_and_count(code, count).unwrap();
-        let counter2 = Counter::new_with_code_and_count_b64(code, count_b64).unwrap();
-        let counter3 = Counter::new_with_qb64(qsc).unwrap();
-        let counter4 = Counter::new_with_qb64b(qscb).unwrap();
-        let counter5 = Counter::new_with_qb2(qscb2).unwrap();
+        let counter1 = Counter::new(Some(count), None, Some(code), None, None, None, None).unwrap();
+        let counter2 =
+            Counter::new(None, Some(count_b64), Some(code), None, None, None, None).unwrap();
+        let counter3 = Counter::new(None, None, None, None, Some(qsc), None, None).unwrap();
+        let counter4 =
+            Counter::new(None, None, None, Some(&mut qscb.to_vec()), None, None, None).unwrap();
+        let counter5 = Counter::new(None, None, None, None, None, Some(&mut qscb2), None).unwrap();
 
         assert_eq!(counter1.code(), code);
         assert_eq!(counter1.count(), verint);
@@ -364,7 +444,7 @@ mod test {
     fn b64_overflow_and_underflow(#[values("-AAB")] qsc: &str) {
         // add some chars
         let longqsc64 = &format!("{qsc}ABCD");
-        let counter = Counter::new_with_qb64(longqsc64).unwrap();
+        let counter = Counter::new(None, None, None, None, Some(&longqsc64), None, None).unwrap();
         assert_eq!(
             counter.qb64().unwrap().len() as u32,
             counter::sizage(&counter.code()).unwrap().fs
@@ -380,7 +460,8 @@ mod test {
         // add some bytes
         let mut longqscb2 = qscb2.clone();
         longqscb2.resize(longqscb2.len() + 5, 1);
-        let counter = Counter::new_with_qb2(&longqscb2).unwrap();
+        let counter =
+            Counter::new(None, None, None, None, None, Some(&mut longqscb2), None).unwrap();
         assert_eq!(counter.qb2().unwrap(), *qscb2);
         assert_eq!(
             counter.qb64().unwrap().len() as u32,
@@ -389,13 +470,15 @@ mod test {
 
         // remove a bytes
         let shortqscb2 = &qscb2[..qscb2.len() - 1];
-        assert!(Counter::new_with_qb2(shortqscb2).is_err());
+        assert!(Counter::new(None, None, None, None, None, Some(&mut shortqscb2.to_vec()), None)
+            .is_err());
     }
 
     #[rstest]
     fn exfil_infil_bexfil_binfil(#[values("-0VAAAQA")] qsc: &str) {
-        let counter1 = Counter::new_with_qb64(qsc).unwrap();
-        let counter2 = Counter::new_with_qb2(&counter1.qb2().unwrap()).unwrap();
+        let counter1 = Counter::new(None, None, None, None, Some(qsc), None, None).unwrap();
+        let mut qb2 = counter1.qb2().unwrap();
+        let counter2 = Counter::new(None, None, None, None, None, Some(&mut qb2), None).unwrap();
         assert_eq!(counter1.code(), counter2.code());
         assert_eq!(counter1.count(), counter2.count());
         assert_eq!(counter1.qb2().unwrap(), counter2.qb2().unwrap());
@@ -450,21 +533,36 @@ mod test {
         assert!((Counter { code: counter::Codex::ControllerIdxSigs.to_string(), count: 64 * 64 })
             .qb64()
             .is_err());
-        assert!(Counter::new_with_qb64("").is_err());
-        assert!(Counter::new_with_qb64("--").is_err());
-        assert!(Counter::new_with_qb64("__").is_err());
-        assert!(Counter::new_with_qb64(counter::Codex::ControllerIdxSigs).is_err());
-        assert!(Counter::new_with_qb64b(&[]).is_err());
-        assert!(Counter::new_with_qb2(&[]).is_err());
-        assert!(Counter::new_with_qb2(&[0xf8, 0]).is_err());
-        assert!(Counter::new_with_qb2(&[0xfc, 0]).is_err());
-        assert!(Counter::new_with_qb2(&[0xfb, 0xe0]).is_err());
+
+        assert!(Counter::new(None, None, None, None, Some(""), None, None).is_err());
+        assert!(Counter::new(None, None, None, None, Some("--"), None, None).is_err());
+        assert!(Counter::new(None, None, None, None, Some("__"), None, None).is_err());
+        assert!(Counter::new(
+            None,
+            None,
+            None,
+            None,
+            Some(counter::Codex::ControllerIdxSigs),
+            None,
+            None
+        )
+        .is_err());
+
+        assert!(Counter::new(None, None, None, Some(&mut vec![]), None, None, None).is_err());
+
+        assert!(Counter::new(None, None, None, None, None, Some(&mut vec![]), None).is_err());
+        assert!(Counter::new(None, None, None, None, None, Some(&mut vec![0xf8, 0]), None).is_err());
+        assert!(Counter::new(None, None, None, None, None, Some(&mut vec![0xfc, 0]), None).is_err());
+        assert!(
+            Counter::new(None, None, None, None, None, Some(&mut vec![0xfb, 0xe0]), None).is_err()
+        );
     }
 
     #[rstest]
     #[case(counter::Codex::ControllerIdxSigs, 1)]
     fn qb64b(#[case] code: &str, #[case] count: u32) {
         let c = Counter { code: code.to_string(), count };
-        assert!(Counter::new_with_qb64b(&c.qb64b().unwrap()).is_ok());
+        let mut qb64b = c.qb64b().unwrap();
+        assert!(Counter::new(None, None, None, Some(&mut qb64b), None, None, None).is_ok());
     }
 }

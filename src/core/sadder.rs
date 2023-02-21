@@ -56,7 +56,7 @@ fn exhale(ked: &Value, kind: Option<&str>) -> Result<ExhaleResult> {
     })
 }
 
-pub trait Sadder: Default + Clone {
+pub(crate) trait Sadder: Default + Clone {
     fn code(&self) -> String;
     fn raw(&self) -> Vec<u8>;
     fn ked(&self) -> Value;
@@ -106,7 +106,18 @@ pub trait Sadder: Default + Clone {
         self.set_kind(&result.kind);
         self.set_size(result.size);
         self.set_version(&result.version);
-        self.set_saider(&Saider::new_with_qb64(&result.ked[Ids::d].to_string()?)?);
+        self.set_saider(&Saider::new(
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(&result.ked[Ids::d].to_string()?),
+            None,
+            None,
+        )?);
 
         if self.code() != self.saider().code() {
             return err!(Error::Validation(
@@ -126,7 +137,18 @@ pub trait Sadder: Default + Clone {
         self.set_kind(&result.kind);
         self.set_size(result.raw.len() as u32);
         self.set_version(&result.version);
-        self.set_saider(&Saider::new_with_qb64(&result.ked[Ids::d].to_string()?)?);
+        self.set_saider(&Saider::new(
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(&result.ked[Ids::d].to_string()?),
+            None,
+            None,
+        )?);
 
         if self.code() != self.saider().code() {
             return err!(Error::Validation(
@@ -146,7 +168,18 @@ pub trait Sadder: Default + Clone {
         self.set_kind(&result.kind);
         self.set_size(result.raw.len() as u32);
         self.set_version(&result.version);
-        self.set_saider(&Saider::new_with_qb64(&result.ked[Ids::d].to_string()?)?);
+        self.set_saider(&Saider::new(
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(&result.ked[Ids::d].to_string()?),
+            None,
+            None,
+        )?);
 
         if self.code() != self.saider().code() {
             return err!(Error::Validation(
@@ -312,8 +345,6 @@ mod test {
         });
 
         let (saider, ked) = Saider::saidify(&ked, None, None, None, None).unwrap();
-        // let said = saider.qb64().unwrap();
-
         let mut ked2 = ked.clone();
         ked2["v"] = data!("KERI11JSON000000_");
 
@@ -376,7 +407,7 @@ mod test {
 
         let sadder = TestSadder::new(None, None, None, Some(&ked), None).unwrap();
 
-        println!("{}", sadder.pretty(None).unwrap());
-        println!("{}", sadder.pretty(Some(10)).unwrap());
+        assert_eq!(sadder.pretty(None).unwrap(), "{\n  \"v\": \"KERI10JSON00004c_\",\n  \"d\": \"EN5gqodYDGPSYQvdixCjfD2leqb6zhPoDYcB21hfqu8d\"\n}");
+        assert_eq!(sadder.pretty(Some(10)).unwrap(), "{\n  \"v\": \"");
     }
 }

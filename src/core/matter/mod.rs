@@ -5,13 +5,55 @@ use crate::error::{err, Error, Result};
 
 pub mod tables;
 
-pub trait Matter: Default {
+pub(crate) trait Matter: Default {
     fn code(&self) -> String;
     fn size(&self) -> u32;
     fn raw(&self) -> Vec<u8>;
     fn set_code(&mut self, code: &str);
     fn set_size(&mut self, size: u32);
     fn set_raw(&mut self, raw: &[u8]);
+
+    fn new(
+        code: Option<&str>,
+        raw: Option<&[u8]>,
+        qb64b: Option<&mut Vec<u8>>,
+        qb64: Option<&str>,
+        qb2: Option<&mut Vec<u8>>,
+        strip: Option<bool>,
+    ) -> Result<Self> {
+        let strip = strip.unwrap_or(false);
+
+        if let Some(raw) = raw {
+            let code = if let Some(code) = code {
+                code
+            } else {
+                return err!(Error::EmptyMaterial("empty code specified with raw".to_string()));
+            };
+
+            Self::new_with_code_and_raw(code, raw)
+        } else if let Some(qb64b) = qb64b {
+            let s = Self::new_with_qb64b(qb64b)?;
+            if strip {
+                let szg = tables::sizage(&s.code())?;
+                let length = if szg.fs == 0 { szg.hs + szg.ss + s.size() * 4 } else { szg.fs };
+                qb64b.resize(length as usize, b'\x00');
+            }
+            Ok(s)
+        } else if let Some(qb64) = qb64 {
+            Self::new_with_qb64(qb64)
+        } else if let Some(qb2) = qb2 {
+            let s = Self::new_with_qb2(qb2)?;
+            if strip {
+                let szg = tables::sizage(&s.code())?;
+                let length =
+                    if szg.fs == 0 { szg.hs + szg.ss + s.size() * 4 } else { szg.fs } * 3 / 4;
+                qb2.resize(length as usize, b'\x00');
+            }
+            Ok(s)
+        } else {
+            err!(Error::Validation("must specify raw and code, qb64b, qb64 or qb2".to_string()))
+        }
+    }
 
     fn new_with_code_and_raw(code: &str, raw: &[u8]) -> Result<Self>
     where
@@ -411,7 +453,7 @@ pub trait Matter: Default {
 
             let both = util::code_b2_to_b64(qb2, cs as usize)?;
             size = util::b64_to_u32(&both[szg.hs as usize..cs as usize])?;
-            szg.fs = (size * 4) + cs
+            szg.fs = (size * 4) + cs;
         }
 
         let bfs = ((szg.fs + 1) * 3) / 4;
@@ -513,16 +555,78 @@ mod test {
     #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8], matter::Codex::Bytes_Big_L0)]
     #[case(&vec![0, 1, 2, 3, 4, 5, 6, 7], matter::Codex::Bytes_Big_L1)]
     #[case(&vec![0, 1, 2, 3, 4, 5, 6], matter::Codex::Bytes_Big_L2)]
-    fn matter_new_variable_length(#[case] raw: &Vec<u8>, #[case] code: &str) {
-        let m = TestMatter::new_with_code_and_raw(code, raw).unwrap();
-        let m2 = TestMatter::new_with_qb64(&m.qb64().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-        let m2 = TestMatter::new_with_qb2(&m.qb2().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
+    fn conversion_variable_length(
+        #[case] _raw: &Vec<u8>,
+        #[case] _code: &str,
+        #[values(TestMatter::new(Some(_code), Some(_raw), None, None, None, None).unwrap())]
+        control: TestMatter,
+        #[values(
+            TestMatter::new(None, None, None, Some(&control.qb64().unwrap()), None, None).unwrap(),
+            TestMatter::new(None, None, None, None, Some(&mut control.qb2().unwrap()), None).unwrap(),        )]
+        matter: TestMatter,
+    ) {
+        assert_eq!(matter.code(), control.code());
+        assert_eq!(matter.raw(), control.raw());
+        assert_eq!(matter.size(), control.size());
+    }
+
+    #[test]
+    fn new_variable_length() {
+        let code = matter::Codex::Bytes_L0;
+        let raw = &vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
+        let matter = TestMatter::new(Some(code), Some(raw), None, None, None, None).unwrap();
+        let qb64 = &matter.qb64().unwrap();
+        let mut qb64b = matter.qb64b().unwrap();
+        let mut qb2 = matter.qb2().unwrap();
+
+        assert!(TestMatter::new(Some(code), Some(raw), None, None, None, None).is_ok());
+
+        assert!(TestMatter::new(None, None, Some(&mut qb64b), None, None, None).is_ok());
+        let length = qb64b.len();
+        qb64b.resize(length + 256, b'\x00');
+        assert_eq!(qb64b.len(), length + 256);
+        assert!(TestMatter::new(None, None, Some(&mut qb64b), None, None, Some(true)).is_ok());
+        assert_eq!(qb64b.len(), length);
+
+        assert!(TestMatter::new(None, None, None, Some(qb64), None, None).is_ok());
+
+        assert!(TestMatter::new(None, None, None, None, Some(&mut qb2), None).is_ok());
+        let length = qb2.len();
+        qb2.resize(length + 256, b'\x00');
+        assert_eq!(qb2.len(), length + 256);
+        assert!(TestMatter::new(None, None, None, None, Some(&mut qb2), Some(true)).is_ok());
+        assert_eq!(qb2.len(), length);
+    }
+
+    #[test]
+    fn new() {
+        assert!(TestMatter::new(None, None, None, None, None, None).is_err());
+        assert!(TestMatter::new(None, Some(&[]), None, None, None, None).is_err());
+
+        let code = matter::Codex::Blake3_256;
+        let qb64 = "BGlOiUdp5sMmfotHfCWQKEzWR91C72AH0lT84c0um-Qj";
+        let matter = TestMatter::new(None, None, None, Some(qb64), None, None).unwrap();
+        let raw = &matter.raw();
+        let mut qb64b = matter.qb64b().unwrap();
+        let mut qb2 = matter.qb2().unwrap();
+
+        assert!(TestMatter::new(Some(code), Some(raw), None, None, None, None).is_ok());
+
+        assert!(TestMatter::new(None, None, Some(&mut qb64b), None, None, None).is_ok());
+        let length = qb64b.len();
+        qb64b.resize(length + 256, b'\x00');
+        assert_eq!(qb64b.len(), length + 256);
+        assert!(TestMatter::new(None, None, Some(&mut qb64b), None, None, Some(true)).is_ok());
+        assert_eq!(qb64b.len(), length);
+
+        assert!(TestMatter::new(None, None, None, Some(qb64), None, None).is_ok());
+
+        assert!(TestMatter::new(None, None, None, None, Some(&mut qb2), None).is_ok());
+        let length = qb2.len();
+        qb2.resize(length + 256, b'\x00');
+        assert_eq!(qb2.len(), length + 256);
+        assert!(TestMatter::new(None, None, None, None, Some(&mut qb2), Some(true)).is_ok());
+        assert_eq!(qb2.len(), length);
     }
 
     #[test]
@@ -547,55 +651,63 @@ mod test {
         assert_eq!(m.size, 1);
     }
 
-    #[test]
-    fn exfil_infil_bexfil_binfil() {
-        let qb64 = "BGlOiUdp5sMmfotHfCWQKEzWR91C72AH0lT84c0um-Qj";
+    #[rstest]
+    fn conversion(
+        #[values("BGlOiUdp5sMmfotHfCWQKEzWR91C72AH0lT84c0um-Qj")] qb64: &str,
+        #[values(TestMatter::new(None, None, None, Some(qb64), None, None).unwrap())]
+        control: TestMatter,
+        #[values(
+            TestMatter::new(Some(&control.code()), Some(&control.raw()), None, None, None, None).unwrap(),
+            TestMatter::new(None, None, Some(&mut control.qb64b().unwrap()), None, None, None).unwrap(),
+            TestMatter::new(None, None, None, None, Some(&mut control.qb2().unwrap()), None).unwrap(),
+        )]
+        matter: TestMatter,
+    ) {
+        assert_eq!(control.code(), matter::Codex::Ed25519N);
 
-        // basic
-        let m = TestMatter::new_with_qb64(qb64).unwrap();
-        assert_eq!(m.code, matter::Codex::Ed25519N);
-
-        // qb64
-        let m2 = TestMatter::new_with_code_and_raw(&m.code, &m.raw).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-        assert_eq!(qb64, m2.qb64().unwrap());
-
-        // qb64b
-        let m2 = TestMatter::new_with_qb64b(&m.qb64b().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-        assert_eq!(qb64, m2.qb64().unwrap());
-
-        // qb2
-        let m2 = TestMatter::new_with_qb2(&m.qb2().unwrap()).unwrap();
-        assert_eq!(m.code, m2.code);
-        assert_eq!(m.raw, m2.raw);
-        assert_eq!(m.size, m2.size);
-        assert_eq!(qb64, m2.qb64().unwrap());
+        assert_eq!(matter.code(), control.code());
+        assert_eq!(matter.raw(), control.raw());
+        assert_eq!(matter.size(), control.size());
+        assert_eq!(matter.qb64().unwrap(), qb64);
     }
 
     #[test]
     fn big_boundary() {
-        let m =
-            TestMatter::new_with_code_and_raw(matter::Codex::Bytes_L2, &[0; 4095 * 3 + 1]).unwrap();
+        let m = TestMatter::new(
+            Some(matter::Codex::Bytes_L2),
+            Some(&[0; 4095 * 3 + 1]),
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
         assert_eq!(m.raw().len(), 4095 * 3 + 1);
         assert_eq!(m.code(), matter::Codex::Bytes_Big_L2);
     }
 
     #[test]
+
     fn unhappy_paths() {
         // empty material
-        assert!(TestMatter::new_with_code_and_raw("", &[]).is_err());
-        assert!(TestMatter::new_with_code_and_raw(matter::Codex::Blake3_256, &[]).is_err());
-        assert!(TestMatter::new_with_qb64("").is_err());
-        assert!(TestMatter::new_with_qb64b(&[]).is_err());
-        assert!(TestMatter::new_with_qb2(&[]).is_err());
+        assert!(TestMatter::new(None, None, None, None, None, None).is_err());
+        assert!(TestMatter::new(Some(""), Some(&[]), None, None, None, None).is_err());
+        assert!(TestMatter::new(
+            Some(matter::Codex::Blake3_256),
+            Some(&[]),
+            None,
+            None,
+            None,
+            None
+        )
+        .is_err());
+        assert!(TestMatter::new(None, None, Some(&mut vec![]), None, None, None).is_err());
+        assert!(TestMatter::new(None, None, None, Some(""), None, None).is_err());
+        assert!(TestMatter::new(None, None, None, None, Some(&mut vec![]), None).is_err());
+        assert!(TestMatter::new(None, None, None, None, None, None).is_err());
 
         // invalid code
-        assert!(TestMatter::new_with_code_and_raw("CESR", &[]).is_err());
+        assert!(TestMatter::new(Some("CESR"), Some(&[]), None, None, None, None).is_err());
 
         // invalid code/raw size combination
         assert!(TestMatter {
@@ -607,26 +719,34 @@ mod test {
         .is_err());
 
         // insufficient hard material
-        assert!(TestMatter::new_with_qb64("0").is_err());
-        assert!(TestMatter::new_with_qb2(&[52 << 2]).is_err());
+        assert!(TestMatter::new(None, None, None, Some("0"), None, None).is_err());
+        assert!(TestMatter::new(None, None, None, None, Some(&mut vec![52 << 2]), None).is_err());
 
         // insufficient code material
-        assert!(TestMatter::new_with_qb64("4A").is_err());
-        assert!(TestMatter::new_with_qb2(&[224, 0]).is_err());
+        assert!(TestMatter::new(None, None, None, Some("4A"), None, None).is_err());
+        assert!(TestMatter::new(None, None, None, None, Some(&mut vec![224, 0]), None).is_err());
 
         // insufficient material
-        assert!(TestMatter::new_with_qb64("E").is_err());
-        assert!(TestMatter::new_with_qb2(&[4 << 2]).is_err());
+        assert!(TestMatter::new(None, None, None, Some("E"), None, None).is_err());
+        assert!(TestMatter::new(None, None, None, None, Some(&mut vec![4 << 2]), None).is_err());
 
         // raw size too large
-        assert!(TestMatter::new_with_code_and_raw(
-            matter::Codex::Bytes_Big_L2,
-            &[0; (16777215 * 3 + 1)],
+        assert!(TestMatter::new(
+            Some(matter::Codex::Bytes_Big_L2),
+            Some(&mut [0; (16777215 * 3 + 1)].to_vec()),
+            None,
+            None,
+            None,
+            None
         )
         .is_err());
-        assert!(TestMatter::new_with_code_and_raw(
-            matter::Codex::Bytes_L2,
-            &[0; (16777215 * 3 + 1)],
+        assert!(TestMatter::new(
+            Some(matter::Codex::Bytes_L2),
+            Some(&mut [0; (16777215 * 3 + 1)].to_vec()),
+            None,
+            None,
+            None,
+            None
         )
         .is_err());
 
@@ -660,21 +780,53 @@ mod test {
         .is_err());
 
         // pre-pad error
-        assert!(TestMatter::new_with_qb64("E___________________________________________").is_err());
-        assert!(TestMatter::new_with_qb2(&[
-            19, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-            255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-        ])
+        assert!(TestMatter::new(
+            None,
+            None,
+            None,
+            Some("E___________________________________________"),
+            None,
+            None
+        )
+        .is_err());
+        assert!(TestMatter::new(
+            None,
+            None,
+            None,
+            None,
+            Some(&mut vec![
+                19, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+            ]),
+            None
+        )
         .is_err());
 
         // non-zeroed lead byte(s)
-        assert!(TestMatter::new_with_qb64("5AAB____").is_err());
-        assert!(TestMatter::new_with_qb64("6AAB____").is_err());
-        assert!(TestMatter::new_with_qb2(&[228, 0, 1, 255, 255, 255]).is_err());
-        assert!(TestMatter::new_with_qb2(&[232, 0, 1, 255, 255, 255]).is_err());
+        assert!(TestMatter::new(None, None, None, Some("5AAB____"), None, None).is_err());
+        assert!(TestMatter::new(
+            None,
+            None,
+            None,
+            None,
+            Some(&mut vec![228, 0, 1, 255, 255, 255]),
+            None
+        )
+        .is_err());
+        assert!(TestMatter::new(None, None, None, Some("6AAB____"), None, None).is_err());
+        assert!(TestMatter::new(
+            None,
+            None,
+            None,
+            None,
+            Some(&mut vec![232, 0, 1, 255, 255, 255]),
+            None
+        )
+        .is_err());
 
         // unexpected qb2 codes
-        assert!(TestMatter::new_with_qb2(&[0xf8]).is_err()); // count code
-        assert!(TestMatter::new_with_qb2(&[0xfc]).is_err()); // op code
+        assert!(TestMatter::new(None, None, None, None, Some(&mut vec![0xf8]), None).is_err()); // count code
+        assert!(TestMatter::new(None, None, None, None, Some(&mut vec![0xfc]), None).is_err());
+        // op code
     }
 }

@@ -51,52 +51,27 @@ fn validate_code(code: &str) -> Result<()> {
 }
 
 impl Siger {
-    fn new_with_code_and_raw(
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
         verfer: Option<&Verfer>,
-        code: &str,
-        raw: &[u8],
-        index: u32,
+        index: Option<u32>,
         ondex: Option<u32>,
+        code: Option<&str>,
+        raw: Option<&[u8]>,
+        qb64b: Option<&mut Vec<u8>>,
+        qb64: Option<&str>,
+        qb2: Option<&mut Vec<u8>>,
+        strip: Option<bool>,
     ) -> Result<Self> {
-        if !code.is_empty() {
-            validate_code(code)?;
-        }
-
-        let mut siger: Siger = Indexer::new_with_code_and_raw(code, raw, index, ondex)?;
+        let mut siger: Self = Indexer::new(index, ondex, code, raw, qb64b, qb64, qb2, strip)?;
         if let Some(verfer) = verfer {
             siger.set_verfer(verfer);
         }
-        Ok(siger)
-    }
-
-    fn new_with_qb64(verfer: Option<&Verfer>, qb64: &str) -> Result<Self> {
-        let mut siger: Siger = Indexer::new_with_qb64(qb64)?;
         validate_code(&siger.code())?;
-        if let Some(verfer) = verfer {
-            siger.set_verfer(verfer);
-        }
         Ok(siger)
     }
 
-    fn new_with_qb64b(verfer: Option<&Verfer>, qb64b: &[u8]) -> Result<Self> {
-        let mut siger: Siger = Indexer::new_with_qb64b(qb64b)?;
-        validate_code(&siger.code())?;
-        if let Some(verfer) = verfer {
-            siger.set_verfer(verfer);
-        }
-        Ok(siger)
-    }
-
-    fn new_with_qb2(verfer: Option<&Verfer>, qb2: &[u8]) -> Result<Self> {
-        let mut siger: Siger = Indexer::new_with_qb2(qb2)?;
-        validate_code(&siger.code())?;
-        if let Some(verfer) = verfer {
-            siger.set_verfer(verfer);
-        }
-        Ok(siger)
-    }
-
-    fn verfer(&self) -> Verfer {
+    pub fn verfer(&self) -> Verfer {
         self.verfer.clone()
     }
 
@@ -147,13 +122,38 @@ mod test {
     use hex_literal::hex;
 
     #[test]
+    fn new() {
+        let vcode = matter::Codex::Ed25519;
+        let vraw = b"abcdefghijklmnopqrstuvwxyz012345";
+        let verfer = Verfer::new(Some(vcode), Some(vraw), None, None, None, None).unwrap();
+        let code = indexer::Codex::Ed25519;
+        let raw = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ[]";
+
+        assert!(Siger::new(
+            Some(&verfer),
+            None,
+            None,
+            Some(code),
+            Some(raw),
+            None,
+            None,
+            None,
+            None
+        )
+        .is_ok());
+        assert!(Siger::new(None, None, None, Some(code), Some(raw), None, None, None, None).is_ok());
+    }
+
+    #[test]
     fn python_interop() {
-        assert!(Siger::new_with_code_and_raw(None, "", b"", 0, Some(0)).is_err());
+        assert!(Siger::new(None, None, None, Some(""), Some(b""), None, None, None, None).is_err());
 
         let qsig64 = "AACdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ";
         let qsig64b = qsig64.as_bytes();
 
-        let siger = Siger::new_with_qb64b(None, qsig64b).unwrap();
+        let siger =
+            Siger::new(None, None, None, None, None, Some(&mut qsig64b.to_vec()), None, None, None)
+                .unwrap();
         assert_eq!(siger.code(), indexer::Codex::Ed25519);
         assert_eq!(siger.index(), 0);
         assert_eq!(siger.ondex(), 0);
@@ -161,7 +161,8 @@ mod test {
         // this behaviour differs from KERIpy
         assert_eq!(siger.verfer(), Verfer::default());
 
-        let mut siger = Siger::new_with_qb64(None, qsig64).unwrap();
+        let mut siger =
+            Siger::new(None, None, None, None, None, None, Some(qsig64), None, None).unwrap();
         assert_eq!(siger.code(), indexer::Codex::Ed25519);
         assert_eq!(siger.index(), 0);
         assert_eq!(siger.ondex(), 0);
@@ -172,17 +173,30 @@ mod test {
         let verfer_raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let verfer_code = matter::Codex::Ed25519;
-        let verfer = Verfer::new_with_code_and_raw(verfer_code, &verfer_raw).unwrap();
+        let verfer =
+            Verfer::new(Some(verfer_code), Some(&verfer_raw), None, None, None, None).unwrap();
 
         siger.set_verfer(&verfer);
         assert_eq!(siger.verfer(), verfer);
 
-        let siger = Siger::new_with_qb64(Some(&verfer), qsig64).unwrap();
+        let siger =
+            Siger::new(Some(&verfer), None, None, None, None, None, Some(qsig64), None, None)
+                .unwrap();
         assert_eq!(siger.verfer(), verfer);
 
         let raw = b"abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdef";
-        let siger =
-            Siger::new_with_code_and_raw(None, indexer::Codex::Ed448, raw, 4, None).unwrap();
+        let siger = Siger::new(
+            None,
+            Some(4),
+            None,
+            Some(indexer::Codex::Ed448),
+            Some(raw),
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
         assert_eq!(siger.qb64().unwrap(), "0AEEYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVm");
     }
 
@@ -191,16 +205,37 @@ mod test {
         let verfer_raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let verfer_code = matter::Codex::Ed25519;
-        let verfer = Verfer::new_with_code_and_raw(verfer_code, &verfer_raw).unwrap();
+        let verfer =
+            Verfer::new(Some(verfer_code), Some(&verfer_raw), None, None, None, None).unwrap();
 
         let siger_code = indexer::Codex::Ed25519;
         let siger_raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa"
                                        "0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
-        assert!(
-            Siger::new_with_code_and_raw(Some(&verfer), siger_code, &siger_raw, 0, None).is_ok()
-        );
-        assert!(Siger::new_with_code_and_raw(None, siger_code, &siger_raw, 0, None).is_ok());
+        assert!(Siger::new(
+            Some(&verfer),
+            None,
+            None,
+            Some(siger_code),
+            Some(&siger_raw),
+            None,
+            None,
+            None,
+            None
+        )
+        .is_ok());
+        assert!(Siger::new(
+            None,
+            None,
+            None,
+            Some(siger_code),
+            Some(&siger_raw),
+            None,
+            None,
+            None,
+            None
+        )
+        .is_ok());
     }
 
     #[test]
@@ -208,13 +243,36 @@ mod test {
         let verfer_raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let verfer_code = matter::Codex::Ed25519;
-        let verfer = Verfer::new_with_code_and_raw(verfer_code, &verfer_raw).unwrap();
+        let verfer =
+            Verfer::new(Some(verfer_code), Some(&verfer_raw), None, None, None, None).unwrap();
 
         let qsig64 = "AACdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ";
         let qsig64b = qsig64.as_bytes();
 
-        assert!(Siger::new_with_qb64b(Some(&verfer), qsig64b).is_ok());
-        assert!(Siger::new_with_qb64b(None, qsig64b).is_ok());
+        assert!(Siger::new(
+            Some(&verfer),
+            None,
+            None,
+            None,
+            None,
+            Some(&mut qsig64b.to_vec()),
+            None,
+            None,
+            None
+        )
+        .is_ok());
+        assert!(Siger::new(
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(&mut qsig64b.to_vec()),
+            None,
+            None,
+            None
+        )
+        .is_ok());
     }
 
     #[test]
@@ -222,17 +280,42 @@ mod test {
         let verfer_raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let verfer_code = matter::Codex::Ed25519;
-        let verfer = Verfer::new_with_code_and_raw(verfer_code, &verfer_raw).unwrap();
+        let verfer =
+            Verfer::new(Some(verfer_code), Some(&verfer_raw), None, None, None, None).unwrap();
 
         let qsig2 = b64_engine::URL_SAFE.decode("AACdI8OSQkMJ9r-xigjEByEjIua7LHH3AOJ22PQKqljMhuhcgh9nGRcKnsz5KvKd7K_H9-1298F4Id1DxvIoEmCQ").unwrap();
 
-        assert!(Siger::new_with_qb2(Some(&verfer), &qsig2).is_ok());
-        assert!(Siger::new_with_qb2(None, &qsig2).is_ok());
+        assert!(Siger::new(
+            Some(&verfer),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(&mut qsig2.to_vec()),
+            None
+        )
+        .is_ok());
+        assert!(Siger::new(
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some(&mut qsig2.to_vec()),
+            None
+        )
+        .is_ok());
     }
 
     #[test]
     fn unhappy_paths() {
         // invalid code
-        assert!(Siger::new_with_code_and_raw(None, "CESR", &[], 0, None).is_err());
+        assert!(
+            Siger::new(None, None, None, Some("CESR"), Some(&[]), None, None, None, None).is_err()
+        );
     }
 }

@@ -9,11 +9,10 @@ mod error;
 
 pub use crate::core::{
     cigar::Cigar,
-    counter::{tables as counter, Counter},
+    counter::{tables as counter, Counter}, // This seems like it shoudl be an abstract class
     diger::Diger,
-    indexer::{tables as indexer, Indexer},
-    matter::{tables as matter, Matter},
-    sadder::Sadder,
+    indexer::tables as indexer,
+    matter::tables as matter,
     saider::Saider,
     siger::Siger,
     signer::Signer,
