@@ -14,6 +14,7 @@ pub use crate::core::{
     indexer::tables as indexer,
     matter::tables as matter,
     saider::Saider,
+    seqner::Seqner,
     siger::Siger,
     signer::Signer,
     util,
