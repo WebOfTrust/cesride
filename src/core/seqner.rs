@@ -1,5 +1,3 @@
-use lazy_static::lazy_static;
-
 use crate::core::matter::{tables as matter, Matter};
 use crate::error::{err, Error, Result};
 
@@ -17,12 +15,6 @@ impl Default for Seqner {
 }
 
 fn validate_code(code: &str) -> Result<()> {
-//    const CODES: &[u8] = &[matter::Codex::Salt_128,];
-
-//    if !CODES.contains(&code) {
-//        return err!(Error::UnexpectedCode(code.to_string()));
-//    }
-
     if code != matter::Codex::Salt_128 {
         return err!(Error::UnexpectedCode(code.to_string()));
     }
