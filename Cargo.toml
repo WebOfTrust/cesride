@@ -12,6 +12,7 @@ keywords = ["cesr", "keri", "acdc"]
 base64 = "~0.21"
 blake2 = "~0.10"
 blake3 = "~1"
+# audit fix: disable `oldtime` feature
 chrono = { version = "~0.4", default-features = false, features = ["clock"] }
 ed25519-dalek = "~1"
 indexmap = "~1"

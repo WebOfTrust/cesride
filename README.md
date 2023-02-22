@@ -54,6 +54,121 @@ make clean preflight
 
 You are now ready to open a pull request!
 
+## Foreign language bindings
+
+This implementation is not complete. Feel free to add.
+
+We use [uniffi](https://github.com/mozilla/uniffi-rs) to provide foreign language bindings. This
+provides bindings in Swift, Kotlin, Python and Ruby.
+
+### Generating bindings
+
+To build bindings for all four languages, simply run `make bindings`.
+
+```sh
+make bindings
+```
+
+To build for a specific language, use the name of that language as the make target (first argument).
+For example, to build only kotlin bindings, run:
+
+```sh
+make kotlin
+```
+
+and to build Python and Swift bindings, run:
+
+```sh
+make python swift
+```
+
+The generated code will be dropped in `uniffi/generated`. Consult `uniffi` documentation on how to
+use the library with the bindings of your choice.
+
+### Python example - Verifying a signature with `cesride`
+
+The Makefile contains a target that will launch a Python shell within a context that has access to
+`cesride` primitives. Read the Makefile to see the commands required to do this yourself, or consult
+`uniffi` documentation. The process differs from language to language and likely platform to
+platform, and is out of scope of this project.
+
+```
+make python-shell
+```
+
+Inside the python shell:
+```python
+from cesride import Verfer
+import pysodium
+
+seed = pysodium.randombytes(32)
+verkey, sigkey = pysodium.crypto_sign_seed_keypair(seed)
+
+verfer = Verfer(raw=verkey, code="B")
+
+# create something to sign and verify
+ser = b'abcdefghijklmnopqrstuvwxyz0123456789'
+sig = pysodium.crypto_sign_detached(ser, sigkey)
+
+verfer.verify(sig, ser)
+```
+
+Let's try.
+
+```
+❯ make python-shell
+    Finished release [optimized] target(s) in 0.13s
+    Finished release [optimized] target(s) in 0.12s
+     Running `target/release/cesride-bindgen generate src/cesride.udl --out-dir generated --language python`
+Python 3.10.10 (main, Feb  8 2023, 05:40:53) [Clang 14.0.0 (clang-1400.0.29.202)] on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+>>> from cesride import Verfer
+>>> import pysodium
+>>> 
+>>> seed = pysodium.randombytes(32)
+>>> verkey, sigkey = pysodium.crypto_sign_seed_keypair(seed)
+>>> 
+>>> verfer = Verfer(raw=verkey, code="B")
+>>> 
+>>> # create something to sign and verify
+>>> ser = b'abcdefghijklmnopqrstuvwxyz0123456789'
+>>> sig = pysodium.crypto_sign_detached(ser, sigkey)
+>>> 
+>>> verfer.verify(sig, ser)
+True
+>>> 
+```
+
+For good measure, lets tamper both the signature and input data:
+
+```
+>>> verfer.verify(b'x' + sig[1:], ser)
+False
+>>> verfer.verify(sig, b'x' + ser[1:])
+False
+```
+
+Success!
+
+### Formatting
+
+If you want to make the generated code readable, you will need to install formatters for each language you
+intend to build bindings for. If you don't do this, things will probably work with a few warnings.
+One reason not to do this is the number of dependencies that seem to be installed for some of the
+formatters.
+
+Swift: `swiftformat`
+Kotlin: `ktlint`
+Ruby: `rubocop`
+Python `yapf`
+
+On `macOS`, one can use `brew` and the stock `ruby` installation to prep the system:
+
+```shell
+brew install swiftformat ktlint yapf
+sudo gem install rubocop
+```
+
 ## Community
 
 ### Bi-weekly Meeting

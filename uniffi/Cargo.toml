@@ -1,0 +1,25 @@
+[package]
+name = "cesride_uniffi"
+version = "0.1.3"
+edition = "2021"
+description = "UNIFFI Bindings for cesride"
+license = "Apache-2.0"
+keywords = ["cesr", "keri", "acdc"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cesride = { version = "*", path = "../" }
+uniffi = { version = "~0.23", features = ["cli"] }
+uniffi_bindgen = "~0.23"
+
+[build-dependencies]
+uniffi = { version = "0.23", features = ["build"] }
+
+[lib]
+name = "cesride_uniffi"
+crate-type = ["cdylib", "staticlib", "lib"]
+
+[[bin]]
+name = "cesride-bindgen"
+path = "cesride-bindgen.rs"

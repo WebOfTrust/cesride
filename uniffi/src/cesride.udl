@@ -1,0 +1,112 @@
+namespace cesride {
+    VerferClass Verfer();
+};
+
+[Error]
+enum CESRError {
+    "General",
+    "Matter",
+    "EmptyMaterial",
+    "Decode",
+    "UnexpectedCode",
+    "UnexpectedCountCode",
+    "UnexpectedOpCode",
+    "InvalidVarSize",
+    "InvalidVarRawSize",
+    "InvalidVarIndex",
+    "InvalidCodeSize",
+    "InvalidBase64Character",
+    "InvalidBase64Index",
+    "Shortage",
+    "EmptyQb64",
+    "UnknownSizage",
+    "UnknownHardage",
+    "UnknownBardage",
+    "UnsupportedSize",
+    "TooSmall",
+    "Prepad",
+    "NonZeroedPrepad",
+    "NonZeroedLeadByte",
+    "NonZeroedLeadBytes",
+    "NonZeroedPadBits",
+    "Parsing",
+    "ParseQb64",
+    "ParseQb2",
+    "Conversion",
+    "Value",
+    "Validation",
+};
+
+// interface Cigar {
+//     [Throws=CESRError]
+//     constructor(
+//         Verfer verfer,
+//         optional string? code = null,
+//         optional sequence<u8>? raw = null,
+//         optional string? qb64 = null,
+//         optional sequence<u8>? qb64b = null,
+//         optional sequence<u8>? qb2 = null,
+//         optional boolean? strip = null
+//     );
+
+//     // Verfer verfer();
+//     // void set_verfer([ByRef] Verfer verfer);
+//     sequence<u8> raw();
+//     string code();
+// };
+
+// interface Dater {
+//     [Throws=CESRError]
+//     constructor(
+//         optional string? code = null,
+//         optional string? dts = null,
+//         optional sequence<u8>? dtsb = null,
+//         optional sequence<u8>? raw = null,
+//         optional string? qb64 = null,
+//         optional sequence<u8>? qb64b = null,
+//         optional sequence<u8>? qb2 = null,
+//         optional boolean? strip = null
+//     );
+
+//     [Throws=CESRError]
+//     string dts();
+
+//     [Throws=CESRError]
+//     sequence<u8> dtsb();
+
+//     sequence<u8> raw();
+//     string code();
+// };
+
+// interface Diger {
+//     [Throws=CESRError]
+//     constructor(
+//         optional string? code = null,
+//         optional sequence<u8>? ser = null,
+//         optional sequence<u8>? raw = null,
+//         optional string? qb64 = null,
+//         optional sequence<u8>? qb64b = null,
+//         optional sequence<u8>? qb2 = null,
+//         optional boolean? strip = null
+//     );
+
+//     [Throws=CESRError]
+//     boolean verify([ByRef] sequence<u8> ser);
+
+//     [Throws=CESRError]
+//     boolean compare_dig([ByRef] sequence<u8> ser, [ByRef] sequence<u8> dig);
+
+//     [Throws=CESRError]
+//     boolean compare_diger([ByRef] sequence<u8> ser, [ByRef] Diger diger);
+
+//     sequence<u8> raw();
+//     string code();
+// };
+
+interface verfer {
+    [Throws=CESRError]
+    boolean verify([ByRef] sequence<u8> sig, [ByRef] sequence<u8> ser);
+
+    sequence<u8> raw();
+    string code();
+};

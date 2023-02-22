@@ -36,23 +36,65 @@ fn validate_code(code: &str) -> Result<()> {
     Ok(())
 }
 
+pub trait Uniffi {
+    fn new(
+        code: Option<String>,
+        raw: Option<Vec<u8>>,
+        qb64b: Option<Vec<u8>>,
+        qb64: Option<String>,
+        qb2: Option<Vec<u8>>,
+    ) -> Result<Self> where Self: Sized;
+}
+
+impl Uniffi for Verfer {
+    fn new(
+        code: Option<String>,
+        raw: Option<Vec<u8>>,
+        qb64b: Option<Vec<u8>>,
+        qb64: Option<String>,
+        qb2: Option<Vec<u8>>,
+    ) -> Result<Self> where Self: Sized {
+        Verfer::create(
+            code.map_or(&None, |code| Some(&code)),
+            raw.map_or(&None, |raw| Some(&raw)),
+            qb64b.map_or(&None, |mut qb64b| &Some(&mut qb64b)),
+            qb64.map_or(&None, |qb64| &Some(&qb64)),
+            qb2.map_or(&None, |mut qb2| &Some(&mut qb2)),
+            &None
+        )
+    }
+
+}
+
 impl Verfer {
-    pub fn new(
-        code: Option<&str>,
-        raw: Option<&[u8]>,
-        qb64b: Option<&mut Vec<u8>>,
-        qb64: Option<&str>,
-        qb2: Option<&mut Vec<u8>>,
-        strip: Option<bool>,
+    pub fn create(
+        code: &Option<&str>,
+        raw: &Option<&[u8]>,
+        qb64b: &Option<&mut Vec<u8>>,
+        qb64: &Option<&str>,
+        qb2: &Option<&mut Vec<u8>>,
+        strip: &Option<bool>,
     ) -> Result<Self> {
         let verfer: Self = Matter::new(code, raw, qb64b, qb64, qb2, strip)?;
-        validate_code(&verfer.code())?;
+        validate_code(&<Verfer as Matter>::code(&verfer))?;
         Ok(verfer)
     }
 
     pub fn verify(&self, sig: &[u8], ser: &[u8]) -> Result<bool> {
-        validate_code(&self.code())?;
-        sign::verify(&self.code(), &self.raw(), sig, ser)
+        validate_code(&<Verfer as Matter>::code(self))?;
+        sign::verify(&<Verfer as Matter>::code(self), &<Verfer as Matter>::raw(self), sig, ser)
+    }
+
+    pub fn code(&self) -> String {
+        <Verfer as Matter>::code(self)
+    }
+
+    pub fn raw(&self) -> Vec<u8> {
+        <Verfer as Matter>::raw(self)
+    }
+
+    pub fn size(&self) -> u32 {
+        <Verfer as Matter>::size(self)
     }
 }
 

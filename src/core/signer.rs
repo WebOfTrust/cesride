@@ -61,9 +61,9 @@ impl Signer {
             let code = code.unwrap_or(matter::Codex::Ed25519_Seed);
             validate_code(code)?;
             let raw = if let Some(raw) = raw { raw.to_vec() } else { sign::generate(code)? };
-            Matter::new(Some(code), Some(&raw), None, None, None, None)?
+            Matter::new(&Some(code), &Some(&raw), &None, &None, &None, &None)?
         } else {
-            let signer: Self = Matter::new(code, raw, qb64b, qb64, qb2, strip)?;
+            let signer: Self = Matter::new(&code, &raw, &qb64b, &qb64, &qb2, &strip)?;
             validate_code(&signer.code())?;
             signer
         };
@@ -155,7 +155,7 @@ impl Signer {
         };
 
         let verfer_raw = sign::public_key(code, private_key)?;
-        Verfer::new(Some(verfer_code), Some(&verfer_raw), None, None, None, None)
+        Verfer::create(&Some(verfer_code), &Some(&verfer_raw), &None, &None, &None, &None)
     }
 }
 
