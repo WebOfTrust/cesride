@@ -17,11 +17,13 @@ impl Default for Seqner {
 }
 
 fn validate_code(code: &str) -> Result<()> {
-    lazy_static! {
-        static ref CODES: Vec<&'static str> = vec![matter::Codex::Salt_128,];
-    }
+//    const CODES: &[u8] = &[matter::Codex::Salt_128,];
 
-    if !CODES.contains(&code) {
+//    if !CODES.contains(&code) {
+//        return err!(Error::UnexpectedCode(code.to_string()));
+//    }
+
+    if code != matter::Codex::Salt_128 {
         return err!(Error::UnexpectedCode(code.to_string()));
     }
 
