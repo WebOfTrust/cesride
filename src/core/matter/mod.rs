@@ -14,42 +14,26 @@ pub trait Matter: Default {
     fn set_raw(&mut self, raw: &[u8]);
 
     fn new(
-        code: &Option<&str>,
-        raw: &Option<&[u8]>,
-        qb64b: &Option<&mut Vec<u8>>,
-        qb64: &Option<&str>,
-        qb2: &Option<&mut Vec<u8>>,
-        strip: &Option<bool>,
+        code: Option<String>,
+        raw: Option<Vec<u8>>,
+        qb64b: Option<Vec<u8>>,
+        qb64: Option<String>,
+        qb2: Option<Vec<u8>>,
     ) -> Result<Self> {
-        let strip = strip.unwrap_or(false);
-
         if let Some(raw) = raw {
-            let code = if let &Some(code) = code {
+            let code = if let Some(code) = code {
                 code
             } else {
                 return err!(Error::EmptyMaterial("empty code specified with raw".to_string()));
             };
 
-            Self::new_with_code_and_raw(code, raw)
+            Self::new_with_code_and_raw(&code, &raw)
         } else if let Some(qb64b) = qb64b {
-            let s = Self::new_with_qb64b(qb64b)?;
-            // if strip {
-            //     let szg = tables::sizage(&s.code())?;
-            //     let length = if szg.fs == 0 { szg.hs + szg.ss + s.size() * 4 } else { szg.fs };
-            //     qb64b.resize(length as usize, b'\x00');
-            // }
-            Ok(s)
+            Self::new_with_qb64b(&qb64b)
         } else if let Some(qb64) = qb64 {
-            Self::new_with_qb64(qb64)
+            Self::new_with_qb64(&qb64)
         } else if let Some(qb2) = qb2 {
-            let s = Self::new_with_qb2(qb2)?;
-            // if strip {
-            //     let szg = tables::sizage(&s.code())?;
-            //     let length =
-            //         if szg.fs == 0 { szg.hs + szg.ss + s.size() * 4 } else { szg.fs } * 3 / 4;
-            //     qb2.resize(length as usize, b'\x00');
-            // }
-            Ok(s)
+            Self::new_with_qb2(&qb2)
         } else {
             err!(Error::Validation("must specify raw and code, qb64b, qb64 or qb2".to_string()))
         }

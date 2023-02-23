@@ -21,3 +21,7 @@ pub use crate::core::{
     verfer::Verfer,
 };
 pub use error::{Error, Result};
+
+pub mod constructors {
+    pub use crate::core::verfer::Constructor as Verfer;
+}

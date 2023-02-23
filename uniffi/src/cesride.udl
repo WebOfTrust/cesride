@@ -1,5 +1,4 @@
 namespace cesride {
-    VerferClass Verfer();
 };
 
 [Error]
@@ -103,7 +102,16 @@ enum CESRError {
 //     string code();
 // };
 
-interface verfer {
+interface Verfer {
+     [Throws=CESRError]
+     constructor(
+         optional string? code = null,
+         optional sequence<u8>? raw = null,
+         optional sequence<u8>? qb64b = null,
+         optional string? qb64 = null,
+         optional sequence<u8>? qb2 = null
+     );
+
     [Throws=CESRError]
     boolean verify([ByRef] sequence<u8> sig, [ByRef] sequence<u8> ser);
 
