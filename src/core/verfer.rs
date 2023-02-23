@@ -36,7 +36,7 @@ fn validate_code(code: &str) -> Result<()> {
     Ok(())
 }
 
-pub trait Constructor {
+pub trait Uniffi {
     fn new(
         code: Option<String>,
         raw: Option<Vec<u8>>,
@@ -46,7 +46,7 @@ pub trait Constructor {
     ) -> Result<Self> where Self: Sized;
 }
 
-impl Constructor for Verfer {
+impl Uniffi for Verfer {
     fn new(
         code: Option<String>,
         raw: Option<Vec<u8>>,
@@ -62,7 +62,7 @@ impl Constructor for Verfer {
 
 impl Verfer {
     pub fn new_with_code_and_raw(code: Option<&str>, raw: &[u8]) -> Result<Self> {
-        <Self as Constructor>::new(
+        <Self as Uniffi>::new(
             code.map_or(None, |code| Some(code.to_string())),
             Some(raw.to_vec()),
             None,
