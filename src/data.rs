@@ -120,7 +120,14 @@ impl IndexMut<usize> for Value {
 impl IndexMut<&str> for Value {
     fn index_mut(&mut self, i: &str) -> &mut Value {
         match self {
-            Value::Object(o) => &mut o[i],
+            Value::Object(o) => {
+                if o.contains_key(i) {
+                    &mut o[i]
+                } else {
+                    o.insert(i.to_string(), Value::Null);
+                    &mut o[i]
+                }
+            }
             _ => panic!("attempted to mutably index non-indexable Value object with string"),
         }
     }

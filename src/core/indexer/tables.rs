@@ -61,8 +61,6 @@ pub mod SigCodex {
 #[allow(non_snake_case)]
 #[allow(non_upper_case_globals)]
 pub mod CurrentSigCodex {
-    use lazy_static::lazy_static;
-
     pub const Ed25519_Crt: &str = "B"; // Ed25519 sig appears in current list only.
     pub const ECDSA_256k1_Crt: &str = "D"; // ECDSA secp256k1 sig appears in current list only.
     pub const Ed448_Crt: &str = "0B"; // Ed448 signature appears in current list only.
@@ -71,16 +69,14 @@ pub mod CurrentSigCodex {
     pub const Ed448_Big_Crt: &str = "3B"; // Ed448 signature appears in current list only.
 
     pub(crate) fn has_code(code: &str) -> bool {
-        lazy_static! {
-            static ref CODES: Vec<&'static str> = vec![
-                Ed25519_Crt,
-                ECDSA_256k1_Crt,
-                Ed448_Crt,
-                Ed25519_Big_Crt,
-                ECDSA_256k1_Big_Crt,
-                Ed448_Big_Crt
-            ];
-        }
+        const CODES: &[&str] = &[
+            Ed25519_Crt,
+            ECDSA_256k1_Crt,
+            Ed448_Crt,
+            Ed25519_Big_Crt,
+            ECDSA_256k1_Big_Crt,
+            Ed448_Big_Crt,
+        ];
 
         CODES.contains(&code)
     }
@@ -89,8 +85,6 @@ pub mod CurrentSigCodex {
 #[allow(non_snake_case)]
 #[allow(non_upper_case_globals)]
 pub mod BothSigCodex {
-    use lazy_static::lazy_static;
-
     pub const Ed25519: &str = "A"; // Ed25519 sig appears same in both lists if any.
     pub const ECDSA_256k1: &str = "C"; // ECDSA secp256k1 sig appears same in both lists if any.
     pub const Ed448: &str = "0A"; // Ed448 signature appears in both lists.
@@ -99,10 +93,8 @@ pub mod BothSigCodex {
     pub const Ed448_Big: &str = "3A"; // Ed448 signature appears in both lists.
 
     pub(crate) fn has_code(code: &str) -> bool {
-        lazy_static! {
-            static ref CODES: Vec<&'static str> =
-                vec![Ed25519, ECDSA_256k1, Ed448, Ed25519_Big, ECDSA_256k1_Big, Ed448_Big];
-        }
+        const CODES: &[&str] =
+            &[Ed25519, ECDSA_256k1, Ed448, Ed25519_Big, ECDSA_256k1_Big, Ed448_Big];
 
         CODES.contains(&code)
     }

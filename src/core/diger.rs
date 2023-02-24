@@ -1,5 +1,3 @@
-use lazy_static::lazy_static;
-
 use crate::core::matter::{tables as matter, Matter};
 use crate::crypto::hash;
 use crate::error::{err, Error, Result};
@@ -18,19 +16,17 @@ impl Default for Diger {
 }
 
 fn validate_code(code: &str) -> Result<()> {
-    lazy_static! {
-        static ref CODES: Vec<&'static str> = vec![
-            matter::Codex::Blake3_256,
-            matter::Codex::Blake3_512,
-            matter::Codex::Blake2b_256,
-            matter::Codex::Blake2b_512,
-            matter::Codex::Blake2s_256,
-            matter::Codex::SHA3_256,
-            matter::Codex::SHA3_512,
-            matter::Codex::SHA2_256,
-            matter::Codex::SHA2_512,
-        ];
-    }
+    const CODES: &[&str] = &[
+        matter::Codex::Blake3_256,
+        matter::Codex::Blake3_512,
+        matter::Codex::Blake2b_256,
+        matter::Codex::Blake2b_512,
+        matter::Codex::Blake2s_256,
+        matter::Codex::SHA3_256,
+        matter::Codex::SHA3_512,
+        matter::Codex::SHA2_256,
+        matter::Codex::SHA2_512,
+    ];
 
     if !CODES.contains(&code) {
         return err!(Error::UnexpectedCode(code.to_string()));

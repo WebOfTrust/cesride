@@ -36,16 +36,37 @@ pub struct Version {
 }
 
 #[allow(non_snake_case)]
-#[allow(non_upper_case_globals)]
 pub(crate) mod Serialage {
     pub const JSON: &str = "JSON";
 }
 
 #[allow(non_snake_case)]
-#[allow(non_upper_case_globals)]
 pub(crate) mod Identage {
     pub const ACDC: &str = "ACDC";
     pub const KERI: &str = "KERI";
+}
+
+#[allow(non_snake_case)]
+#[allow(non_upper_case_globals)]
+pub(crate) mod Ilkage {
+    pub const icp: &str = "icp";
+    pub const rot: &str = "rot";
+    pub const ixn: &str = "ixn";
+    pub const dip: &str = "dip";
+    pub const drt: &str = "drt";
+    pub const rct: &str = "rct";
+    pub const ksn: &str = "ksn";
+    pub const qry: &str = "qry";
+    pub const rpy: &str = "rpy";
+    pub const exn: &str = "exn";
+    pub const pro: &str = "pro";
+    pub const bar: &str = "bar";
+    pub const vcp: &str = "vcp";
+    pub const vrt: &str = "vrt";
+    pub const iss: &str = "iss";
+    pub const rev: &str = "rev";
+    pub const bis: &str = "bis";
+    pub const brv: &str = "brv";
 }
 
 #[allow(non_snake_case)]
@@ -56,11 +77,38 @@ pub(crate) mod Ids {
     pub const id: &str = "id";
     pub const i: &str = "i";
     pub const d: &str = "d";
+    pub const t: &str = "t";
+    pub const k: &str = "k";
+    pub const n: &str = "n";
+    pub const b: &str = "b";
+    pub const a: &str = "a";
 }
 
 const REVER_STRING: &str = "(?P<ident>[A-Z]{4})(?P<major>[0-9a-f])(?P<minor>[0-9a-f])(?P<kind>[A-Z]{4})(?P<size>[0-9a-f]{6})_";
 const IDENTS: &[&str] = &[Identage::ACDC, Identage::KERI];
 const SERIALS: &[&str] = &[Serialage::JSON];
+const ILKS: &[&str] = &[
+    Ilkage::icp,
+    Ilkage::rot,
+    Ilkage::ixn,
+    Ilkage::dip,
+    Ilkage::drt,
+    Ilkage::rct,
+    Ilkage::ksn,
+    Ilkage::qry,
+    Ilkage::rpy,
+    Ilkage::exn,
+    Ilkage::pro,
+    Ilkage::bar,
+    Ilkage::vcp,
+    Ilkage::vrt,
+    Ilkage::iss,
+    Ilkage::rev,
+    Ilkage::bis,
+    Ilkage::brv,
+];
+
+pub(crate) const DUMMY: u8 = b'#';
 
 pub const CURRENT_VERSION: &Version = &Version { major: 1, minor: 0 };
 
@@ -261,7 +309,7 @@ mod test {
     }
 
     #[test]
-    fn sniff_sad_paths() {
+    fn sniff_unhappy_paths() {
         assert!(common::sniff(&[]).is_err()); // minimum 29 octets
         assert!(common::sniff(
             &data!({"v":"version string must be valid!"}).to_json().unwrap().as_bytes()
@@ -279,14 +327,14 @@ mod test {
     }
 
     #[test]
-    fn loads_sad_paths() {
+    fn loads_unhappy_paths() {
         let raw = &data!({}).to_json().unwrap().as_bytes().to_vec();
         assert!(common::loads(raw, None, Some("CESR")).is_err());
         assert!(common::loads(raw, Some(1024), Some("CESR")).is_err());
     }
 
     #[test]
-    fn sizeify_sad_paths() {
+    fn sizeify_unhappy_paths() {
         assert!(common::sizeify(&data!({}), None).is_err());
         assert!(common::sizeify(&data!({"v":"KERIffJSON000000_"}), None).is_err());
         assert!(common::sizeify(&data!({"v":"KERI10JSON000000_"}), Some("CESR")).is_err());
@@ -296,20 +344,20 @@ mod test {
     }
 
     #[test]
-    fn versify_sad_paths() {
+    fn versify_unhappy_paths() {
         assert!(common::versify(Some("CESR"), None, None, None).is_err());
         assert!(common::versify(None, None, Some("CESR"), None).is_err());
     }
 
     #[rstest]
-    fn deversify_sad_paths(
+    fn deversify_unhappy_paths(
         #[values("CESR10JSON000000_", "KERI10CESR000000_", "KERIXXJSON000000_")] vs: &str,
     ) {
         assert!(common::deversify(vs).is_err());
     }
 
     #[test]
-    fn dumps_sad_paths() {
+    fn dumps_unhappy_paths() {
         assert!(common::dumps(&data!({}), Some("CESR")).is_err());
     }
 }

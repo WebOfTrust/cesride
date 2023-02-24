@@ -1,5 +1,3 @@
-use lazy_static::lazy_static;
-
 use crate::core::{
     cigar::Cigar,
     indexer::tables as indexer,
@@ -30,13 +28,11 @@ impl Default for Signer {
 }
 
 fn validate_code(code: &str) -> Result<()> {
-    lazy_static! {
-        static ref CODES: Vec<&'static str> = vec![
-            matter::Codex::Ed25519_Seed,
-            matter::Codex::ECDSA_256k1_Seed,
-            // matter::Codex::Ed448_Seed,
-        ];
-    }
+    const CODES: &[&str] = &[
+        matter::Codex::Ed25519_Seed,
+        matter::Codex::ECDSA_256k1_Seed,
+        // matter::Codex::Ed448_Seed,
+    ];
 
     if !CODES.contains(&code) {
         return err!(Error::UnexpectedCode(code.to_string()));

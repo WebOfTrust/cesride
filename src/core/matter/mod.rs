@@ -35,8 +35,9 @@ pub(crate) trait Matter: Default {
             let s = Self::new_with_qb64b(qb64b)?;
             if strip {
                 let szg = tables::sizage(&s.code())?;
-                let length = if szg.fs == 0 { szg.hs + szg.ss + s.size() * 4 } else { szg.fs };
-                qb64b.resize(length as usize, b'\x00');
+                let length =
+                    if szg.fs == 0 { szg.hs + szg.ss + s.size() * 4 } else { szg.fs } as usize;
+                qb64b.drain(0..length);
             }
             Ok(s)
         } else if let Some(qb64) = qb64 {
@@ -45,9 +46,9 @@ pub(crate) trait Matter: Default {
             let s = Self::new_with_qb2(qb2)?;
             if strip {
                 let szg = tables::sizage(&s.code())?;
-                let length =
-                    if szg.fs == 0 { szg.hs + szg.ss + s.size() * 4 } else { szg.fs } * 3 / 4;
-                qb2.resize(length as usize, b'\x00');
+                let length = (if szg.fs == 0 { szg.hs + szg.ss + s.size() * 4 } else { szg.fs } * 3
+                    / 4) as usize;
+                qb2.drain(0..length);
             }
             Ok(s)
         } else {
@@ -586,7 +587,8 @@ mod test {
         qb64b.resize(length + 256, b'\x00');
         assert_eq!(qb64b.len(), length + 256);
         assert!(TestMatter::new(None, None, Some(&mut qb64b), None, None, Some(true)).is_ok());
-        assert_eq!(qb64b.len(), length);
+        assert_eq!(qb64b.len(), 256);
+        assert_eq!(qb64b, vec![b'\x00'; 256]);
 
         assert!(TestMatter::new(None, None, None, Some(qb64), None, None).is_ok());
 
@@ -595,7 +597,8 @@ mod test {
         qb2.resize(length + 256, b'\x00');
         assert_eq!(qb2.len(), length + 256);
         assert!(TestMatter::new(None, None, None, None, Some(&mut qb2), Some(true)).is_ok());
-        assert_eq!(qb2.len(), length);
+        assert_eq!(qb2.len(), 256);
+        assert_eq!(qb2, vec![b'\x00'; 256]);
     }
 
     #[test]
@@ -617,7 +620,8 @@ mod test {
         qb64b.resize(length + 256, b'\x00');
         assert_eq!(qb64b.len(), length + 256);
         assert!(TestMatter::new(None, None, Some(&mut qb64b), None, None, Some(true)).is_ok());
-        assert_eq!(qb64b.len(), length);
+        assert_eq!(qb64b.len(), 256);
+        assert_eq!(qb64b, vec![b'\x00'; 256]);
 
         assert!(TestMatter::new(None, None, None, Some(qb64), None, None).is_ok());
 
@@ -626,7 +630,8 @@ mod test {
         qb2.resize(length + 256, b'\x00');
         assert_eq!(qb2.len(), length + 256);
         assert!(TestMatter::new(None, None, None, None, Some(&mut qb2), Some(true)).is_ok());
-        assert_eq!(qb2.len(), length);
+        assert_eq!(qb2.len(), 256);
+        assert_eq!(qb2, vec![b'\x00'; 256]);
     }
 
     #[test]

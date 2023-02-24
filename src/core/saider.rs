@@ -1,6 +1,4 @@
-use lazy_static::lazy_static;
-
-use crate::core::common::{deversify, dumps, sizeify, Ids, Serialage};
+use crate::core::common::{deversify, dumps, sizeify, Ids, Serialage, DUMMY};
 use crate::core::matter::{tables as matter, Matter};
 use crate::crypto::hash;
 use crate::data::{data, Value};
@@ -20,19 +18,17 @@ impl Default for Saider {
 }
 
 fn validate_code(code: &str) -> Result<()> {
-    lazy_static! {
-        static ref CODES: Vec<&'static str> = vec![
-            matter::Codex::Blake3_256,
-            matter::Codex::Blake2b_256,
-            matter::Codex::Blake2s_256,
-            matter::Codex::SHA3_256,
-            matter::Codex::SHA2_256,
-            matter::Codex::Blake3_512,
-            matter::Codex::Blake2b_512,
-            matter::Codex::SHA3_512,
-            matter::Codex::SHA2_512,
-        ];
-    }
+    const CODES: &[&str] = &[
+        matter::Codex::Blake3_256,
+        matter::Codex::Blake2b_256,
+        matter::Codex::Blake2s_256,
+        matter::Codex::SHA3_256,
+        matter::Codex::SHA2_256,
+        matter::Codex::Blake3_512,
+        matter::Codex::Blake2b_512,
+        matter::Codex::SHA3_512,
+        matter::Codex::SHA2_512,
+    ];
 
     if !CODES.contains(&code) {
         return err!(Error::UnexpectedCode(code.to_string()));
@@ -42,8 +38,6 @@ fn validate_code(code: &str) -> Result<()> {
 }
 
 impl Saider {
-    const DUMMY: u8 = b'#';
-
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         sad: Option<&Value>,
@@ -225,7 +219,7 @@ impl Saider {
         let szg = matter::sizage(code)?;
         let mut sad = sad.clone();
 
-        sad[label] = data!(&String::from_utf8(vec![Self::DUMMY; szg.fs as usize])?);
+        sad[label] = data!(&String::from_utf8(vec![DUMMY; szg.fs as usize])?);
 
         let (kind, sad) = if sad.to_map()?.contains_key("v") {
             let result = sizeify(&sad, kind)?;
@@ -586,7 +580,7 @@ mod test {
     }
 
     #[test]
-    fn sad_paths() {
+    fn unhappy_paths() {
         assert!(validate_code(matter::Codex::Ed25519).is_err());
         assert!(Saider::new(
             Some(&data!({})),
