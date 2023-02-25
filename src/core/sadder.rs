@@ -116,7 +116,6 @@ pub(crate) trait Sadder: Default + Clone {
             None,
             Some(&result.ked[Ids::d].to_string()?),
             None,
-            None,
         )?);
 
         if self.code() != self.saider().code() {
@@ -147,7 +146,6 @@ pub(crate) trait Sadder: Default + Clone {
             None,
             Some(&result.ked[Ids::d].to_string()?),
             None,
-            None,
         )?);
 
         if self.code() != self.saider().code() {
@@ -177,7 +175,6 @@ pub(crate) trait Sadder: Default + Clone {
             None,
             None,
             Some(&result.ked[Ids::d].to_string()?),
-            None,
             None,
         )?);
 

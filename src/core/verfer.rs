@@ -36,15 +36,30 @@ impl Verfer {
     pub fn new(
         code: Option<&str>,
         raw: Option<&[u8]>,
-        qb64b: Option<&mut Vec<u8>>,
+        qb64b: Option<&[u8]>,
         qb64: Option<&str>,
-        qb2: Option<&mut Vec<u8>>,
-        strip: Option<bool>,
+        qb2: Option<&[u8]>,
     ) -> Result<Self> {
         let code = code.unwrap_or(matter::Codex::Ed25519N);
-        let verfer: Self = Matter::new(Some(code), raw, qb64b, qb64, qb2, strip)?;
+        let verfer: Self = Matter::new(Some(code), raw, qb64b, qb64, qb2)?;
         validate_code(&verfer.code())?;
         Ok(verfer)
+    }
+
+    pub fn new_with_raw(raw: &[u8], code: Option<&str>) -> Result<Self> {
+        Self::new(code, Some(raw), None, None, None)
+    }
+
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
+        Self::new(None, None, Some(qb64b), None, None)
+    }
+
+    pub fn new_with_qb64(qb64: &str) -> Result<Self> {
+        Self::new(None, None, None, Some(qb64), None)
+    }
+
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
+        Self::new(None, None, None, None, Some(qb2))
     }
 
     pub fn verify(&self, sig: &[u8], ser: &[u8]) -> Result<bool> {
@@ -86,11 +101,24 @@ mod test {
     use hex_literal::hex;
 
     #[test]
+    fn convenience() {
+        let raw = &hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
+        let code = matter::Codex::Ed25519N;
+
+        let verfer = Verfer::new(Some(code), Some(raw), None, None, None).unwrap();
+
+        assert!(Verfer::new_with_raw(&verfer.raw(), Some(&verfer.code())).is_ok());
+        assert!(Verfer::new_with_qb64b(&verfer.qb64b().unwrap()).is_ok());
+        assert!(Verfer::new_with_qb64(&verfer.qb64().unwrap()).is_ok());
+        assert!(Verfer::new_with_qb2(&verfer.qb2().unwrap()).is_ok());
+    }
+
+    #[test]
     fn new() {
         let raw = &hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
         let code = matter::Codex::Ed25519N;
 
-        assert!(Verfer::new(Some(code), Some(raw), None, None, None, None).is_ok());
+        assert!(Verfer::new(Some(code), Some(raw), None, None, None).is_ok());
     }
 
     #[test]
@@ -98,11 +126,11 @@ mod test {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
         let code = matter::Codex::Ed25519N;
 
-        let m = Verfer::new(Some(code), Some(&raw), None, None, None, None).unwrap();
+        let m = Verfer::new(Some(code), Some(&raw), None, None, None).unwrap();
         assert_eq!(m.raw(), raw);
 
         let code = matter::Codex::Blake3_256;
-        assert!(Verfer::new(Some(code), Some(&raw), None, None, None, None).is_err());
+        assert!(Verfer::new(Some(code), Some(&raw), None, None, None).is_err());
     }
 
     #[test]
@@ -110,19 +138,17 @@ mod test {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let good_code = matter::Codex::Ed25519N;
-        let good_qb64 = Verfer::new(Some(good_code), Some(&raw), None, None, None, None)
-            .unwrap()
-            .qb64()
-            .unwrap();
+        let good_qb64 =
+            Verfer::new(Some(good_code), Some(&raw), None, None, None).unwrap().qb64().unwrap();
 
         let bad_code = matter::Codex::Blake3_256;
-        let bad_qb64 = <Verfer as Matter>::new(Some(bad_code), Some(&raw), None, None, None, None)
+        let bad_qb64 = <Verfer as Matter>::new(Some(bad_code), Some(&raw), None, None, None)
             .unwrap()
             .qb64()
             .unwrap();
 
-        assert!(Verfer::new(None, None, None, Some(&good_qb64), None, None).is_ok());
-        assert!(Verfer::new(None, None, None, Some(&bad_qb64), None, None).is_err());
+        assert!(Verfer::new(None, None, None, Some(&good_qb64), None).is_ok());
+        assert!(Verfer::new(None, None, None, Some(&bad_qb64), None).is_err());
     }
 
     #[test]
@@ -130,20 +156,17 @@ mod test {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let good_code = matter::Codex::Ed25519N;
-        let mut good_qb64b = Verfer::new(Some(good_code), Some(&raw), None, None, None, None)
+        let good_qb64b =
+            Verfer::new(Some(good_code), Some(&raw), None, None, None).unwrap().qb64b().unwrap();
+
+        let bad_code = matter::Codex::Blake3_256;
+        let bad_qb64b = <Verfer as Matter>::new(Some(bad_code), Some(&raw), None, None, None)
             .unwrap()
             .qb64b()
             .unwrap();
 
-        let bad_code = matter::Codex::Blake3_256;
-        let mut bad_qb64b =
-            <Verfer as Matter>::new(Some(bad_code), Some(&raw), None, None, None, None)
-                .unwrap()
-                .qb64b()
-                .unwrap();
-
-        assert!(Verfer::new(None, None, Some(&mut good_qb64b), None, None, None).is_ok());
-        assert!(Verfer::new(None, None, Some(&mut bad_qb64b), None, None, None).is_err());
+        assert!(Verfer::new(None, None, Some(&good_qb64b), None, None).is_ok());
+        assert!(Verfer::new(None, None, Some(&bad_qb64b), None, None).is_err());
     }
 
     #[test]
@@ -151,20 +174,17 @@ mod test {
         let raw = hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
 
         let good_code = matter::Codex::Ed25519N;
-        let mut good_qb2 = Verfer::new(Some(good_code), Some(&raw), None, None, None, None)
+        let good_qb2 =
+            Verfer::new(Some(good_code), Some(&raw), None, None, None).unwrap().qb2().unwrap();
+
+        let bad_code = matter::Codex::Blake3_256;
+        let bad_qb2 = <Verfer as Matter>::new(Some(bad_code), Some(&raw), None, None, None)
             .unwrap()
             .qb2()
             .unwrap();
 
-        let bad_code = matter::Codex::Blake3_256;
-        let mut bad_qb2 =
-            <Verfer as Matter>::new(Some(bad_code), Some(&raw), None, None, None, None)
-                .unwrap()
-                .qb2()
-                .unwrap();
-
-        assert!(Verfer::new(None, None, None, None, Some(&mut good_qb2), None).is_ok());
-        assert!(Verfer::new(None, None, None, None, Some(&mut bad_qb2), None).is_err());
+        assert!(Verfer::new(None, None, None, None, Some(&good_qb2)).is_ok());
+        assert!(Verfer::new(None, None, None, None, Some(&bad_qb2)).is_err());
     }
 
     #[test]
@@ -185,8 +205,7 @@ mod test {
 
         let raw = keypair.public.as_bytes();
 
-        let mut m =
-            Verfer::new(Some(matter::Codex::Ed25519), Some(raw), None, None, None, None).unwrap();
+        let mut m = Verfer::new(Some(matter::Codex::Ed25519), Some(raw), None, None, None).unwrap();
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());
@@ -218,8 +237,7 @@ mod test {
         let raw = public_key.to_encoded_point(true).to_bytes();
 
         let mut m =
-            Verfer::new(Some(matter::Codex::ECDSA_256k1), Some(&raw), None, None, None, None)
-                .unwrap();
+            Verfer::new(Some(matter::Codex::ECDSA_256k1), Some(&raw), None, None, None).unwrap();
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());

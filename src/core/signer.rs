@@ -41,15 +41,32 @@ fn validate_code(code: &str) -> Result<()> {
     Ok(())
 }
 
+fn derive_verfer(code: &str, private_key: &[u8], transferable: bool) -> Result<Verfer> {
+    let verfer_code = match transferable {
+        true => match code {
+            matter::Codex::Ed25519_Seed => matter::Codex::Ed25519,
+            matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1,
+            _ => return err!(Error::UnexpectedCode(code.to_string())),
+        },
+        false => match code {
+            matter::Codex::Ed25519_Seed => matter::Codex::Ed25519N,
+            matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1N,
+            _ => return err!(Error::UnexpectedCode(code.to_string())),
+        },
+    };
+
+    let verfer_raw = sign::public_key(code, private_key)?;
+    Verfer::new(Some(verfer_code), Some(&verfer_raw), None, None, None)
+}
+
 impl Signer {
     pub fn new(
         transferable: Option<bool>,
         code: Option<&str>,
         raw: Option<&[u8]>,
-        qb64b: Option<&mut Vec<u8>>,
+        qb64b: Option<&[u8]>,
         qb64: Option<&str>,
-        qb2: Option<&mut Vec<u8>>,
-        strip: Option<bool>,
+        qb2: Option<&[u8]>,
     ) -> Result<Self> {
         let transferable = transferable.unwrap_or(true);
 
@@ -57,9 +74,9 @@ impl Signer {
             let code = code.unwrap_or(matter::Codex::Ed25519_Seed);
             validate_code(code)?;
             let raw = if let Some(raw) = raw { raw.to_vec() } else { sign::generate(code)? };
-            Matter::new(Some(code), Some(&raw), None, None, None, None)?
+            Matter::new(Some(code), Some(&raw), None, None, None)?
         } else {
-            let signer: Self = Matter::new(code, raw, qb64b, qb64, qb2, strip)?;
+            let signer: Self = Matter::new(code, raw, qb64b, qb64, qb2)?;
             validate_code(&signer.code())?;
             signer
         };
@@ -68,8 +85,24 @@ impl Signer {
         Ok(signer)
     }
 
-    pub fn verfer(&self) -> Verfer {
-        self.verfer.clone()
+    pub fn new_with_raw(
+        raw: &[u8],
+        transferable: Option<bool>,
+        code: Option<&str>,
+    ) -> Result<Self> {
+        Self::new(transferable, code, Some(raw), None, None, None)
+    }
+
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
+        Self::new(None, None, None, Some(qb64b), None, None)
+    }
+
+    pub fn new_with_qb64(qb64: &str) -> Result<Self> {
+        Self::new(None, None, None, None, Some(qb64), None)
+    }
+
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
+        Self::new(None, None, None, None, None, Some(qb2))
     }
 
     pub fn sign_unindexed(&self, ser: &[u8]) -> Result<Cigar> {
@@ -80,7 +113,7 @@ impl Signer {
         };
 
         let sig = sign::sign(&self.code(), &self.raw(), ser)?;
-        Cigar::new(Some(&self.verfer()), Some(code), Some(&sig), None, None, None, None)
+        Cigar::new(Some(&self.verfer()), Some(code), Some(&sig), None, None, None)
     }
 
     pub fn sign_indexed(
@@ -128,30 +161,16 @@ impl Signer {
         };
 
         let sig = sign::sign(&self.code(), &self.raw(), ser)?;
-        Siger::new(None, Some(index), ondex, Some(code), Some(&sig), None, None, None, None)
+        Siger::new(None, Some(index), ondex, Some(code), Some(&sig), None, None, None)
+    }
+
+    pub fn verfer(&self) -> Verfer {
+        self.verfer.clone()
     }
 
     fn derive_and_assign_verfer(&mut self, transferable: bool) -> Result<()> {
-        self.verfer = Self::derive_verfer(&self.code(), &self.raw(), transferable)?;
+        self.verfer = derive_verfer(&self.code(), &self.raw(), transferable)?;
         Ok(())
-    }
-
-    fn derive_verfer(code: &str, private_key: &[u8], transferable: bool) -> Result<Verfer> {
-        let verfer_code = match transferable {
-            true => match code {
-                matter::Codex::Ed25519_Seed => matter::Codex::Ed25519,
-                matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1,
-                _ => return err!(Error::UnexpectedCode(code.to_string())),
-            },
-            false => match code {
-                matter::Codex::Ed25519_Seed => matter::Codex::Ed25519N,
-                matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1N,
-                _ => return err!(Error::UnexpectedCode(code.to_string())),
-            },
-        };
-
-        let verfer_raw = sign::public_key(code, private_key)?;
-        Verfer::new(Some(verfer_code), Some(&verfer_raw), None, None, None, None)
     }
 }
 
@@ -191,49 +210,36 @@ mod test {
     use rstest::rstest;
 
     #[test]
+    fn convenience() {
+        let signer = Signer::new(None, None, None, None, None, None).unwrap();
+
+        assert!(Signer::new_with_raw(&signer.raw(), None, Some(&signer.code())).is_ok());
+        assert!(Signer::new_with_qb64b(&signer.qb64b().unwrap()).is_ok());
+        assert!(Signer::new_with_qb64(&signer.qb64().unwrap()).is_ok());
+        assert!(Signer::new_with_qb2(&signer.qb2().unwrap()).is_ok());
+    }
+
+    #[test]
     fn new() {
-        let signer = Signer::new(None, None, None, None, None, None, None).unwrap();
-        assert!(
-            Signer::new(None, None, None, None, Some(&signer.qb64().unwrap()), None, None).is_ok()
-        );
+        let signer = Signer::new(None, None, None, None, None, None).unwrap();
+        assert!(Signer::new(None, None, None, None, Some(&signer.qb64().unwrap()), None).is_ok());
     }
 
     #[rstest]
     fn conversions(
         #[values(matter::Codex::Ed25519_Seed, matter::Codex::ECDSA_256k1_Seed)] code: &str,
     ) {
-        let signer = Signer::new(Some(false), Some(code), None, None, None, None, None).unwrap();
+        let signer = Signer::new(Some(false), Some(code), None, None, None, None).unwrap();
 
-        assert!(Signer::new(
-            Some(true),
-            None,
-            None,
-            Some(&mut signer.qb64b().unwrap()),
-            None,
-            None,
-            None
-        )
-        .is_ok());
-        assert!(Signer::new(
-            Some(true),
-            None,
-            None,
-            None,
-            Some(&signer.qb64().unwrap()),
-            None,
-            None
-        )
-        .is_ok());
-        assert!(Signer::new(
-            Some(true),
-            None,
-            None,
-            None,
-            None,
-            Some(&mut signer.qb2().unwrap()),
-            None
-        )
-        .is_ok());
+        assert!(
+            Signer::new(Some(true), None, None, Some(&signer.qb64b().unwrap()), None, None).is_ok()
+        );
+        assert!(
+            Signer::new(Some(true), None, None, None, Some(&signer.qb64().unwrap()), None).is_ok()
+        );
+        assert!(
+            Signer::new(Some(true), None, None, None, None, Some(&signer.qb2().unwrap())).is_ok()
+        );
     }
 
     #[test]
@@ -255,7 +261,6 @@ mod test {
             None,
             None,
             None,
-            None,
         )
         .unwrap();
 
@@ -270,16 +275,9 @@ mod test {
         let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
         let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
 
-        let signer = Signer::new(
-            Some(true),
-            Some(matter::Codex::ECDSA_256k1_Seed),
-            None,
-            None,
-            None,
-            None,
-            None,
-        )
-        .unwrap();
+        let signer =
+            Signer::new(Some(true), Some(matter::Codex::ECDSA_256k1_Seed), None, None, None, None)
+                .unwrap();
 
         let cigar = signer.sign_unindexed(ser).unwrap();
         assert_eq!(cigar.code(), matter::Codex::ECDSA_256k1_Sig);
@@ -320,7 +318,6 @@ mod test {
             None,
             None,
             None,
-            None,
         )
         .unwrap();
 
@@ -352,16 +349,9 @@ mod test {
         let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
         let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
 
-        let signer = Signer::new(
-            Some(true),
-            Some(matter::Codex::ECDSA_256k1_Seed),
-            None,
-            None,
-            None,
-            None,
-            None,
-        )
-        .unwrap();
+        let signer =
+            Signer::new(Some(true), Some(matter::Codex::ECDSA_256k1_Seed), None, None, None, None)
+                .unwrap();
 
         let siger = signer.sign_indexed(ser, only, index, input_ondex).unwrap();
         assert_eq!(siger.code(), siger_code);
@@ -380,19 +370,10 @@ mod test {
             Some(&raw),
             None,
             None,
-            None,
             None
         )
         .is_err());
-        assert!(Signer::new(
-            Some(false),
-            Some(matter::Codex::Ed25519N),
-            None,
-            None,
-            None,
-            None,
-            None
-        )
-        .is_err());
+        assert!(Signer::new(Some(false), Some(matter::Codex::Ed25519N), None, None, None, None)
+            .is_err());
     }
 }
