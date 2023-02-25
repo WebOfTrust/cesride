@@ -36,7 +36,7 @@ impl Counter {
             if strip {
                 let szg = tables::sizage(&counter.code())?;
                 let length = szg.fs as usize;
-                qb64b.resize(length, b'\x00');
+                qb64b.drain(0..length);
             }
             Ok(counter)
         } else if let Some(qb64) = qb64 {
@@ -46,7 +46,7 @@ impl Counter {
             if strip {
                 let szg = tables::sizage(&counter.code())?;
                 let length = (szg.fs * 3 / 4) as usize;
-                qb2.resize(length, b'\x00');
+                qb2.drain(0..length);
             }
             Ok(counter)
         } else {
@@ -361,14 +361,16 @@ mod test {
         qb64b.resize(length + 256, b'\x00');
         assert_eq!(qb64b.len(), length + 256);
         assert!(Counter::new(None, None, None, Some(&mut qb64b), None, None, Some(true)).is_ok());
-        assert_eq!(qb64b.len(), length);
+        assert_eq!(qb64b.len(), 256);
+        assert_eq!(qb64b, vec![b'\x00'; 256]);
 
         assert!(Counter::new(None, None, None, None, None, Some(&mut qb2), None).is_ok());
         let length = qb2.len();
         qb2.resize(length + 256, b'\x00');
         assert_eq!(qb2.len(), length + 256);
         assert!(Counter::new(None, None, None, None, None, Some(&mut qb2), Some(true)).is_ok());
-        assert_eq!(qb2.len(), length);
+        assert_eq!(qb2.len(), 256);
+        assert_eq!(qb2, vec![b'\x00'; 256]);
     }
 
     #[rstest]

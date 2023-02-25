@@ -338,7 +338,7 @@ mod test {
     }
 
     #[test]
-    fn new_sad_paths() {
+    fn new_unhappy_paths() {
         let ked = data!({
             "v": "KERI10JSON000000_",
             "d": "",
@@ -376,7 +376,7 @@ mod test {
     }
 
     #[test]
-    fn populate_from_kind_and_self_sad_paths() {
+    fn populate_from_kind_and_self_unhappy_paths() {
         let ked = data!({
             "v": "KERI10JSON000000_",
             "d": "",

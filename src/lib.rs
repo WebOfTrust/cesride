@@ -13,6 +13,7 @@ pub use crate::core::{
     diger::Diger,
     indexer::tables as indexer,
     matter::tables as matter,
+    prefixer::Prefixer,
     saider::Saider,
     seqner::Seqner,
     siger::Siger,
