@@ -82,7 +82,7 @@ impl fmt::Display for Value {
             // hopefully unreachable (.to_json() should never blow up)
             Err(_) => return Err(fmt::Error),
         };
-        write!(f, "{}", json)
+        write!(f, "{json}")
     }
 }
 
