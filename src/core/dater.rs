@@ -45,23 +45,42 @@ impl Dater {
         dts: Option<&str>,
         code: Option<&str>,
         raw: Option<&[u8]>,
-        qb64b: Option<&mut Vec<u8>>,
+        qb64b: Option<&[u8]>,
         qb64: Option<&str>,
-        qb2: Option<&mut Vec<u8>>,
-        strip: Option<bool>,
+        qb2: Option<&[u8]>,
     ) -> Result<Self> {
         let code = if let Some(code) = code { Some(code) } else { Some(matter::Codex::DateTime) };
 
         let dater: Self = if raw.is_none() && qb64b.is_none() && qb64.is_none() && qb2.is_none() {
             let b64 = if let Some(dts) = dts { iso_8601_to_b64(dts) } else { now_as_b64() };
             let qb64 = format!("{}{}", matter::Codex::DateTime, &b64);
-            Matter::new(code, raw, qb64b, Some(&qb64), qb2, strip)?
+            Matter::new(code, raw, qb64b, Some(&qb64), qb2)?
         } else {
-            Matter::new(code, raw, qb64b, qb64, qb2, strip)?
+            Matter::new(code, raw, qb64b, qb64, qb2)?
         };
 
         validate_code(&dater.code())?;
         Ok(dater)
+    }
+
+    pub fn new_with_dts(dts: &str, code: Option<&str>) -> Result<Self> {
+        Self::new(Some(dts), code, None, None, None, None)
+    }
+
+    pub fn new_with_raw(raw: &[u8], code: Option<&str>) -> Result<Self> {
+        Self::new(None, code, Some(raw), None, None, None)
+    }
+
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
+        Self::new(None, None, None, Some(qb64b), None, None)
+    }
+
+    pub fn new_with_qb64(qb64: &str) -> Result<Self> {
+        Self::new(None, None, None, None, Some(qb64), None)
+    }
+
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
+        Self::new(None, None, None, None, None, Some(qb2))
     }
 
     pub fn dts(&self) -> Result<String> {
@@ -107,18 +126,30 @@ mod test {
     use rstest::rstest;
 
     #[test]
+    fn convenience() {
+        let dts = "2020-08-22T17:50:09.988921-01:00";
+
+        let dater = Dater::new(Some(dts), None, None, None, None, None).unwrap();
+
+        assert!(Dater::new_with_dts(dts, None).is_ok());
+        assert!(Dater::new_with_raw(&dater.raw(), Some(&dater.code())).is_ok());
+        assert!(Dater::new_with_qb64b(&dater.qb64b().unwrap()).is_ok());
+        assert!(Dater::new_with_qb64(&dater.qb64().unwrap()).is_ok());
+        assert!(Dater::new_with_qb2(&dater.qb2().unwrap()).is_ok());
+    }
+
+    #[test]
     fn new() {
         let dts = "2020-08-22T17:50:09.988921-01:00";
-        let qb64 =
-            Dater::new(Some(dts), None, None, None, None, None, None).unwrap().qb64().unwrap();
-        assert!(Dater::new(Some(dts), None, None, None, None, None, None).is_ok());
-        assert!(Dater::new(None, None, None, None, Some(&qb64), None, None).is_ok());
+        let qb64 = Dater::new(Some(dts), None, None, None, None, None).unwrap().qb64().unwrap();
+        assert!(Dater::new(Some(dts), None, None, None, None, None,).is_ok());
+        assert!(Dater::new(None, None, None, None, Some(&qb64), None,).is_ok());
     }
 
     #[rstest]
     fn new_default(
         #[values(
-            &Dater::new(None, None, None, None, None, None, None).unwrap(),
+            &Dater::new(None, None, None, None, None, None,).unwrap(),
         )]
         dater: &Dater,
     ) {
@@ -148,12 +179,12 @@ mod test {
         #[case] dtraw: &[u8],
         #[case] dtqb2: &[u8],
         #[values(
-            &Dater::new(Some(dts), None, None, None, None, None, None).unwrap(),
-            &Dater::new(None, Some(matter::Codex::DateTime), Some(dtraw), None, None, None, None).unwrap(),
-            &Dater::new(None, None, Some(dtraw), None, None, None, None).unwrap(),
-            &Dater::new(None, None, None, Some(&mut dtqb64.as_bytes().to_vec()), None, None, None).unwrap(),
-            &Dater::new(None, None, None, None, Some(dtqb64), None, None).unwrap(),
-            &Dater::new(None, None, None, None, None, Some(&mut dtqb2.to_vec()), None).unwrap(),
+            &Dater::new(Some(dts), None, None, None, None, None,).unwrap(),
+            &Dater::new(None, Some(matter::Codex::DateTime), Some(dtraw), None, None, None,).unwrap(),
+            &Dater::new(None, None, Some(dtraw), None, None, None,).unwrap(),
+            &Dater::new(None, None, None, Some(dtqb64.as_bytes()), None, None,).unwrap(),
+            &Dater::new(None, None, None, None, Some(dtqb64), None,).unwrap(),
+            &Dater::new(None, None, None, None, None, Some(dtqb2),).unwrap(),
         )]
         dater: &Dater,
     ) {
@@ -175,12 +206,12 @@ mod test {
     )]
     #[case("", b"\xdbM\xb4\xfbO>\xdbd\xf5\xed\xcetsO]\xf7\xcf=\xdb_\xb4\xd5\xcd4")]
     fn unhappy_new_with_code_and_raw(#[case] code: &str, #[case] dtraw: &[u8]) {
-        assert!(Dater::new(None, Some(code), Some(dtraw), None, None, None, None).is_err());
+        assert!(Dater::new(None, Some(code), Some(dtraw), None, None, None,).is_err());
     }
 
     #[rstest]
     fn unhappy_new_with_dts(#[values("not a date", "2020-08-22T17:50:09.988921-01")] dts: &str) {
-        assert!(Dater::new(Some(dts), None, None, None, None, None, None).is_err());
+        assert!(Dater::new(Some(dts), None, None, None, None, None,).is_err());
     }
 
     #[rstest]
@@ -192,17 +223,8 @@ mod test {
         )]
         qb64: &str,
     ) {
-        assert!(Dater::new(None, None, None, None, Some(qb64), None, None).is_err());
-        assert!(Dater::new(
-            None,
-            None,
-            None,
-            Some(&mut qb64.as_bytes().to_vec()),
-            None,
-            None,
-            None
-        )
-        .is_err());
+        assert!(Dater::new(None, None, None, None, Some(qb64), None,).is_err());
+        assert!(Dater::new(None, None, None, Some(qb64.as_bytes()), None, None).is_err());
     }
 
     #[rstest]
@@ -214,6 +236,6 @@ mod test {
         )]
         qb2: &[u8],
     ) {
-        assert!(Dater::new(None, None, None, None, None, Some(&mut qb2.to_vec()), None).is_err());
+        assert!(Dater::new(None, None, None, None, None, Some(qb2),).is_err());
     }
 }
