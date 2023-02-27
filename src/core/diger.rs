@@ -4,9 +4,9 @@ use crate::error::{err, Error, Result};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Diger {
-    pub raw: Vec<u8>,
-    pub code: String,
-    pub size: u32,
+    raw: Vec<u8>,
+    code: String,
+    size: u32,
 }
 
 impl Default for Diger {

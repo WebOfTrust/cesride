@@ -464,7 +464,7 @@ mod test {
     }
 
     #[rstest]
-    fn binary_overflow_and_underflow(#[values(vec ! [248, 0, 1])] qscb2: Vec<u8>) {
+    fn binary_overflow_and_underflow(#[values(vec![248, 0, 1])] qscb2: Vec<u8>) {
         // add some bytes
         let mut longqscb2 = qscb2.clone();
         longqscb2.resize(longqscb2.len() + 5, 1);

@@ -2,13 +2,12 @@ use crate::core::matter::{tables as matter, Matter};
 use crate::core::verfer::Verfer;
 use crate::error::{err, Error, Result};
 
-//  FIXME: writing uniffi bindings forced me to make fields public but it will be better to hid them
 #[derive(Debug, Clone, PartialEq)]
 pub struct Cigar {
-    pub raw: Vec<u8>,
-    pub code: String,
-    pub size: u32,
-    pub verfer: Verfer,
+    raw: Vec<u8>,
+    code: String,
+    size: u32,
+    verfer: Verfer,
 }
 
 impl Default for Cigar {
