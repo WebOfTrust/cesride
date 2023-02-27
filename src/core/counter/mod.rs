@@ -2,7 +2,6 @@ pub mod tables;
 
 use self::tables::sizage;
 use crate::core::util;
-use crate::counter::Sizage;
 use crate::error::{err, Error, Result};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -321,8 +320,9 @@ impl Counter {
         Ok(())
     }
 
-    pub fn sizage(&self) -> Result<Sizage> {
-        sizage(&self.code)
+    pub fn raw_size(&self) -> Result<u32> {
+        let sizes = sizage(&self.code)?;
+        Ok(sizes.fs)
     }
 }
 
@@ -464,7 +464,7 @@ mod test {
     }
 
     #[rstest]
-    fn binary_overflow_and_underflow(#[values(vec![248, 0, 1])] qscb2: Vec<u8>) {
+    fn binary_overflow_and_underflow(#[values(vec ! [248, 0, 1])] qscb2: Vec<u8>) {
         // add some bytes
         let mut longqscb2 = qscb2.clone();
         longqscb2.resize(longqscb2.len() + 5, 1);
@@ -552,9 +552,9 @@ mod test {
             None,
             Some(counter::Codex::ControllerIdxSigs),
             None,
-            None
+            None,
         )
-        .is_err());
+            .is_err());
 
         assert!(Counter::new(None, None, None, Some(&mut vec![]), None, None, None).is_err());
 
