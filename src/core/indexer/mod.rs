@@ -32,13 +32,11 @@ pub trait Indexer: Default {
         ondex: Option<u32>,
         code: Option<&str>,
         raw: Option<&[u8]>,
-        qb64b: Option<&mut Vec<u8>>,
+        qb64b: Option<&[u8]>,
         qb64: Option<&str>,
-        qb2: Option<&mut Vec<u8>>,
-        strip: Option<bool>,
+        qb2: Option<&[u8]>,
     ) -> Result<Self> {
         let index = index.unwrap_or(0);
-        let strip = strip.unwrap_or(false);
 
         if let Some(raw) = raw {
             let code = if let Some(code) = code {
@@ -49,26 +47,11 @@ pub trait Indexer: Default {
 
             Self::new_with_code_and_raw(code, raw, index, ondex)
         } else if let Some(qb64b) = qb64b {
-            let s = Self::new_with_qb64b(qb64b)?;
-            if strip {
-                let szg = tables::sizage(&s.code())?;
-                let length =
-                    if szg.fs == 0 { szg.hs + szg.ss + s.index() * 4 } else { szg.fs } as usize;
-                qb64b.drain(0..length);
-            }
-            Ok(s)
+            Self::new_with_qb64b(qb64b)
         } else if let Some(qb64) = qb64 {
             Self::new_with_qb64(qb64)
         } else if let Some(qb2) = qb2 {
-            let s = Self::new_with_qb2(qb2)?;
-            if strip {
-                let szg = tables::sizage(&s.code())?;
-                let length = (if szg.fs == 0 { szg.hs + szg.ss + s.index() * 4 } else { szg.fs }
-                    * 3
-                    / 4) as usize;
-                qb2.drain(0..length);
-            }
-            Ok(s)
+            Self::new_with_qb2(qb2)
         } else {
             err!(Error::Validation("must specify raw and code, qb64b, qb64 or qb2".to_string()))
         }
@@ -719,78 +702,39 @@ mod test {
 
     #[test]
     fn new_variable_length() {
-        assert!(TestIndexer::new(None, None, None, None, None, None, None, None).is_err());
-        assert!(TestIndexer::new(None, None, None, Some(&[]), None, None, None, None).is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, None, None).is_err());
+        assert!(TestIndexer::new(None, None, None, Some(&[]), None, None, None).is_err());
 
         let code = indexer::Codex::TBD0;
         let raw = &vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
         let indexer =
-            TestIndexer::new(None, None, Some(code), Some(raw), None, None, None, None).unwrap();
+            TestIndexer::new(None, None, Some(code), Some(raw), None, None, None).unwrap();
         let qb64 = &indexer.qb64().unwrap();
-        let mut qb64b = indexer.qb64b().unwrap();
-        let mut qb2 = indexer.qb2().unwrap();
+        let qb64b = indexer.qb64b().unwrap();
+        let qb2 = indexer.qb2().unwrap();
 
-        assert!(TestIndexer::new(None, None, Some(code), Some(raw), None, None, None, None).is_ok());
-
-        assert!(
-            TestIndexer::new(None, None, None, None, Some(&mut qb64b), None, None, None).is_ok()
-        );
-        let length = qb64b.len();
-        qb64b.resize(length + 256, b'\x00');
-        assert_eq!(qb64b.len(), length + 256);
-        assert!(TestIndexer::new(None, None, None, None, Some(&mut qb64b), None, None, Some(true))
-            .is_ok());
-        assert_eq!(qb64b.len(), 256);
-        assert_eq!(qb64b, vec![b'\x00'; 256]);
-
-        assert!(TestIndexer::new(None, None, None, None, None, Some(qb64), None, None).is_ok());
-
-        assert!(TestIndexer::new(None, None, None, None, None, None, Some(&mut qb2), None).is_ok());
-        let length = qb2.len();
-        qb2.resize(length + 256, b'\x00');
-        assert_eq!(qb2.len(), length + 256);
-        assert!(TestIndexer::new(None, None, None, None, None, None, Some(&mut qb2), Some(true))
-            .is_ok());
-        assert_eq!(qb2.len(), 256);
-        assert_eq!(qb2, vec![b'\x00'; 256]);
+        assert!(TestIndexer::new(None, None, Some(code), Some(raw), None, None, None).is_ok());
+        assert!(TestIndexer::new(None, None, None, None, Some(&qb64b), None, None).is_ok());
+        assert!(TestIndexer::new(None, None, None, None, None, Some(qb64), None).is_ok());
+        assert!(TestIndexer::new(None, None, None, None, None, None, Some(&qb2)).is_ok());
     }
 
     #[test]
     fn new() {
-        assert!(TestIndexer::new(None, None, None, None, None, None, None, None).is_err());
-        assert!(TestIndexer::new(None, None, None, Some(&[]), None, None, None, None).is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, None, None).is_err());
+        assert!(TestIndexer::new(None, None, None, Some(&[]), None, None, None).is_err());
 
         let code = indexer::Codex::Ed25519;
         let qb64 = "AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ";
-        let indexer =
-            TestIndexer::new(None, None, None, None, None, Some(qb64), None, None).unwrap();
+        let indexer = TestIndexer::new(None, None, None, None, None, Some(qb64), None).unwrap();
         let raw = &indexer.raw();
-        let mut qb64b = indexer.qb64b().unwrap();
-        let mut qb2 = indexer.qb2().unwrap();
+        let qb64b = indexer.qb64b().unwrap();
+        let qb2 = indexer.qb2().unwrap();
 
-        assert!(TestIndexer::new(None, None, Some(code), Some(raw), None, None, None, None).is_ok());
-
-        assert!(
-            TestIndexer::new(None, None, None, None, Some(&mut qb64b), None, None, None).is_ok()
-        );
-        let length = qb64b.len();
-        qb64b.resize(length + 256, b'\x00');
-        assert_eq!(qb64b.len(), length + 256);
-        assert!(TestIndexer::new(None, None, None, None, Some(&mut qb64b), None, None, Some(true))
-            .is_ok());
-        assert_eq!(qb64b.len(), 256);
-        assert_eq!(qb64b, vec![b'\x00'; 256]);
-
-        assert!(TestIndexer::new(None, None, None, None, None, Some(qb64), None, None).is_ok());
-
-        assert!(TestIndexer::new(None, None, None, None, None, None, Some(&mut qb2), None).is_ok());
-        let length = qb2.len();
-        qb2.resize(length + 256, b'\x00');
-        assert_eq!(qb2.len(), length + 256);
-        assert!(TestIndexer::new(None, None, None, None, None, None, Some(&mut qb2), Some(true))
-            .is_ok());
-        assert_eq!(qb2.len(), 256);
-        assert_eq!(qb2, vec![b'\x00'; 256]);
+        assert!(TestIndexer::new(None, None, Some(code), Some(raw), None, None, None).is_ok());
+        assert!(TestIndexer::new(None, None, None, None, Some(&qb64b), None, None).is_ok());
+        assert!(TestIndexer::new(None, None, None, None, None, Some(qb64), None).is_ok());
+        assert!(TestIndexer::new(None, None, None, None, None, None, Some(&qb2)).is_ok());
     }
 
     #[rstest]
@@ -800,10 +744,10 @@ mod test {
         #[values(b"\x00\x00\x99\xd2<9$$0\x9fk\xfb\x18\xa0\x8c@r\x122.k\xb2\xc7\x1fp\x0e'm\x8f@\xaa\xa5\x8c\xc8n\x85\xc8!\xf6q\x91p\xa9\xec\xcf\x92\xaf)\xde\xca\xfc\x7f~\xd7o|\x17\x82\x1d\xd4<o\"\x81&\t")]
         qsig2: &[u8],
         #[values(
-            TestIndexer::new(None, None, Some(indexer::Codex::Ed25519), Some(sig), None, None, None, None).unwrap(),
-            TestIndexer::new(None, None, None, None, None, Some("AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ"), None, None).unwrap(),
-            TestIndexer::new(None, None, None, None, Some(&mut "AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ".as_bytes().to_vec()), None, None, None).unwrap(),
-            TestIndexer::new(None, None, None, None, None, None, Some(&mut qsig2.to_vec()), None).unwrap(),
+            TestIndexer::new(None, None, Some(indexer::Codex::Ed25519), Some(sig), None, None, None).unwrap(),
+            TestIndexer::new(None, None, None, None, None, Some("AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ"), None).unwrap(),
+            TestIndexer::new(None, None, None, None, Some("AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ".as_bytes()), None, None).unwrap(),
+            TestIndexer::new(None, None, None, None, None, None, Some(qsig2)).unwrap(),
         )]
         idx: TestIndexer,
     ) {
@@ -846,12 +790,12 @@ mod test {
     fn exfil_infil_bexfil_binfil(
         #[values("AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ")]
         qb64: &str,
-        #[values(TestIndexer::new(None, None, None, None, None, Some(qb64), None, None).unwrap())]
+        #[values(TestIndexer::new(None, None, None, None, None, Some(qb64), None).unwrap())]
         control: TestIndexer,
         #[values(
-            TestIndexer::new(None, None, Some(&control.code()), Some(&control.raw()), None, None, None, None).unwrap(),
-            TestIndexer::new(None, None, None, None, Some(&mut control.qb64b().unwrap()), None, None, None).unwrap(),
-            TestIndexer::new(None, None, None, None, None, None, Some(&mut control.qb2().unwrap()), None).unwrap(),
+            TestIndexer::new(None, None, Some(&control.code()), Some(&control.raw()), None, None, None).unwrap(),
+            TestIndexer::new(None, None, None, None, Some(&control.qb64b().unwrap()), None, None).unwrap(),
+            TestIndexer::new(None, None, None, None, None, None, Some(&control.qb2().unwrap())).unwrap(),
         )]
         indexer: TestIndexer,
     ) {
@@ -874,7 +818,6 @@ mod test {
             None,
             None,
             None,
-            None,
         )
         .unwrap();
         assert!(TestIndexer::new(
@@ -885,7 +828,6 @@ mod test {
             None,
             Some(&indexer.qb64().unwrap()),
             None,
-            None
         )
         .is_ok());
         assert!(TestIndexer::new(
@@ -893,10 +835,9 @@ mod test {
             None,
             None,
             None,
-            Some(&mut indexer.qb64b().unwrap()),
+            Some(&indexer.qb64b().unwrap()),
             None,
             None,
-            None
         )
         .is_ok());
         assert!(TestIndexer::new(
@@ -906,8 +847,7 @@ mod test {
             None,
             None,
             None,
-            Some(&mut indexer.qb2().unwrap()),
-            None
+            Some(&indexer.qb2().unwrap()),
         )
         .is_ok());
     }
@@ -915,7 +855,7 @@ mod test {
     #[test]
     fn unhappy_paths() {
         // empty inputs
-        assert!(TestIndexer::new(None, None, Some(""), Some(&[]), None, None, None, None).is_err());
+        assert!(TestIndexer::new(None, None, Some(""), Some(&[]), None, None, None,).is_err());
         assert!(TestIndexer::new(
             None,
             None,
@@ -924,24 +864,17 @@ mod test {
             None,
             None,
             None,
-            None
         )
         .is_err());
-        assert!(
-            TestIndexer::new(None, None, None, None, Some(&mut vec![]), None, None, None).is_err()
-        );
-        assert!(TestIndexer::new(None, None, None, None, None, Some(""), None, None).is_err());
-        assert!(
-            TestIndexer::new(None, None, None, None, None, None, Some(&mut vec![]), None).is_err()
-        );
+        assert!(TestIndexer::new(None, None, None, None, Some(&[]), None, None,).is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, Some(""), None,).is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, None, Some(&[]),).is_err());
 
         // unknown sizage
-        assert!(
-            TestIndexer::new(None, None, Some("CESR"), Some(&[]), None, None, None, None).is_err()
-        );
+        assert!(TestIndexer::new(None, None, Some("CESR"), Some(&[]), None, None, None,).is_err());
 
         // shortage
-        assert!(TestIndexer::new(None, None, None, None, None, Some("0"), None, None).is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, Some("0"), None,).is_err());
 
         // index too large
         assert!(TestIndexer::new(
@@ -952,7 +885,6 @@ mod test {
             None,
             None,
             None,
-            None
         )
         .is_err());
 
@@ -965,7 +897,6 @@ mod test {
             None,
             None,
             None,
-            None
         )
         .is_err());
 
@@ -978,7 +909,6 @@ mod test {
             None,
             None,
             None,
-            None
         )
         .is_err());
 
@@ -991,7 +921,6 @@ mod test {
             None,
             None,
             None,
-            None
         )
         .is_err());
 
@@ -1044,110 +973,49 @@ mod test {
             None,
             Some(indexer::Codex::Ed25519),
             None,
-            None
         )
         .is_err());
 
         // invalid ondex for current sig
         let qb64 = "0BAB";
-        assert!(TestIndexer::new(None, None, None, None, None, Some(qb64), None, None).is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, Some(qb64), None).is_err());
 
         // not enough material
         let qb64 = "0AAA";
-        assert!(TestIndexer::new(None, None, None, None, None, Some(qb64), None, None).is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, Some(qb64), None).is_err());
 
         // prepad
         let qb64 = "AA_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-        assert!(TestIndexer::new(None, None, None, None, None, Some(qb64), None, None).is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, Some(qb64), None).is_err());
 
         // lead byte
         let qb64 = "1zAA_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-        assert!(TestIndexer::new(None, None, None, None, None, Some(qb64), None, None).is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, Some(qb64), None).is_err());
 
         // not enough for hard
         let qb2 = b"\xd0";
-        assert!(TestIndexer::new(
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            Some(&mut qb2.to_vec()),
-            None
-        )
-        .is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, None, Some(qb2),).is_err());
 
         // hard complete, code not
         let qb2 = b"\xd0\x00";
-        assert!(TestIndexer::new(
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            Some(&mut qb2.to_vec()),
-            None
-        )
-        .is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, None, Some(qb2)).is_err());
 
         // invalid ondex for current sig
         let qb2 = b"\xd0\x10\x01";
-        assert!(TestIndexer::new(
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            Some(&mut qb2.to_vec()),
-            None
-        )
-        .is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, None, Some(qb2)).is_err());
 
         // not enough material
         let qb2 = b64_engine::URL_SAFE.decode("0AAA").unwrap();
-        assert!(TestIndexer::new(
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            Some(&mut qb2.to_vec()),
-            None
-        )
-        .is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, None, Some(&qb2)).is_err());
 
         // prepad
         let qb2 = b64_engine::URL_SAFE.decode("AA_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA").unwrap();
-        assert!(TestIndexer::new(
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            Some(&mut qb2.to_vec()),
-            None
-        )
-        .is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, None, Some(&qb2)).is_err());
 
         // lead byte
         let qb2 = b64_engine::URL_SAFE
             .decode("1zAA_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
             .unwrap();
-        assert!(TestIndexer::new(
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            Some(&mut qb2.to_vec()),
-            None
-        )
-        .is_err());
+        assert!(TestIndexer::new(None, None, None, None, None, None, Some(&qb2),).is_err());
     }
 }

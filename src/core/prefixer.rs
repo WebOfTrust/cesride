@@ -94,7 +94,7 @@ fn derive_nontransferable(ked: &Value, code: &str) -> Result<(Vec<u8>, String)> 
             )));
         }
 
-        Verfer::new(None, None, None, Some(&keys[0].to_string()?), None, None)?
+        Verfer::new(None, None, None, Some(&keys[0].to_string()?), None)?
     } else {
         return err!(Error::Derivation("error extracting public key".to_string()));
     };
@@ -136,7 +136,7 @@ fn derive_transferable(ked: &Value, code: &str) -> Result<(Vec<u8>, String)> {
             )));
         }
 
-        Verfer::new(None, None, None, Some(&keys[0].to_string()?), None, None)?
+        Verfer::new(None, None, None, Some(&keys[0].to_string()?), None)?
     } else {
         return err!(Error::Derivation("error extracting public key".to_string()));
     };
@@ -229,7 +229,7 @@ fn verify_transferable(ked: &Value, pre: &str, prefixed: bool) -> Result<bool> {
 
 fn verify_digest(ked: &Value, pre: &str, prefixed: bool, code: &str) -> Result<bool> {
     let (raw, code) = derive_digest(ked, code)?;
-    let crymat = Diger::new(None, Some(&code), Some(&raw), None, None, None, None)?;
+    let crymat = Diger::new(None, Some(&code), Some(&raw), None, None, None)?;
 
     if crymat.qb64()? != *pre {
         return Ok(false);
@@ -245,64 +245,78 @@ fn verify_digest(ked: &Value, pre: &str, prefixed: bool, code: &str) -> Result<b
 }
 
 impl Prefixer {
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         ked: Option<&Value>,
         allows: Option<&[&str]>,
         code: Option<&str>,
         raw: Option<&[u8]>,
-        qb64b: Option<&mut Vec<u8>>,
+        qb64b: Option<&[u8]>,
         qb64: Option<&str>,
-        qb2: Option<&mut Vec<u8>>,
-        strip: Option<bool>,
+        qb2: Option<&[u8]>,
     ) -> Result<Self> {
-        let prefixer: Prefixer =
-            if raw.is_some() || qb64b.is_some() || qb64.is_some() || qb2.is_some() {
-                validate_code(code.unwrap_or(matter::Codex::Ed25519N))?;
-                Matter::new(code, raw, qb64b, qb64, qb2, strip)?
-            } else {
-                let ked = if let Some(ked) = ked {
-                    if code.is_none() && !ked.to_map()?.contains_key(Ids::i) {
-                        return err!(Error::Validation(
-                            "must supply one of raw, qb64b, qb64, qb2, or ked with 'i'".to_string()
-                        ));
-                    }
-
-                    ked
-                } else {
+        let prefixer: Prefixer = if raw.is_some()
+            || qb64b.is_some()
+            || qb64.is_some()
+            || qb2.is_some()
+        {
+            validate_code(code.unwrap_or(matter::Codex::Ed25519N))?;
+            Matter::new(code, raw, qb64b, qb64, qb2)?
+        } else {
+            let ked = if let Some(ked) = ked {
+                if code.is_none() && !ked.to_map()?.contains_key(Ids::i) {
                     return err!(Error::Validation(
                         "must supply one of raw, qb64b, qb64, qb2, or ked with 'i'".to_string()
                     ));
-                };
-
-                let code = if let Some(code) = code {
-                    code.to_string()
-                } else {
-                    let label = Ids::i;
-                    <Prefixer as Matter>::new(
-                        None,
-                        None,
-                        None,
-                        Some(&ked[label].to_string()?),
-                        None,
-                        strip,
-                    )?
-                    .code()
-                };
-
-                validate_code(&code)?;
-
-                let allows = allows.unwrap_or(&[]);
-                if !allows.is_empty() && !allows.contains(&code.as_str()) {
-                    return err!(Error::UnexpectedCode(code));
                 }
 
-                let (raw, code) = derive(ked, &code)?;
-
-                Matter::new(Some(&code), Some(&raw), None, None, None, None)?
+                ked
+            } else {
+                return err!(Error::Validation(
+                    "must supply one of raw, qb64b, qb64, qb2, or ked with 'i'".to_string()
+                ));
             };
 
+            let code = if let Some(code) = code {
+                code.to_string()
+            } else {
+                let label = Ids::i;
+                <Prefixer as Matter>::new(None, None, None, Some(&ked[label].to_string()?), None)?
+                    .code()
+            };
+
+            validate_code(&code)?;
+
+            let allows = allows.unwrap_or(&[]);
+            if !allows.is_empty() && !allows.contains(&code.as_str()) {
+                return err!(Error::UnexpectedCode(code));
+            }
+
+            let (raw, code) = derive(ked, &code)?;
+
+            Matter::new(Some(&code), Some(&raw), None, None, None)?
+        };
+
         Ok(prefixer)
+    }
+
+    pub fn new_with_ked(ked: &Value, allows: Option<&[&str]>, code: Option<&str>) -> Result<Self> {
+        Self::new(Some(ked), allows, code, None, None, None, None)
+    }
+
+    pub fn new_with_raw(raw: &[u8], code: Option<&str>) -> Result<Self> {
+        Self::new(None, None, code, Some(raw), None, None, None)
+    }
+
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
+        Self::new(None, None, None, None, Some(qb64b), None, None)
+    }
+
+    pub fn new_with_qb64(qb64: &str) -> Result<Self> {
+        Self::new(None, None, None, None, None, Some(qb64), None)
+    }
+
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
+        Self::new(None, None, None, None, None, None, Some(qb2))
     }
 
     pub fn verify(&self, ked: &Value, prefixed: Option<bool>) -> Result<bool> {
@@ -383,20 +397,41 @@ mod test {
     };
     use rstest::rstest;
 
+    #[test]
+    fn convenience() {
+        let code = matter::Codex::Ed25519N;
+        let vkey = b"\xacr\xda\xc83~\x99r\xaf\xeb`\xc0\x8cR\xd7\xd7\xf69\xc8E\x1e\xd2\xf0=`\xf7\xbf\x8a\x18\x8a`q";
+        let prefix = "BKxy2sgzfplyr-tgwIxS19f2OchFHtLwPWD3v4oYimBx";
+
+        let verfer = Verfer::new(Some(code), Some(vkey), None, None, None).unwrap();
+        let ked = data!({
+            "k": [&verfer.qb64().unwrap()],
+            "n": "",
+            "t": "icp",
+            "i": prefix
+        });
+        let prefixer = Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).unwrap();
+
+        assert!(Prefixer::new_with_ked(&ked, None, None).is_ok());
+        assert!(Prefixer::new_with_raw(&prefixer.raw(), Some(&prefixer.code())).is_ok());
+        assert!(Prefixer::new_with_qb64b(&prefixer.qb64b().unwrap()).is_ok());
+        assert!(Prefixer::new_with_qb64(&prefixer.qb64().unwrap()).is_ok());
+        assert!(Prefixer::new_with_qb2(&prefixer.qb2().unwrap()).is_ok());
+    }
+
     #[rstest]
     fn new_unhappy_paths_by_values(
         #[values(b"\xacr\xda\xc83~\x99r\xaf\xeb`\xc0\x8cR\xd7\xd7\xf69\xc8E\x1e\xd2\xf0=`\xf7\xbf\x8a\x18\x8a`q")]
         _verkey: &[u8],
         #[values(
-            Prefixer::new(None, None, None, None, None, None, None, None).is_err(),
-            Prefixer::new(None, None, None, Some(_verkey), None, None, None, None).is_err(),
-            Prefixer::new(None, None, Some(""), Some(_verkey), None, None, None, None).is_err(),
+            Prefixer::new(None, None, None, None, None, None, None).is_err(),
+            Prefixer::new(None, None, None, Some(_verkey), None, None, None).is_err(),
+            Prefixer::new(None, None, Some(""), Some(_verkey), None, None, None).is_err(),
             Prefixer::new(
                 None,
                 None,
                 Some(matter::Codex::Bytes_Big_L0),
                 Some(_verkey),
-                None,
                 None,
                 None,
                 None
@@ -408,7 +443,7 @@ mod test {
     }
 
     fn build_verfer(code: &str, raw: &[u8]) -> Verfer {
-        Verfer::new(Some(code), Some(raw), None, None, None, None).unwrap()
+        Verfer::new(Some(code), Some(raw), None, None, None).unwrap()
     }
 
     #[rstest]
@@ -509,7 +544,7 @@ mod test {
             ked["i"] = data!(prefix);
         }
 
-        assert!(Prefixer::new(Some(&ked), None, code, None, None, None, None, None).is_err());
+        assert!(Prefixer::new(Some(&ked), None, code, None, None, None, None).is_err());
     }
 
     #[rstest]
@@ -525,7 +560,7 @@ mod test {
         let pre_n = "BKxy2sgzfplyr-tgwIxS19f2OchFHtLwPWD3v4oYimBx";
         let verkey = b"\xacr\xda\xc83~\x99r\xaf\xeb`\xc0\x8cR\xd7\xd7\xf69\xc8E\x1e\xd2\xf0=`\xf7\xbf\x8a\x18\x8a`q";
 
-        let verfer = Verfer::new(Some(code), Some(verkey), None, None, None, None).unwrap();
+        let verfer = Verfer::new(Some(code), Some(verkey), None, None, None).unwrap();
 
         let mut ked = data!({
             "k": [&verfer.qb64().unwrap()],
@@ -540,7 +575,7 @@ mod test {
             ked["b"] = data!(b);
         }
 
-        assert!(Prefixer::new(Some(&ked), None, Some(code), None, None, None, None, None).is_err());
+        assert!(Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).is_err());
     }
 
     #[rstest]
@@ -552,15 +587,14 @@ mod test {
         let nxtkey = b"\xa6_\x894J\xf25T\xc1\x83#\x06\x98L\xa6\xef\x1a\xb3h\xeaA:x'\xda\x04\x88\xb2\xc4_\xf6\x00";
 
         // missing key
-        let verfer = Verfer::new(Some(code), Some(verkey), None, None, None, None).unwrap();
+        let verfer = Verfer::new(Some(code), Some(verkey), None, None, None).unwrap();
         let mut ked = data!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
             "i": pre_n,
         });
-        let prefixer =
-            Prefixer::new(Some(&ked), None, Some(code), None, None, None, None, None).unwrap();
+        let prefixer = Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).unwrap();
 
         let mut map = ked.to_map().unwrap();
         map.remove("k");
@@ -569,61 +603,57 @@ mod test {
         assert!(!prefixer.verify(&ked, None).unwrap());
 
         // multiple keys
-        let verfer = Verfer::new(Some(code), Some(verkey), None, None, None, None).unwrap();
+        let verfer = Verfer::new(Some(code), Some(verkey), None, None, None).unwrap();
         let mut ked = data!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
             "i": pre_n,
         });
-        let prefixer =
-            Prefixer::new(Some(&ked), None, Some(code), None, None, None, None, None).unwrap();
+        let prefixer = Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).unwrap();
 
         ked["k"] = data!([&verfer.qb64().unwrap(), &verfer.qb64().unwrap()]);
 
         assert!(!prefixer.verify(&ked, None).unwrap());
 
         // key != prefix
-        let verfer = Verfer::new(Some(code), Some(verkey), None, None, None, None).unwrap();
+        let verfer = Verfer::new(Some(code), Some(verkey), None, None, None).unwrap();
         let mut ked = data!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
             "i": pre,
         });
-        let prefixer =
-            Prefixer::new(Some(&ked), None, Some(code), None, None, None, None, None).unwrap();
+        let prefixer = Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).unwrap();
 
         ked["k"] = data!(["ABC"]);
 
         assert!(!prefixer.verify(&ked, None).unwrap());
 
         // bad key (doesn't match)
-        let verfer = Verfer::new(Some(code), Some(verkey), None, None, None, None).unwrap();
+        let verfer = Verfer::new(Some(code), Some(verkey), None, None, None).unwrap();
         let mut ked = data!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
             "i": pre_n,
         });
-        let prefixer =
-            Prefixer::new(Some(&ked), None, Some(code), None, None, None, None, None).unwrap();
+        let prefixer = Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).unwrap();
 
-        let nxtfer = Verfer::new(Some(code), Some(nxtkey), None, None, None, None).unwrap();
+        let nxtfer = Verfer::new(Some(code), Some(nxtkey), None, None, None).unwrap();
         ked["k"] = data!([&nxtfer.qb64().unwrap()]);
 
         assert!(!prefixer.verify(&ked, None).unwrap());
 
         // non-incepting
-        let verfer = Verfer::new(Some(code), Some(verkey), None, None, None, None).unwrap();
+        let verfer = Verfer::new(Some(code), Some(verkey), None, None, None).unwrap();
         let mut ked = data!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
             "i": pre_n,
         });
-        let prefixer =
-            Prefixer::new(Some(&ked), None, Some(code), None, None, None, None, None).unwrap();
+        let prefixer = Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).unwrap();
 
         ked["t"] = data!("ksn");
 
@@ -637,25 +667,16 @@ mod test {
 
         // next keys present, non-transferable
         let verfer =
-            Verfer::new(Some(matter::Codex::Ed25519N), Some(verkey), None, None, None, None)
-                .unwrap();
+            Verfer::new(Some(matter::Codex::Ed25519N), Some(verkey), None, None, None).unwrap();
         let mut ked = data!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
             "i": pre_n,
         });
-        let prefixer = Prefixer::new(
-            Some(&ked),
-            None,
-            Some(matter::Codex::Ed25519N),
-            None,
-            None,
-            None,
-            None,
-            None,
-        )
-        .unwrap();
+        let prefixer =
+            Prefixer::new(Some(&ked), None, Some(matter::Codex::Ed25519N), None, None, None, None)
+                .unwrap();
 
         ked["n"] = data!([&verfer.qb64().unwrap()]);
 
@@ -675,7 +696,6 @@ mod test {
             None,
             Some(_code),
             Some(_verkey),
-            None,
             None,
             None,
             None,
@@ -734,8 +754,7 @@ mod test {
         #[case] unprefixed_result: bool,
         #[case] prefixed_result: bool,
     ) {
-        let prefixer =
-            Prefixer::new(None, None, Some(code), Some(raw), None, None, None, None).unwrap();
+        let prefixer = Prefixer::new(None, None, Some(code), Some(raw), None, None, None).unwrap();
         let ked = data!({
             "k": [&prefixer.qb64().unwrap()],
             "n": n,
@@ -773,8 +792,7 @@ mod test {
         #[case] unprefixed_result: bool,
         #[case] prefixed_result: bool,
     ) {
-        let prefixer =
-            Prefixer::new(None, None, Some(code), Some(raw), None, None, None, None).unwrap();
+        let prefixer = Prefixer::new(None, None, Some(code), Some(raw), None, None, None).unwrap();
         let ked = data!({
             "k": [&prefixer.qb64().unwrap()],
             "t": "icp"
@@ -798,14 +816,13 @@ mod test {
         #[case] unprefixed_result: bool,
         #[case] prefixed_result: bool,
     ) {
-        let verfer = Verfer::new(Some(vcode), Some(vkey), None, None, None, None).unwrap();
+        let verfer = Verfer::new(Some(vcode), Some(vkey), None, None, None).unwrap();
         let ked = data!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp"
         });
-        let prefixer =
-            Prefixer::new(Some(&ked), None, Some(code), None, None, None, None, None).unwrap();
+        let prefixer = Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).unwrap();
         assert_eq!(prefixer.qb64().unwrap(), verfer.qb64().unwrap());
         assert_eq!(prefixer.verify(&ked, None).unwrap(), unprefixed_result);
         assert_eq!(prefixer.verify(&ked, Some(true)).unwrap(), prefixed_result);
@@ -834,15 +851,14 @@ mod test {
         #[case] unprefixed_result: bool,
         #[case] prefixed_result: bool,
     ) {
-        let verfer = Verfer::new(Some(vcode), Some(vkey), None, None, None, None).unwrap();
+        let verfer = Verfer::new(Some(vcode), Some(vkey), None, None, None).unwrap();
         let ked = data!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
             "i": prefix
         });
-        let prefixer =
-            Prefixer::new(Some(&ked), None, Some(code), None, None, None, None, None).unwrap();
+        let prefixer = Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).unwrap();
         assert_eq!(prefixer.qb64().unwrap(), verfer.qb64().unwrap());
         assert_eq!(prefixer.verify(&ked, None).unwrap(), unprefixed_result);
         assert_eq!(prefixer.verify(&ked, Some(true)).unwrap(), prefixed_result);
@@ -863,7 +879,7 @@ mod test {
         )]
         code: &str,
     ) {
-        let diger = Diger::new(Some(b""), Some(code), None, None, None, None, None).unwrap();
+        let diger = Diger::new(Some(b""), Some(code), None, None, None, None).unwrap();
         let vs = versify(None, Some(CURRENT_VERSION), Some(Serialage::JSON), Some(0)).unwrap();
         let ked = data!({
             "v": &vs,
@@ -874,8 +890,7 @@ mod test {
         let result = sizeify(&ked, None).unwrap();
 
         let prefixer =
-            Prefixer::new(Some(&result.ked), None, Some(code), None, None, None, None, None)
-                .unwrap();
+            Prefixer::new(Some(&result.ked), None, Some(code), None, None, None, None).unwrap();
         assert!(prefixer.verify(&result.ked, None).unwrap());
         assert!(!prefixer.verify(&result.ked, Some(true)).unwrap());
     }
@@ -895,7 +910,7 @@ mod test {
         )]
         code: &str,
     ) {
-        let diger = Diger::new(Some(b""), Some(code), None, None, None, None, None).unwrap();
+        let diger = Diger::new(Some(b""), Some(code), None, None, None, None).unwrap();
         let vs = versify(None, Some(CURRENT_VERSION), Some(Serialage::JSON), Some(0)).unwrap();
         let ked = data!({
             "v": &vs,
@@ -907,8 +922,7 @@ mod test {
         });
         let result = sizeify(&ked, None).unwrap();
         let mut ked = result.ked;
-        let prefixer =
-            Prefixer::new(Some(&ked), None, Some(code), None, None, None, None, None).unwrap();
+        let prefixer = Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).unwrap();
 
         assert!(prefixer.verify(&ked, None).unwrap());
         assert!(!prefixer.verify(&ked, Some(true)).unwrap());
@@ -925,14 +939,13 @@ mod test {
         let pre_n = "BKxy2sgzfplyr-tgwIxS19f2OchFHtLwPWD3v4oYimBx";
 
         let verkey = b"\xacr\xda\xc83~\x99r\xaf\xeb`\xc0\x8cR\xd7\xd7\xf69\xc8E\x1e\xd2\xf0=`\xf7\xbf\x8a\x18\x8a`q";
-        let verfer = Verfer::new(None, Some(verkey), None, None, None, None).unwrap();
+        let verfer = Verfer::new(None, Some(verkey), None, None, None).unwrap();
 
         assert_eq!(verfer.qb64().unwrap(), pre_n);
 
         let nxtkey = b"\xa6_\x894J\xf25T\xc1\x83#\x06\x98L\xa6\xef\x1a\xb3h\xeaA:x'\xda\x04\x88\xb2\xc4_\xf6\x00";
         let nxtfer =
-            Verfer::new(Some(matter::Codex::Ed25519), Some(nxtkey), None, None, None, None)
-                .unwrap();
+            Verfer::new(Some(matter::Codex::Ed25519), Some(nxtkey), None, None, None).unwrap();
 
         assert_eq!(nxtfer.qb64().unwrap(), "DKZfiTRK8jVUwYMjBphMpu8as2jqQTp4J9oEiLLEX_YA");
 
@@ -945,7 +958,6 @@ mod test {
             None,
             Some(matter::Codex::Ed25519),
             Some(verkey),
-            None,
             None,
             None,
             None
@@ -979,25 +991,17 @@ mod test {
             None,
             None,
             None,
-            None,
         )
         .unwrap();
         assert_eq!(prefixer.qb64().unwrap(), "ELEjyRTtmfyp4VpTBTkv_b6KONMS1V8-EW-aGJ5P_QMo");
         assert!(prefixer.verify(&ked, None).unwrap());
         assert!(!prefixer.verify(&ked, Some(true)).unwrap());
 
-        let n_digs = data!([&Diger::new(
-            Some(&nxtfer.qb64b().unwrap()),
-            None,
-            None,
-            None,
-            None,
-            None,
-            None
-        )
-        .unwrap()
-        .qb64()
-        .unwrap()]);
+        let n_digs =
+            data!([&Diger::new(Some(&nxtfer.qb64b().unwrap()), None, None, None, None, None)
+                .unwrap()
+                .qb64()
+                .unwrap()]);
         let ked = data!({
             "v": &vs,
             "i": "",
@@ -1015,7 +1019,6 @@ mod test {
             Some(&ked),
             None,
             Some(matter::Codex::Blake3_256),
-            None,
             None,
             None,
             None,
@@ -1044,7 +1047,7 @@ mod test {
 
         let mut signers: Vec<Signer> = vec![];
         for secret in secrets {
-            signers.push(Signer::new(None, None, None, None, Some(secret), None, None).unwrap());
+            signers.push(Signer::new(None, None, None, None, Some(secret), None).unwrap());
         }
 
         for i in 0..secrets.len() {
@@ -1057,18 +1060,11 @@ mod test {
             &signers[2].verfer().qb64().unwrap(),
         ]);
         let sith = data!([["1/2", "1/2", "1"]]);
-        let n_dig = Diger::new(
-            Some(&signers[3].verfer().qb64b().unwrap()),
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-        )
-        .unwrap()
-        .qb64()
-        .unwrap();
+        let n_dig =
+            Diger::new(Some(&signers[3].verfer().qb64b().unwrap()), None, None, None, None, None)
+                .unwrap()
+                .qb64()
+                .unwrap();
         let n_digs = data!([&n_dig]);
         let ked = data!({
             "v": &vs,
@@ -1087,7 +1083,6 @@ mod test {
             Some(&ked),
             None,
             Some(matter::Codex::Blake3_256),
-            None,
             None,
             None,
             None,
@@ -1115,7 +1110,6 @@ mod test {
             Some(&ked),
             None,
             Some(matter::Codex::Blake3_256),
-            None,
             None,
             None,
             None,
@@ -1156,7 +1150,6 @@ mod test {
             None,
             None,
             None,
-            None,
         )
         .unwrap();
         assert_eq!(prefixer.qb64().unwrap(), "EBabiu_JCkE0GbiglDXNB5C4NQq-hiGgxhHKXBxkiojg");
@@ -1170,7 +1163,6 @@ mod test {
             None,
             None,
             None,
-            None,
             None
         )
         .is_err());
@@ -1179,7 +1171,6 @@ mod test {
             Some(&ked),
             Some(&[matter::Codex::Blake3_256, matter::Codex::Ed25519]),
             Some(matter::Codex::Blake3_256),
-            None,
             None,
             None,
             None,

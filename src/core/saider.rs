@@ -37,6 +37,57 @@ fn validate_code(code: &str) -> Result<()> {
     Ok(())
 }
 
+fn serialize(sad: &Value, kind: Option<&str>) -> Result<Vec<u8>> {
+    let knd = if sad.to_map()?.contains_key("v") {
+        let result = deversify(&sad["v"].to_string()?)?;
+        result.kind
+    } else {
+        Serialage::JSON.to_string()
+    };
+    let kind = if let Some(kind) = kind { Some(kind) } else { Some(knd.as_str()) };
+    dumps(sad, kind)
+}
+
+fn derive(
+    sad: &Value,
+    code: Option<&str>,
+    kind: Option<&str>,
+    label: Option<&str>,
+    ignore: Option<&[&str]>,
+) -> Result<(Vec<u8>, Value)> {
+    let label = label.unwrap_or(Ids::d);
+    let code = code.unwrap_or(matter::Codex::Blake3_256);
+
+    validate_code(code)?;
+
+    let szg = matter::sizage(code)?;
+    let mut sad = sad.clone();
+
+    sad[label] = data!(&String::from_utf8(vec![DUMMY; szg.fs as usize])?);
+
+    let (kind, sad) = if sad.to_map()?.contains_key("v") {
+        let result = sizeify(&sad, kind)?;
+        (Some(result.kind), result.ked)
+    } else {
+        let kind = kind.map(|kind| kind.to_string());
+        (kind, sad)
+    };
+
+    let mut map = sad.to_map()?;
+    for key in ignore.unwrap_or(&[]) {
+        if map.contains_key(*key) {
+            map.remove(*key);
+        }
+    }
+    let ser = data!(&map);
+
+    let cpa =
+        if let Some(kind) = kind { serialize(&ser, Some(&kind))? } else { serialize(&ser, None)? };
+    let digest = hash::digest(code, &cpa)?;
+
+    Ok((digest, sad))
+}
+
 impl Saider {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
@@ -46,19 +97,71 @@ impl Saider {
         ignore: Option<&[&str]>,
         code: Option<&str>,
         raw: Option<&[u8]>,
-        qb64b: Option<&mut Vec<u8>>,
+        qb64b: Option<&[u8]>,
         qb64: Option<&str>,
-        qb2: Option<&mut Vec<u8>>,
-        strip: Option<bool>,
+        qb2: Option<&[u8]>,
     ) -> Result<Self> {
-        let saider = if raw.is_some() || sad.is_some() {
-            Self::new_with_code_and_raw_or_sad(code, raw, sad, label, kind, ignore)?
-        } else {
-            Matter::new(code, raw, qb64b, qb64, qb2, strip)?
-        };
-        validate_code(&saider.code())?;
+        if raw.is_some() || sad.is_some() {
+            let label = label.unwrap_or(Ids::d);
+            let (code, raw) = if code.is_none() || raw.is_none() {
+                let code = if let Some(sad) = sad {
+                    let map = sad.to_map()?;
+                    if !map.contains_key(label) {
+                        return err!(Error::Value(format!(
+                            "cannot find label {label} in sad, code or raw is empty"
+                        )));
+                    }
 
-        Ok(saider)
+                    if let Some(code) = code {
+                        // raw must be empty
+                        code.to_string()
+                    } else if sad[label].to_string().is_err() {
+                        return err!(Error::Validation(format!(
+                            "label {label} present but value not a string"
+                        )));
+                    } else if sad[label].to_string()?.is_empty() {
+                        matter::Codex::Blake3_256.to_string()
+                    } else {
+                        <Saider as Matter>::new(
+                            None,
+                            None,
+                            None,
+                            Some(&sad[label].to_string()?),
+                            None,
+                        )?
+                        .code()
+                    }
+                } else {
+                    return err!(Error::Validation(
+                        "sad or raw and code must be present".to_string()
+                    ));
+                };
+
+                validate_code(&code)?;
+
+                let sad = if let Some(sad) = sad { sad.clone() } else { data!({}) };
+                let (raw, _) = derive(&sad, Some(&code), kind, Some(label), ignore)?;
+
+                (code, raw)
+            } else if let Some(code) = code {
+                validate_code(code)?;
+                if let Some(raw) = raw {
+                    (code.to_string(), raw.to_vec())
+                } else {
+                    // unreachable because we have validated that raw is some above.
+                    unreachable!();
+                }
+            } else {
+                // unreachable because we have validated that code is some above.
+                unreachable!();
+            };
+
+            Matter::new(Some(&code), Some(&raw), None, None, None)
+        } else {
+            let saider: Saider = Matter::new(code, raw, qb64b, qb64, qb2)?;
+            validate_code(&saider.code())?;
+            Ok(saider)
+        }
     }
 
     pub fn saidify(
@@ -75,15 +178,9 @@ impl Saider {
             return err!(Error::Validation(format!("missing id field labelled={label}")));
         }
 
-        let (raw, sad) = Self::derive(sad, Some(code), kind, Some(label), ignore)?;
-        let saider = Self::new_with_code_and_raw_or_sad(
-            Some(code),
-            Some(&raw),
-            Some(&sad),
-            Some(label),
-            kind,
-            ignore,
-        )?;
+        let (_, sad) = derive(sad, Some(code), kind, Some(label), ignore)?;
+        let saider =
+            Self::new(Some(&sad), Some(label), kind, ignore, Some(code), None, None, None, None)?;
         let mut sad = sad;
         sad[label] = data!(&saider.qb64()?);
 
@@ -104,15 +201,18 @@ impl Saider {
         let prefixed = prefixed.unwrap_or(false);
         let versioned = versioned.unwrap_or(true);
 
-        let (raw, dsad) = match Self::derive(sad, Some(&self.code()), kind, Some(label), ignore) {
+        let (raw, dsad) = match derive(sad, Some(&self.code()), kind, Some(label), ignore) {
             Ok(r) => r,
             Err(_) => return Ok(false),
         };
 
-        let saider = match Self::new_with_code_and_raw_or_sad(
+        let saider = match Self::new(
+            None,
+            None,
+            None,
+            None,
             Some(&self.code()),
             Some(&raw),
-            None,
             None,
             None,
             None,
@@ -140,122 +240,30 @@ impl Saider {
         Ok(true)
     }
 
-    fn new_with_code_and_raw_or_sad(
-        code: Option<&str>,
-        raw: Option<&[u8]>,
-        sad: Option<&Value>,
-        label: Option<&str>,
-        kind: Option<&str>,
-        ignore: Option<&[&str]>,
-    ) -> Result<Self> {
-        let label = label.unwrap_or(Ids::d);
-        let (code, raw) = if code.is_none() || raw.is_none() {
-            let code = if let Some(sad) = sad {
-                let map = sad.to_map()?;
-                if !map.contains_key(label) {
-                    return err!(Error::Value(format!(
-                        "cannot find label {label} in sad, code or raw is empty"
-                    )));
-                }
-
-                if let Some(code) = code {
-                    // raw must be empty
-                    code.to_string()
-                } else if sad[label].to_string().is_err() {
-                    return err!(Error::Validation(format!(
-                        "label {label} present but value not a string"
-                    )));
-                } else if sad[label].to_string()?.is_empty() {
-                    matter::Codex::Blake3_256.to_string()
-                } else {
-                    <Saider as Matter>::new(
-                        None,
-                        None,
-                        None,
-                        Some(&sad[label].to_string()?),
-                        None,
-                        None,
-                    )?
-                    .code()
-                }
-            } else {
-                return err!(Error::Validation("sad or raw and code must be present".to_string()));
-            };
-
-            validate_code(&code)?;
-
-            let sad = if let Some(sad) = sad { sad.clone() } else { data!({}) };
-            let (raw, _) = Self::derive(&sad, Some(&code), kind, Some(label), ignore)?;
-
-            (code, raw)
-        } else if let Some(code) = code {
-            validate_code(code)?;
-            if let Some(raw) = raw {
-                (code.to_string(), raw.to_vec())
-            } else {
-                // unreachable because we have validated that raw is some above.
-                unreachable!();
-            }
-        } else {
-            // unreachable because we have validated that code is some above.
-            unreachable!();
-        };
-
-        Matter::new(Some(&code), Some(&raw), None, None, None, None)
-    }
-
-    fn derive(
+    pub fn new_with_sad(
         sad: &Value,
-        code: Option<&str>,
-        kind: Option<&str>,
         label: Option<&str>,
+        kind: Option<&str>,
         ignore: Option<&[&str]>,
-    ) -> Result<(Vec<u8>, Value)> {
-        let label = label.unwrap_or(Ids::d);
-        let code = code.unwrap_or(matter::Codex::Blake3_256);
-
-        validate_code(code)?;
-
-        let szg = matter::sizage(code)?;
-        let mut sad = sad.clone();
-
-        sad[label] = data!(&String::from_utf8(vec![DUMMY; szg.fs as usize])?);
-
-        let (kind, sad) = if sad.to_map()?.contains_key("v") {
-            let result = sizeify(&sad, kind)?;
-            (Some(result.kind), result.ked)
-        } else {
-            let kind = kind.map(|kind| kind.to_string());
-            (kind, sad)
-        };
-
-        let mut map = sad.to_map()?;
-        for key in ignore.unwrap_or(&[]) {
-            if map.contains_key(*key) {
-                map.remove(*key);
-            }
-        }
-        let ser = data!(&map);
-
-        let cpa = if let Some(kind) = kind {
-            Self::serialize(&ser, Some(&kind))?
-        } else {
-            Self::serialize(&ser, None)?
-        };
-        let digest = hash::digest(code, &cpa)?;
-
-        Ok((digest, sad))
+        code: Option<&str>,
+    ) -> Result<Self> {
+        Self::new(Some(sad), label, kind, ignore, code, None, None, None, None)
     }
 
-    fn serialize(sad: &Value, kind: Option<&str>) -> Result<Vec<u8>> {
-        let knd = if sad.to_map()?.contains_key("v") {
-            let result = deversify(&sad["v"].to_string()?)?;
-            result.kind
-        } else {
-            Serialage::JSON.to_string()
-        };
-        let kind = if let Some(kind) = kind { Some(kind) } else { Some(knd.as_str()) };
-        dumps(sad, kind)
+    pub fn new_with_raw(raw: &[u8], code: Option<&str>) -> Result<Self> {
+        Self::new(None, None, None, None, code, Some(raw), None, None, None)
+    }
+
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
+        Self::new(None, None, None, None, None, None, Some(qb64b), None, None)
+    }
+
+    pub fn new_with_qb64(qb64: &str) -> Result<Self> {
+        Self::new(None, None, None, None, None, None, None, Some(qb64), None)
+    }
+
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
+        Self::new(None, None, None, None, None, None, None, None, Some(qb2))
     }
 }
 
@@ -287,7 +295,7 @@ impl Matter for Saider {
 
 #[cfg(test)]
 mod test {
-    use super::validate_code;
+    use super::{derive, validate_code};
     use crate::core::common::{versify, Identage, Ids, Serialage, Version};
     use crate::core::matter::{tables as matter, Matter};
     use crate::core::saider::Saider;
@@ -295,11 +303,24 @@ mod test {
     use rstest::rstest;
 
     #[test]
+    fn convenience() {
+        let sad = data!({"d":""});
+
+        let saider =
+            Saider::new(Some(&sad), None, None, None, None, None, None, None, None).unwrap();
+
+        assert!(Saider::new_with_sad(&sad, None, None, None, None).is_ok());
+        assert!(Saider::new_with_raw(&saider.raw(), Some(&saider.code())).is_ok());
+        assert!(Saider::new_with_qb64b(&saider.qb64b().unwrap()).is_ok());
+        assert!(Saider::new_with_qb64(&saider.qb64().unwrap()).is_ok());
+        assert!(Saider::new_with_qb2(&saider.qb2().unwrap()).is_ok());
+    }
+
+    #[test]
     fn new() {
         let saider = Saider::new(
             Some(&data!({"d":""})),
             Some(Ids::d),
-            None,
             None,
             None,
             None,
@@ -319,7 +340,6 @@ mod test {
             None,
             None,
             Some(&saider.qb64().unwrap()),
-            None,
             None
         )
         .is_ok());
@@ -331,7 +351,7 @@ mod test {
     fn new_with_qb64(#[case] code: &str, #[case] said: &str) {
         // Test with valid said qb64
         let saider =
-            Saider::new(None, None, None, None, None, None, None, Some(said), None, None).unwrap();
+            Saider::new(None, None, None, None, None, None, None, Some(said), None).unwrap();
         assert_eq!(saider.code(), code);
         assert_eq!(saider.qb64().unwrap(), said);
     }
@@ -425,19 +445,9 @@ mod test {
                 "role":"Founder",
             },
         });
-        let saider = Saider::new(
-            Some(&sad6),
-            Some(label),
-            None,
-            None,
-            Some(code),
-            None,
-            None,
-            None,
-            None,
-            None,
-        )
-        .unwrap();
+        let saider =
+            Saider::new(Some(&sad6), Some(label), None, None, Some(code), None, None, None, None)
+                .unwrap();
         assert_eq!(saider.code(), code);
         assert_eq!(saider.qb64().unwrap(), "ELzewBpZHSENRP-sL_G_2Ji4YDdNkns9AzFzufleJqdw");
         assert!(saider.verify(&sad6, Some(false), Some(false), None, None, None).unwrap());
@@ -449,7 +459,7 @@ mod test {
         assert!(saider.verify(&sad7, Some(true), Some(false), None, None, None).unwrap());
 
         let mut sad8 = sad7.clone();
-        let (_, dsad) = Saider::derive(&sad6, Some(code), None, Some(label), None).unwrap();
+        let (_, dsad) = derive(&sad6, Some(code), None, Some(label), None).unwrap();
         sad8["v"] = data!(&dsad["v"].to_string().unwrap());
         assert!(saider.verify(&sad8, Some(true), None, None, None, None).unwrap());
 
@@ -468,7 +478,6 @@ mod test {
             None,
             Some(&vec!["read"]),
             Some(code),
-            None,
             None,
             None,
             None,
@@ -504,7 +513,6 @@ mod test {
             None,
             None,
             None,
-            None,
         )
         .unwrap();
         assert_eq!(saider1.qb64().unwrap(), saider2.qb64().unwrap());
@@ -516,7 +524,6 @@ mod test {
         let saider = Saider::new(
             Some(&data!({"d":""})),
             Some(Ids::d),
-            None,
             None,
             None,
             None,
@@ -536,7 +543,6 @@ mod test {
             None,
             None,
             None,
-            None,
         )
         .unwrap();
         assert_eq!(saider.code(), saider2.code());
@@ -548,8 +554,7 @@ mod test {
             None,
             None,
             None,
-            Some(&mut saider.qb64b().unwrap()),
-            None,
+            Some(&saider.qb64b().unwrap()),
             None,
             None,
         )
@@ -565,8 +570,7 @@ mod test {
             None,
             None,
             None,
-            Some(&mut saider.qb2().unwrap()),
-            None,
+            Some(&saider.qb2().unwrap()),
         )
         .unwrap();
         assert_eq!(saider.code(), saider4.code());
@@ -582,24 +586,11 @@ mod test {
     #[test]
     fn unhappy_paths() {
         assert!(validate_code(matter::Codex::Ed25519).is_err());
-        assert!(Saider::new(
-            Some(&data!({})),
-            Some(Ids::d),
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None
-        )
-        .is_err());
 
+        assert!(Saider::new(None, None, None, None, None, Some(&[]), None, None, None).is_err());
         assert!(Saider::new(
             Some(&data!({})),
             Some(Ids::d),
-            None,
             None,
             None,
             None,
@@ -618,11 +609,10 @@ mod test {
             None,
             None,
             None,
-            None,
             None
         )
         .is_err());
-        assert!(Saider::new(None, None, None, None, None, None, None, None, None, None).is_err());
+        assert!(Saider::new(None, None, None, None, None, None, None, None, None).is_err());
         assert!(!Saider { code: "CESR".to_string(), raw: vec![], size: 0 }
             .verify(&data!({}), None, None, None, None, None)
             .unwrap());

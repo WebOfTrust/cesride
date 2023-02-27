@@ -15,13 +15,10 @@ impl Counter {
         count: Option<u32>,
         count_b64: Option<&str>,
         code: Option<&str>,
-        qb64b: Option<&mut Vec<u8>>,
+        qb64b: Option<&[u8]>,
         qb64: Option<&str>,
-        qb2: Option<&mut Vec<u8>>,
-        strip: Option<bool>,
+        qb2: Option<&[u8]>,
     ) -> Result<Self> {
-        let strip = strip.unwrap_or(false);
-
         if let Some(code) = code {
             let count = if let Some(count) = count {
                 count
@@ -33,23 +30,11 @@ impl Counter {
 
             Self::new_with_code_and_count(code, count)
         } else if let Some(qb64b) = qb64b {
-            let counter = Self::new_with_qb64b(qb64b)?;
-            if strip {
-                let szg = tables::sizage(&counter.code())?;
-                let length = szg.fs as usize;
-                qb64b.drain(0..length);
-            }
-            Ok(counter)
+            Self::new_with_qb64b(qb64b)
         } else if let Some(qb64) = qb64 {
             Self::new_with_qb64(qb64)
         } else if let Some(qb2) = qb2 {
-            let counter = Self::new_with_qb2(qb2)?;
-            if strip {
-                let szg = tables::sizage(&counter.code())?;
-                let length = (szg.fs * 3 / 4) as usize;
-                qb2.drain(0..length);
-            }
-            Ok(counter)
+            Self::new_with_qb2(qb2)
         } else {
             err!(Error::Validation("need either code and count, qb64b, qb64 or qb2".to_string()))
         }
@@ -343,14 +328,13 @@ mod test {
     #[case("-AAF", 5, "F", counter::Codex::ControllerIdxSigs)]
     #[case("-0VAAAQA", 1024, "QA", counter::Codex::BigAttachedMaterialQuadlets)]
     fn new(#[case] qsc: &str, #[case] count: u32, #[case] count_b64: &str, #[case] code: &str) {
-        assert!(Counter::new(None, None, None, None, None, None, None).is_err());
-        let counter = Counter::new(None, None, Some(code), None, None, None, None).unwrap();
+        assert!(Counter::new(None, None, None, None, None, None).is_err());
+        let counter = Counter::new(None, None, Some(code), None, None, None).unwrap();
         assert_eq!(counter.count(), 1);
 
-        let counter1 = Counter::new(Some(count), None, Some(code), None, None, None, None).unwrap();
-        let counter2 =
-            Counter::new(None, Some(count_b64), Some(code), None, None, None, None).unwrap();
-        let counter3 = Counter::new(None, None, None, None, Some(qsc), None, None).unwrap();
+        let counter1 = Counter::new(Some(count), None, Some(code), None, None, None).unwrap();
+        let counter2 = Counter::new(None, Some(count_b64), Some(code), None, None, None).unwrap();
+        let counter3 = Counter::new(None, None, None, None, Some(qsc), None).unwrap();
 
         assert_eq!(counter1.code(), code);
         assert_eq!(counter2.code(), code);
@@ -359,24 +343,11 @@ mod test {
         assert_eq!(counter2.count(), count);
         assert_eq!(counter3.count(), count);
 
-        let mut qb64b = counter1.qb64b().unwrap();
-        let mut qb2 = counter1.qb2().unwrap();
+        let qb64b = counter1.qb64b().unwrap();
+        let qb2 = counter1.qb2().unwrap();
 
-        assert!(Counter::new(None, None, None, Some(&mut qb64b), None, None, None).is_ok());
-        let length = qb64b.len();
-        qb64b.resize(length + 256, b'\x00');
-        assert_eq!(qb64b.len(), length + 256);
-        assert!(Counter::new(None, None, None, Some(&mut qb64b), None, None, Some(true)).is_ok());
-        assert_eq!(qb64b.len(), 256);
-        assert_eq!(qb64b, vec![b'\x00'; 256]);
-
-        assert!(Counter::new(None, None, None, None, None, Some(&mut qb2), None).is_ok());
-        let length = qb2.len();
-        qb2.resize(length + 256, b'\x00');
-        assert_eq!(qb2.len(), length + 256);
-        assert!(Counter::new(None, None, None, None, None, Some(&mut qb2), Some(true)).is_ok());
-        assert_eq!(qb2.len(), 256);
-        assert_eq!(qb2, vec![b'\x00'; 256]);
+        assert!(Counter::new(None, None, None, Some(&qb64b), None, None).is_ok());
+        assert!(Counter::new(None, None, None, None, None, Some(&qb2)).is_ok());
     }
 
     #[rstest]
@@ -390,15 +361,13 @@ mod test {
         #[case] code: &str,
     ) {
         let qscb = qsc.as_bytes();
-        let mut qscb2 = b64_engine::URL_SAFE.decode(qsc).unwrap();
+        let qscb2 = b64_engine::URL_SAFE.decode(qsc).unwrap();
 
-        let counter1 = Counter::new(Some(count), None, Some(code), None, None, None, None).unwrap();
-        let counter2 =
-            Counter::new(None, Some(count_b64), Some(code), None, None, None, None).unwrap();
-        let counter3 = Counter::new(None, None, None, None, Some(qsc), None, None).unwrap();
-        let counter4 =
-            Counter::new(None, None, None, Some(&mut qscb.to_vec()), None, None, None).unwrap();
-        let counter5 = Counter::new(None, None, None, None, None, Some(&mut qscb2), None).unwrap();
+        let counter1 = Counter::new(Some(count), None, Some(code), None, None, None).unwrap();
+        let counter2 = Counter::new(None, Some(count_b64), Some(code), None, None, None).unwrap();
+        let counter3 = Counter::new(None, None, None, None, Some(qsc), None).unwrap();
+        let counter4 = Counter::new(None, None, None, Some(qscb), None, None).unwrap();
+        let counter5 = Counter::new(None, None, None, None, None, Some(&qscb2)).unwrap();
 
         assert_eq!(counter1.code(), counter2.code());
         assert_eq!(counter1.count(), counter2.count());
@@ -421,15 +390,13 @@ mod test {
     ) {
         let qsc = &format!("{code}{version}");
         let qscb = qsc.as_bytes();
-        let mut qscb2 = b64_engine::URL_SAFE.decode(qsc).unwrap();
+        let qscb2 = b64_engine::URL_SAFE.decode(qsc).unwrap();
 
-        let counter1 = Counter::new(Some(count), None, Some(code), None, None, None, None).unwrap();
-        let counter2 =
-            Counter::new(None, Some(count_b64), Some(code), None, None, None, None).unwrap();
-        let counter3 = Counter::new(None, None, None, None, Some(qsc), None, None).unwrap();
-        let counter4 =
-            Counter::new(None, None, None, Some(&mut qscb.to_vec()), None, None, None).unwrap();
-        let counter5 = Counter::new(None, None, None, None, None, Some(&mut qscb2), None).unwrap();
+        let counter1 = Counter::new(Some(count), None, Some(code), None, None, None).unwrap();
+        let counter2 = Counter::new(None, Some(count_b64), Some(code), None, None, None).unwrap();
+        let counter3 = Counter::new(None, None, None, None, Some(qsc), None).unwrap();
+        let counter4 = Counter::new(None, None, None, Some(qscb), None, None).unwrap();
+        let counter5 = Counter::new(None, None, None, None, None, Some(&qscb2)).unwrap();
 
         assert_eq!(counter1.code(), code);
         assert_eq!(counter1.count(), verint);
@@ -452,7 +419,7 @@ mod test {
     fn b64_overflow_and_underflow(#[values("-AAB")] qsc: &str) {
         // add some chars
         let longqsc64 = &format!("{qsc}ABCD");
-        let counter = Counter::new(None, None, None, None, Some(&longqsc64), None, None).unwrap();
+        let counter = Counter::new(None, None, None, None, Some(&longqsc64), None).unwrap();
         assert_eq!(
             counter.qb64().unwrap().len() as u32,
             counter::sizage(&counter.code()).unwrap().fs
@@ -468,8 +435,7 @@ mod test {
         // add some bytes
         let mut longqscb2 = qscb2.clone();
         longqscb2.resize(longqscb2.len() + 5, 1);
-        let counter =
-            Counter::new(None, None, None, None, None, Some(&mut longqscb2), None).unwrap();
+        let counter = Counter::new(None, None, None, None, None, Some(&longqscb2)).unwrap();
         assert_eq!(counter.qb2().unwrap(), *qscb2);
         assert_eq!(
             counter.qb64().unwrap().len() as u32,
@@ -478,15 +444,14 @@ mod test {
 
         // remove a bytes
         let shortqscb2 = &qscb2[..qscb2.len() - 1];
-        assert!(Counter::new(None, None, None, None, None, Some(&mut shortqscb2.to_vec()), None)
-            .is_err());
+        assert!(Counter::new(None, None, None, None, None, Some(shortqscb2)).is_err());
     }
 
     #[rstest]
     fn exfil_infil_bexfil_binfil(#[values("-0VAAAQA")] qsc: &str) {
-        let counter1 = Counter::new(None, None, None, None, Some(qsc), None, None).unwrap();
-        let mut qb2 = counter1.qb2().unwrap();
-        let counter2 = Counter::new(None, None, None, None, None, Some(&mut qb2), None).unwrap();
+        let counter1 = Counter::new(None, None, None, None, Some(qsc), None).unwrap();
+        let qb2 = counter1.qb2().unwrap();
+        let counter2 = Counter::new(None, None, None, None, None, Some(&qb2)).unwrap();
         assert_eq!(counter1.code(), counter2.code());
         assert_eq!(counter1.count(), counter2.count());
         assert_eq!(counter1.qb2().unwrap(), counter2.qb2().unwrap());
@@ -542,35 +507,32 @@ mod test {
             .qb64()
             .is_err());
 
-        assert!(Counter::new(None, None, None, None, Some(""), None, None).is_err());
-        assert!(Counter::new(None, None, None, None, Some("--"), None, None).is_err());
-        assert!(Counter::new(None, None, None, None, Some("__"), None, None).is_err());
+        assert!(Counter::new(None, None, None, None, Some(""), None).is_err());
+        assert!(Counter::new(None, None, None, None, Some("--"), None).is_err());
+        assert!(Counter::new(None, None, None, None, Some("__"), None).is_err());
         assert!(Counter::new(
             None,
             None,
             None,
             None,
             Some(counter::Codex::ControllerIdxSigs),
-            None,
-            None,
+            None
         )
-            .is_err());
+        .is_err());
 
-        assert!(Counter::new(None, None, None, Some(&mut vec![]), None, None, None).is_err());
+        assert!(Counter::new(None, None, None, Some(&[]), None, None).is_err());
 
-        assert!(Counter::new(None, None, None, None, None, Some(&mut vec![]), None).is_err());
-        assert!(Counter::new(None, None, None, None, None, Some(&mut vec![0xf8, 0]), None).is_err());
-        assert!(Counter::new(None, None, None, None, None, Some(&mut vec![0xfc, 0]), None).is_err());
-        assert!(
-            Counter::new(None, None, None, None, None, Some(&mut vec![0xfb, 0xe0]), None).is_err()
-        );
+        assert!(Counter::new(None, None, None, None, None, Some(&[])).is_err());
+        assert!(Counter::new(None, None, None, None, None, Some(&[0xf8, 0])).is_err());
+        assert!(Counter::new(None, None, None, None, None, Some(&[0xfc, 0])).is_err());
+        assert!(Counter::new(None, None, None, None, None, Some(&[0xfb, 0xe0])).is_err());
     }
 
     #[rstest]
     #[case(counter::Codex::ControllerIdxSigs, 1)]
     fn qb64b(#[case] code: &str, #[case] count: u32) {
         let c = Counter { code: code.to_string(), count };
-        let mut qb64b = c.qb64b().unwrap();
-        assert!(Counter::new(None, None, None, Some(&mut qb64b), None, None, None).is_ok());
+        let qb64b = c.qb64b().unwrap();
+        assert!(Counter::new(None, None, None, Some(&qb64b), None, None).is_ok());
     }
 }

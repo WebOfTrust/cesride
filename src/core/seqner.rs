@@ -23,18 +23,18 @@ fn validate_code(code: &str) -> Result<()> {
 }
 
 impl Seqner {
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         sn: Option<u128>,
         snh: Option<&str>,
         code: Option<&str>,
         raw: Option<&[u8]>,
-        qb64b: Option<&mut Vec<u8>>,
+        qb64b: Option<&[u8]>,
         qb64: Option<&str>,
-        qb2: Option<&mut Vec<u8>>,
-        strip: Option<bool>,
+        qb2: Option<&[u8]>,
     ) -> Result<Self> {
         let buf;
+        let code = code.unwrap_or(matter::Codex::Salt_128);
+
         let raw: Option<&[u8]> =
             if raw.is_none() && qb64b.is_none() && qb64.is_none() && qb2.is_none() {
                 let sn = if let Some(sn) = sn {
@@ -49,9 +49,33 @@ impl Seqner {
             } else {
                 raw
             };
-        let seqner: Seqner = Matter::new(code, raw, qb64b, qb64, qb2, strip)?;
+        let seqner: Seqner = Matter::new(Some(code), raw, qb64b, qb64, qb2)?;
         validate_code(&seqner.code)?;
         Ok(seqner)
+    }
+
+    pub fn new_with_sn(sn: u128) -> Result<Self> {
+        Self::new(Some(sn), None, None, None, None, None, None)
+    }
+
+    pub fn new_with_snh(snh: &str) -> Result<Self> {
+        Self::new(None, Some(snh), None, None, None, None, None)
+    }
+
+    pub fn new_with_raw(raw: &[u8], code: Option<&str>) -> Result<Self> {
+        Self::new(None, None, code, Some(raw), None, None, None)
+    }
+
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
+        Self::new(None, None, None, None, Some(qb64b), None, None)
+    }
+
+    pub fn new_with_qb64(qb64: &str) -> Result<Self> {
+        Self::new(None, None, None, None, None, Some(qb64), None)
+    }
+
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
+        Self::new(None, None, None, None, None, None, Some(qb2))
     }
 
     pub fn sn(&self) -> Result<u128> {
@@ -94,6 +118,20 @@ mod test {
     use super::{matter, Matter, Seqner};
     use rstest::rstest;
 
+    #[test]
+    fn convenience() {
+        let raw = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0A";
+
+        let seqner = Seqner::new(None, None, None, Some(raw), None, None, None).unwrap();
+
+        assert!(Seqner::new_with_sn(seqner.sn().unwrap()).is_ok());
+        assert!(Seqner::new_with_snh(&seqner.snh().unwrap()).is_ok());
+        assert!(Seqner::new_with_raw(&seqner.raw(), Some(&seqner.code())).is_ok());
+        assert!(Seqner::new_with_qb64b(&seqner.qb64b().unwrap()).is_ok());
+        assert!(Seqner::new_with_qb64(&seqner.qb64().unwrap()).is_ok());
+        assert!(Seqner::new_with_qb2(&seqner.qb2().unwrap()).is_ok());
+    }
+
     #[rstest]
     #[case(
         "0AAAAAAAAAAAAAAAAAAAAAAA",
@@ -103,14 +141,14 @@ mod test {
         #[case] qb64: &str,
         #[case] qb2: &[u8],
         #[values(
-            &Seqner::new(None, None, Some(matter::Codex::Salt_128), None, None, None, None, None).unwrap(),
-            &Seqner::new(None, None, Some(matter::Codex::Salt_128), Some(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"), None, None, None, None).unwrap(),
-            &Seqner::new(Some(0), None, Some(matter::Codex::Salt_128), None, None, None, None, None).unwrap(),
-            &Seqner::new(None, Some("0"), Some(matter::Codex::Salt_128), None, None, None, None, None).unwrap(),
-            &Seqner::new(None, Some("00"), Some(matter::Codex::Salt_128), None, None, None, None, None).unwrap(),
-            &Seqner::new(None, None, None, None, Some(&mut qb64.as_bytes().to_vec()), None, None, None).unwrap(),
-            &Seqner::new(None, None, None, None, None, Some(qb64), None, None).unwrap(),
-            &Seqner::new(None, None, None, None, None, None, Some(&mut qb2.to_vec()), None).unwrap(),
+            &Seqner::new(None, None, Some(matter::Codex::Salt_128), None, None, None, None).unwrap(),
+            &Seqner::new(None, None, Some(matter::Codex::Salt_128), Some(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"), None, None, None).unwrap(),
+            &Seqner::new(Some(0), None, Some(matter::Codex::Salt_128), None, None, None, None).unwrap(),
+            &Seqner::new(None, Some("0"), Some(matter::Codex::Salt_128), None, None, None, None).unwrap(),
+            &Seqner::new(None, Some("00"), Some(matter::Codex::Salt_128), None, None, None, None).unwrap(),
+            &Seqner::new(None, None, None, None, Some(qb64.as_bytes()), None, None).unwrap(),
+            &Seqner::new(None, None, None, None, None, Some(qb64), None).unwrap(),
+            &Seqner::new(None, None, None, None, None, None, Some(&mut qb2.to_vec())).unwrap(),
         )]
         seqner: &Seqner,
     ) {
@@ -132,13 +170,13 @@ mod test {
         #[case] qb64: &str,
         #[case] qb2: &[u8],
         #[values(
-            &Seqner::new(None, None, Some(matter::Codex::Salt_128), Some(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0A"), None, None, None, None).unwrap(),
-            &Seqner::new(Some(10), None, Some(matter::Codex::Salt_128), None, None, None, None, None).unwrap(),
-            &Seqner::new(None, Some("A"), Some(matter::Codex::Salt_128), None, None, None, None, None).unwrap(),
-            &Seqner::new(None, Some("0A"), Some(matter::Codex::Salt_128), None, None, None, None, None).unwrap(),
-            &Seqner::new(None, None, None, None, Some(&mut qb64.as_bytes().to_vec()), None, None, None).unwrap(),
-            &Seqner::new(None, None, None, None, None, Some(qb64), None, None).unwrap(),
-            &Seqner::new(None, None, None, None, None, None, Some(&mut qb2.to_vec()), None).unwrap(),
+            &Seqner::new(None, None, Some(matter::Codex::Salt_128), Some(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0A"), None, None, None).unwrap(),
+            &Seqner::new(Some(10), None, Some(matter::Codex::Salt_128), None, None, None, None).unwrap(),
+            &Seqner::new(None, Some("A"), Some(matter::Codex::Salt_128), None, None, None, None).unwrap(),
+            &Seqner::new(None, Some("0A"), Some(matter::Codex::Salt_128), None, None, None, None).unwrap(),
+            &Seqner::new(None, None, None, None, Some(qb64.as_bytes()), None, None).unwrap(),
+            &Seqner::new(None, None, None, None, None, Some(qb64), None).unwrap(),
+            &Seqner::new(None, None, None, None, None, None, Some(qb2)).unwrap(),
         )]
         seqner: &Seqner,
     ) {
@@ -160,12 +198,12 @@ mod test {
         #[case] qb64: &str,
         #[case] qb2: &[u8],
         #[values(
-            &Seqner::new(None, None, Some(matter::Codex::Salt_128), Some(b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"), None, None, None, None).unwrap(),
-            &Seqner::new(Some(0xffffffffffffffffffffffffffffffff_u128), None, Some(matter::Codex::Salt_128), None, None, None, None, None).unwrap(),
-            &Seqner::new(None, Some("ffffffffffffffffffffffffffffffff"), Some(matter::Codex::Salt_128), None, None, None, None, None).unwrap(),
-            &Seqner::new(None, None, None, None, Some(&mut qb64.as_bytes().to_vec()), None, None, None).unwrap(),
-            &Seqner::new(None, None, None, None, None, Some(qb64), None, None).unwrap(),
-            &Seqner::new(None, None, None, None, None, None, Some(&mut qb2.to_vec()), None).unwrap(),
+            &Seqner::new(None, None, Some(matter::Codex::Salt_128), Some(b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"), None, None, None).unwrap(),
+            &Seqner::new(Some(0xffffffffffffffffffffffffffffffff_u128), None, Some(matter::Codex::Salt_128), None, None, None, None).unwrap(),
+            &Seqner::new(None, Some("ffffffffffffffffffffffffffffffff"), Some(matter::Codex::Salt_128), None, None, None, None).unwrap(),
+            &Seqner::new(None, None, None, None, Some(qb64.as_bytes()), None, None).unwrap(),
+            &Seqner::new(None, None, None, None, None, Some(qb64), None).unwrap(),
+            &Seqner::new(None, None, None, None, None, None, Some(qb2)).unwrap(),
         )]
         seqner: &Seqner,
     ) {
@@ -200,7 +238,7 @@ mod test {
         b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     )]
     fn unhappy_new_with_code_and_raw(#[case] code: &str, #[case] snraw: &[u8]) {
-        assert!(Seqner::new(None, None, Some(code), Some(snraw), None, None, None, None).is_err());
+        assert!(Seqner::new(None, None, Some(code), Some(snraw), None, None, None).is_err());
     }
 
     #[rstest]
@@ -214,7 +252,7 @@ mod test {
         )]
         sns: &str,
     ) {
-        assert!(Seqner::new(None, Some(sns), None, None, None, None, None, None).is_err());
+        assert!(Seqner::new(None, Some(sns), None, None, None, None, None).is_err());
     }
 
     #[rstest]
@@ -229,18 +267,8 @@ mod test {
         )]
         qb64: &str,
     ) {
-        assert!(Seqner::new(
-            None,
-            None,
-            None,
-            None,
-            Some(&mut qb64.as_bytes().to_vec()),
-            None,
-            None,
-            None
-        )
-        .is_err());
-        assert!(Seqner::new(None, None, None, None, None, Some(qb64), None, None).is_err());
+        assert!(Seqner::new(None, None, None, None, Some(&qb64.as_bytes()), None, None).is_err());
+        assert!(Seqner::new(None, None, None, None, None, Some(qb64), None).is_err());
     }
 
     #[rstest]
@@ -255,8 +283,6 @@ mod test {
         )]
         qb2: &[u8],
     ) {
-        assert!(
-            Seqner::new(None, None, None, None, None, None, Some(&mut qb2.to_vec()), None).is_err()
-        );
+        assert!(Seqner::new(None, None, None, None, None, None, Some(qb2)).is_err());
     }
 }
