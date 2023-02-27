@@ -1,5 +1,3 @@
-use lazy_static::lazy_static;
-
 use crate::core::matter::{tables as matter, Matter};
 use crate::error::{err, Error, Result};
 
@@ -17,11 +15,7 @@ impl Default for Dater {
 }
 
 fn validate_code(code: &str) -> Result<()> {
-    lazy_static! {
-        static ref CODES: Vec<&'static str> = vec![matter::Codex::DateTime];
-    }
-
-    if !CODES.contains(&code) {
+    if code != matter::Codex::DateTime {
         return err!(Error::UnexpectedCode(code.to_string()));
     }
 

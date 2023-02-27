@@ -14,12 +14,11 @@ pub use crate::core::{
     diger::Diger,
     indexer::{tables as indexer, Indexer},
     matter::{tables as matter, Matter},
+    prefixer::Prefixer,
     saider::Saider,
+    seqner::Seqner,
     siger::Siger,
     signer::Signer,
     util,
     verfer::Verfer,
 };
-
-pub type Seqner = Verfer; // FIXME: Implement and export
-pub type Prefixer = Verfer; // FIXME: Implement and export

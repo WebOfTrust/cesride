@@ -63,6 +63,8 @@ pub enum Error {
     Value(String),
     #[error("{0}")]
     Validation(String),
+    #[error("{0}")]
+    Derivation(String),
 }
 
 macro_rules! err {

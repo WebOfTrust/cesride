@@ -1,5 +1,3 @@
-use lazy_static::lazy_static;
-
 use crate::core::indexer::{tables as indexer, Indexer};
 use crate::core::verfer::Verfer;
 use crate::error::{err, Error, Result};
@@ -26,22 +24,20 @@ impl Default for Siger {
 }
 
 fn validate_code(code: &str) -> Result<()> {
-    lazy_static! {
-        static ref CODES: Vec<&'static str> = vec![
-            indexer::Codex::Ed25519,
-            indexer::Codex::Ed25519_Crt,
-            indexer::Codex::ECDSA_256k1,
-            indexer::Codex::ECDSA_256k1_Crt,
-            indexer::Codex::Ed448,
-            indexer::Codex::Ed448_Crt,
-            indexer::Codex::Ed25519_Big,
-            indexer::Codex::Ed25519_Big_Crt,
-            indexer::Codex::ECDSA_256k1_Big,
-            indexer::Codex::ECDSA_256k1_Big_Crt,
-            indexer::Codex::Ed448_Big,
-            indexer::Codex::Ed448_Big_Crt,
-        ];
-    }
+    const CODES: &[&str] = &[
+        indexer::Codex::Ed25519,
+        indexer::Codex::Ed25519_Crt,
+        indexer::Codex::ECDSA_256k1,
+        indexer::Codex::ECDSA_256k1_Crt,
+        indexer::Codex::Ed448,
+        indexer::Codex::Ed448_Crt,
+        indexer::Codex::Ed25519_Big,
+        indexer::Codex::Ed25519_Big_Crt,
+        indexer::Codex::ECDSA_256k1_Big,
+        indexer::Codex::ECDSA_256k1_Big_Crt,
+        indexer::Codex::Ed448_Big,
+        indexer::Codex::Ed448_Big_Crt,
+    ];
 
     if !CODES.contains(&code) {
         return err!(Error::UnexpectedCode(code.to_string()));

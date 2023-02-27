@@ -1,5 +1,3 @@
-use lazy_static::lazy_static;
-
 use crate::core::matter::{tables as matter, Matter};
 use crate::crypto::sign;
 use crate::error::{err, Error, Result};
@@ -18,16 +16,14 @@ impl Default for Verfer {
 }
 
 fn validate_code(code: &str) -> Result<()> {
-    lazy_static! {
-        static ref CODES: Vec<&'static str> = vec![
-            matter::Codex::Ed25519N,
-            matter::Codex::Ed25519,
-            matter::Codex::ECDSA_256k1N,
-            matter::Codex::ECDSA_256k1,
-            // matter::Codex::Ed448N,
-            // matter::Codex::Ed448,
-        ];
-    }
+    const CODES: &[&str] = &[
+        matter::Codex::Ed25519N,
+        matter::Codex::Ed25519,
+        matter::Codex::ECDSA_256k1N,
+        matter::Codex::ECDSA_256k1,
+        // matter::Codex::Ed448N,
+        // matter::Codex::Ed448,
+    ];
 
     if !CODES.contains(&code) {
         return err!(Error::UnexpectedCode(code.to_string()));
@@ -45,7 +41,8 @@ impl Verfer {
         qb2: Option<&mut Vec<u8>>,
         strip: Option<bool>,
     ) -> Result<Self> {
-        let verfer: Self = Matter::new(code, raw, qb64b, qb64, qb2, strip)?;
+        let code = code.unwrap_or(matter::Codex::Ed25519N);
+        let verfer: Self = Matter::new(Some(code), raw, qb64b, qb64, qb2, strip)?;
         validate_code(&verfer.code())?;
         Ok(verfer)
     }
