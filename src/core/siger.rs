@@ -4,11 +4,11 @@ use crate::error::{err, Error, Result};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Siger {
-    pub raw: Vec<u8>,
-    pub code: String,
-    pub index: u32,
-    pub ondex: u32,
-    pub verfer: Verfer,
+    raw: Vec<u8>,
+    code: String,
+    index: u32,
+    ondex: u32,
+    verfer: Verfer,
 }
 
 impl Default for Siger {
