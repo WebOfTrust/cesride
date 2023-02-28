@@ -489,8 +489,8 @@ pub trait Matter: Default {
         if sizes.fs != 0 {
             Ok(sizes.fs)
         } else {
-            let fs = sizes.hs + sizes.ss + (self.size() * 4);
-            Ok(fs)
+            let cs = sizes.hs + sizes.ss;
+            Ok(((sizes.fs - cs) * 3 / 4) - sizes.ls)
         }
     }
 }
