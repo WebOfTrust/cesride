@@ -12,7 +12,7 @@ use crate::core::util;
 /// Indexer is fully qualified cryptographic material primitive base class for
 /// indexed primitives. Indexed codes are a mix of indexed and variable length
 /// because code table has two char codes for compact variable length.
-pub(crate) trait Indexer: Default {
+pub trait Indexer: Default {
     /// stable (hard) part of derivation code
     fn code(&self) -> String;
     fn set_code(&mut self, code: &str);
