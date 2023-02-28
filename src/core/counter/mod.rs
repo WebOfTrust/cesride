@@ -305,9 +305,14 @@ impl Counter {
         Ok(())
     }
 
-    pub fn raw_size(&self) -> Result<u32> {
+    pub fn qb64b_size(&self) -> Result<u32> {
         let sizes = sizage(&self.code)?;
         Ok(sizes.fs)
+    }
+
+    pub fn qb2_size(&self) -> Result<u32> {
+        let sizes = sizage(&self.code)?;
+        Ok(sizes.fs  * 3 / 4)
     }
 }
 
