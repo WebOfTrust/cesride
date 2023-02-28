@@ -1,0 +1,322 @@
+[Error]
+enum Error {
+    "General",
+    "Matter",
+    "EmptyMaterial",
+    "Decode",
+    "UnexpectedCode",
+    "UnexpectedCountCode",
+    "UnexpectedOpCode",
+    "InvalidVarSize",
+    "InvalidVarRawSize",
+    "InvalidVarIndex",
+    "InvalidCodeSize",
+    "InvalidBase64Character",
+    "InvalidBase64Index",
+    "Shortage",
+    "EmptyQb64",
+    "UnknownSizage",
+    "UnknownHardage",
+    "UnknownBardage",
+    "UnsupportedSize",
+    "TooSmall",
+    "Prepad",
+    "NonZeroedPrepad",
+    "NonZeroedLeadByte",
+    "NonZeroedLeadBytes",
+    "NonZeroedPadBits",
+    "Parsing",
+    "ParseQb64",
+    "ParseQb2",
+    "Conversion",
+    "Value",
+    "Validation",
+    "Derivation"
+};
+
+enum CesrideMatterCodex {
+    "Ed25519Seed",
+    "Ed25519N",
+    "X25519",
+    "Ed25519",
+    "Blake3_256",
+    "Blake2b_256",
+    "Blake2s_256",
+    "SHA3_256",
+    "SHA2_256",
+    "ECDSA_256k1_Seed",
+    "Ed448_Seed",
+    "X448",
+    "Short",
+    "Big",
+    "X25519_Private",
+    "X25519_Cipher_Seed",
+    "Salt_128",
+    "Ed25519_Sig",
+    "ECDSA_256k1_Sig",
+    "Blake3_512",
+    "Blake2b_512",
+    "SHA3_512",
+    "SHA2_512",
+    "Long",
+    "ECDSA_256k1N",
+    "ECDSA_256k1",
+    "Ed448N",
+    "Ed448",
+    "Ed448_Sig",
+    "Tern",
+    "DateTime",
+    "X25519_Cipher_Salt",
+    "TBD1",
+    "TBD2",
+    "StrB64_L0",
+    "StrB64_L1",
+    "StrB64_L2",
+    "StrB64_Big_L0",
+    "StrB64_Big_L1",
+    "StrB64_Big_L2",
+    "Bytes_L0",
+    "Bytes_L1",
+    "Bytes_L2",
+    "Bytes_Big_L0",
+    "Bytes_Big_L1",
+    "Bytes_Big_L2",
+};
+
+enum CesrideIndexerCodex {
+    "Ed25519",
+    "Ed25519_Crt",
+    "ECDSA_256k1",
+    "ECDSA_256k1_Crt",
+    "Ed448",
+    "Ed448_Crt",
+    "Ed25519_Big",
+    "Ed25519_Big_Crt",
+    "ECDSA_256k1_Big",
+    "ECDSA_256k1_Big_Crt",
+    "Ed448_Big",
+    "Ed448_Big_Crt",
+    "TBD0",
+    "TBD1",
+    "TBD4",
+};
+
+dictionary Verfer {
+  sequence<u8> raw;
+  string code;
+  u32 size;
+};
+
+dictionary Prefixer {
+  sequence<u8> raw;
+  string code;
+  u32 size;
+};
+
+dictionary Dater {
+  sequence<u8> raw;
+  string code;
+  u32 size;
+};
+
+dictionary Seqner {
+  sequence<u8> raw;
+  string code;
+  u32 size;
+};
+
+dictionary Diger {
+  sequence<u8> raw;
+  string code;
+  u32 size;
+};
+
+dictionary Saider {
+  sequence<u8> raw;
+  string code;
+  u32 size;
+};
+
+dictionary Cigar {
+  sequence<u8> raw;
+  string code;
+  u32 size;
+  Verfer verfer;
+};
+
+dictionary Signer {
+  sequence<u8> raw;
+  string code;
+  u32 size;
+  Verfer verfer;
+};
+
+dictionary Siger {
+  sequence<u8> raw;
+  string code;
+  u32 index;
+  u32 ondex;
+  Verfer verfer;
+};
+
+namespace cesride {
+    [Throws=Error]
+    Dater dater_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
+    [Throws=Error]
+    Dater dater_new_with_qb64([ByRef] string qb64);
+    [Throws=Error]
+    Dater dater_new_with_qb64b([ByRef] sequence<u8> qb64b);
+    [Throws=Error]
+    Dater dater_new_with_qb2([ByRef] sequence<u8> qb2);
+    string dater_code([ByRef] Dater dater);
+    u32 dater_size([ByRef] Dater dater);
+    sequence<u8> dater_raw([ByRef] Dater dater);
+    [Throws=Error]
+    string dater_qb64([ByRef] Dater dater);
+    [Throws=Error]
+    sequence<u8> dater_qb64b([ByRef] Dater dater);
+    [Throws=Error]
+    sequence<u8> dater_qb2([ByRef] Dater dater);
+
+    [Throws=Error]
+    Seqner seqner_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
+    [Throws=Error]
+    Seqner seqner_new_with_qb64([ByRef] string qb64);
+    [Throws=Error]
+    Seqner seqner_new_with_qb64b([ByRef] sequence<u8> qb64b);
+    [Throws=Error]
+    Seqner seqner_new_with_qb2([ByRef] sequence<u8> qb2);
+    string seqner_code([ByRef] Seqner seqner);
+    u32 seqner_size([ByRef] Seqner seqner);
+    sequence<u8> seqner_raw([ByRef] Seqner seqner);
+    [Throws=Error]
+    string seqner_qb64([ByRef] Seqner seqner);
+    [Throws=Error]
+    sequence<u8> seqner_qb64b([ByRef] Seqner seqner);
+    [Throws=Error]
+    sequence<u8> seqner_qb2([ByRef] Seqner seqner);
+
+    [Throws=Error]
+    Diger diger_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
+    [Throws=Error]
+    Diger diger_new_with_qb64([ByRef] string qb64);
+    [Throws=Error]
+    Diger diger_new_with_qb64b([ByRef] sequence<u8> qb64b);
+    [Throws=Error]
+    Diger diger_new_with_qb2([ByRef] sequence<u8> qb2);
+    string diger_code([ByRef] Diger diger);
+    u32 diger_size([ByRef] Diger diger);
+    sequence<u8> diger_raw([ByRef] Diger diger);
+    [Throws=Error]
+    string diger_qb64([ByRef] Diger diger);
+    [Throws=Error]
+    sequence<u8> diger_qb64b([ByRef] Diger diger);
+    [Throws=Error]
+    sequence<u8> diger_qb2([ByRef] Diger diger);
+
+    [Throws=Error]
+    Saider saider_new_with_qb64([ByRef] string qb64);
+    [Throws=Error]
+    Saider saider_new_with_qb64b([ByRef] sequence<u8> qb64b);
+    [Throws=Error]
+    Saider saider_new_with_qb2([ByRef] sequence<u8> qb2);
+    string saider_code([ByRef] Saider saider);
+    u32 saider_size([ByRef] Saider saider);
+    sequence<u8> saider_raw([ByRef] Saider saider);
+    [Throws=Error]
+    string saider_qb64([ByRef] Saider saider);
+    [Throws=Error]
+    sequence<u8> saider_qb64b([ByRef] Saider saider);
+    [Throws=Error]
+    sequence<u8> saider_qb2([ByRef] Saider saider);
+
+    [Throws=Error]
+    Cigar cigar_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
+    [Throws=Error]
+    Cigar cigar_new_with_qb64([ByRef] string qb64, Verfer? verfer);
+    [Throws=Error]
+    Cigar cigar_new_with_qb64b([ByRef] sequence<u8> qb64b, Verfer? verfer);
+    [Throws=Error]
+    Cigar cigar_new_with_qb2([ByRef] sequence<u8> qb2, Verfer? verfer);
+    string cigar_code([ByRef] Cigar cigar);
+    u32 cigar_size([ByRef] Cigar cigar);
+    sequence<u8> cigar_raw([ByRef] Cigar cigar);
+    [Throws=Error]
+    string cigar_qb64([ByRef] Cigar cigar);
+    [Throws=Error]
+    sequence<u8> cigar_qb64b([ByRef] Cigar cigar);
+    [Throws=Error]
+    sequence<u8> cigar_qb2([ByRef] Cigar cigar);
+
+    [Throws=Error]
+    Signer signer_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
+    [Throws=Error]
+    Signer signer_new_with_qb64([ByRef] string qb64);
+    [Throws=Error]
+    Signer signer_new_with_qb64b([ByRef] sequence<u8> qb64b);
+    [Throws=Error]
+    Signer signer_new_with_qb2([ByRef] sequence<u8> qb2);
+    string signer_code([ByRef] Signer signer);
+    u32 signer_size([ByRef] Signer signer);
+    sequence<u8> signer_raw([ByRef] Signer signer);
+    [Throws=Error]
+    string signer_qb64([ByRef] Signer signer);
+    [Throws=Error]
+    sequence<u8> signer_qb64b([ByRef] Signer signer);
+    [Throws=Error]
+    sequence<u8> signer_qb2([ByRef] Signer signer);
+
+    [Throws=Error]
+    Siger siger_new_with_code_and_raw([ByRef] CesrideIndexerCodex code, [ByRef] sequence<u8> raw, u32 index, u32? ondex);
+    [Throws=Error]
+    Siger siger_new_with_qb64([ByRef] string qb64, Verfer? verfer);
+    [Throws=Error]
+    Siger siger_new_with_qb64b([ByRef] sequence<u8> qb64b, Verfer? verfer);
+    [Throws=Error]
+    Siger siger_new_with_qb2([ByRef] sequence<u8> qb2, Verfer? verfer);
+    string siger_code([ByRef] Siger siger);
+    sequence<u8> siger_raw([ByRef] Siger siger);
+    [Throws=Error]
+    string siger_qb64([ByRef] Siger siger);
+    [Throws=Error]
+    sequence<u8> siger_qb64b([ByRef] Siger siger);
+    [Throws=Error]
+    sequence<u8> siger_qb2([ByRef] Siger siger);
+
+    [Throws=Error]
+    Prefixer prefixer_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
+    [Throws=Error]
+    Prefixer prefixer_new_with_qb64([ByRef] string qb64);
+    [Throws=Error]
+    Prefixer prefixer_new_with_qb64b([ByRef] sequence<u8> qb64b);
+    [Throws=Error]
+    Prefixer prefixer_new_with_qb2([ByRef] sequence<u8> qb2);
+    string prefixer_code([ByRef] Prefixer prefixer);
+    sequence<u8> prefixer_raw([ByRef] Prefixer prefixer);
+    [Throws=Error]
+    string prefixer_qb64([ByRef] Prefixer prefixer);
+    [Throws=Error]
+    sequence<u8> prefixer_qb64b([ByRef] Prefixer prefixer);
+    [Throws=Error]
+    sequence<u8> prefixer_qb2([ByRef] Prefixer prefixer);
+
+    [Throws=Error]
+    Verfer verfer_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
+    [Throws=Error]
+    Verfer verfer_new_with_qb64([ByRef] string qb64);
+    [Throws=Error]
+    Verfer verfer_new_with_qb64b([ByRef] sequence<u8> qb64b);
+    [Throws=Error]
+    Verfer verfer_new_with_qb2([ByRef] sequence<u8> qb2);
+    string verfer_code([ByRef] Verfer verfer);
+    sequence<u8> verfer_raw([ByRef] Verfer verfer);
+    [Throws=Error]
+    string verfer_qb64([ByRef] Verfer verfer);
+    [Throws=Error]
+    sequence<u8> verfer_qb64b([ByRef] Verfer verfer);
+    [Throws=Error]
+    sequence<u8> verfer_qb2([ByRef] Verfer verfer);
+
+    string matter_codex_code([ByRef] CesrideMatterCodex codex);
+    string indexer_codex_code([ByRef] CesrideIndexerCodex codex);
+};

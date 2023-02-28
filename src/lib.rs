@@ -22,3 +22,11 @@ pub use crate::core::{
     util,
     verfer::Verfer,
 };
+pub use crate::error::{Error, Result};
+
+#[cfg(feature = "ffi")]
+pub mod ffi;
+#[cfg(feature = "ffi")]
+pub use self::ffi::*;
+#[cfg(feature = "ffi")]
+uniffi_macros::include_scaffolding!("cesride");
