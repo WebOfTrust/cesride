@@ -1,5 +1,5 @@
 use crate::{error::JsResult, VerferWrapper};
-use cesride_core::{Matter, Cigar};
+use cesride_core::{Cigar, Matter};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(js_name = Cigar)]
@@ -13,9 +13,7 @@ impl CigarWrapper {
         verfer: Option<VerferWrapper>,
         code: Option<String>,
     ) -> Result<CigarWrapper, JsValue> {
-        Ok(CigarWrapper(
-            Cigar::new_with_raw(raw, verfer.as_deref(), code.as_deref()).as_js()?,
-        ))
+        Ok(CigarWrapper(Cigar::new_with_raw(raw, verfer.as_deref(), code.as_deref()).as_js()?))
     }
 
     #[wasm_bindgen(constructor)]
@@ -23,7 +21,8 @@ impl CigarWrapper {
         qb64: &str,
         verfer: Option<VerferWrapper>,
     ) -> Result<CigarWrapper, JsValue> {
-        Ok(CigarWrapper(Cigar::new_with_qb64(qb64, verfer.as_deref()).as_js()?))
+        let cigar = Cigar::new_with_qb64(qb64, verfer.as_deref()).as_js()?;
+        Ok(CigarWrapper(cigar))
     }
 
     #[wasm_bindgen(constructor)]
@@ -31,7 +30,8 @@ impl CigarWrapper {
         qb64b: &[u8],
         verfer: Option<VerferWrapper>,
     ) -> Result<CigarWrapper, JsValue> {
-        Ok(CigarWrapper(Cigar::new_with_qb64b(qb64b, verfer.as_deref()).as_js()?))
+        let cigar = Cigar::new_with_qb64b(qb64b, verfer.as_deref()).as_js()?;
+        Ok(CigarWrapper(cigar))
     }
 
     #[wasm_bindgen(constructor)]
@@ -39,7 +39,8 @@ impl CigarWrapper {
         qb2: &[u8],
         verfer: Option<VerferWrapper>,
     ) -> Result<CigarWrapper, JsValue> {
-        Ok(CigarWrapper(Cigar::new_with_qb2(qb2, verfer.as_deref()).as_js()?))
+        let cigar = Cigar::new_with_qb2(qb2, verfer.as_deref()).as_js()?;
+        Ok(CigarWrapper(cigar))
     }
 
     pub fn verfer(&self) -> VerferWrapper {
@@ -59,14 +60,14 @@ impl CigarWrapper {
     }
 
     pub fn qb64(&self) -> Result<String, JsValue> {
-        Ok(self.0.qb64().as_js()?)
+        self.0.qb64().as_js().map_err(JsValue::from)
     }
 
     pub fn qb64b(&self) -> Result<Vec<u8>, JsValue> {
-        Ok(self.0.qb64b().as_js()?)
+        self.0.qb64b().as_js().map_err(JsValue::from)
     }
 
     pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
-        Ok(self.0.qb2().as_js()?)
+        self.0.qb2().as_js().map_err(JsValue::from)
     }
 }

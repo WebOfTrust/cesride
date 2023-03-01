@@ -15,9 +15,9 @@ impl SigerWrapper {
         ondex: Option<u32>,
         code: Option<String>,
     ) -> Result<SigerWrapper, JsValue> {
-        Ok(SigerWrapper(
-            Siger::new_with_raw(raw, verfer.as_deref(), index, ondex, code.as_deref()).as_js()?,
-        ))
+        let siger =
+            Siger::new_with_raw(raw, verfer.as_deref(), index, ondex, code.as_deref()).as_js()?;
+        Ok(SigerWrapper(siger))
     }
 
     #[wasm_bindgen(constructor)]
@@ -25,7 +25,8 @@ impl SigerWrapper {
         qb64: &str,
         verfer: Option<VerferWrapper>,
     ) -> Result<SigerWrapper, JsValue> {
-        Ok(SigerWrapper(Siger::new_with_qb64(qb64, verfer.as_deref()).as_js()?))
+        let siger = Siger::new_with_qb64(qb64, verfer.as_deref()).as_js()?;
+        Ok(SigerWrapper(siger))
     }
 
     #[wasm_bindgen(constructor)]
@@ -33,7 +34,8 @@ impl SigerWrapper {
         qb64b: &[u8],
         verfer: Option<VerferWrapper>,
     ) -> Result<SigerWrapper, JsValue> {
-        Ok(SigerWrapper(Siger::new_with_qb64b(qb64b, verfer.as_deref()).as_js()?))
+        let siger = Siger::new_with_qb64b(qb64b, verfer.as_deref()).as_js()?;
+        Ok(SigerWrapper(siger))
     }
 
     #[wasm_bindgen(constructor)]
@@ -41,7 +43,8 @@ impl SigerWrapper {
         qb2: &[u8],
         verfer: Option<VerferWrapper>,
     ) -> Result<SigerWrapper, JsValue> {
-        Ok(SigerWrapper(Siger::new_with_qb2(qb2, verfer.as_deref()).as_js()?))
+        let siger = Siger::new_with_qb2(qb2, verfer.as_deref()).as_js()?;
+        Ok(SigerWrapper(siger))
     }
 
     pub fn verfer(&self) -> VerferWrapper {
@@ -65,14 +68,14 @@ impl SigerWrapper {
     }
 
     pub fn qb64(&self) -> Result<String, JsValue> {
-        Ok(self.0.qb64().as_js()?)
+        self.0.qb64().as_js().map_err(JsValue::from)
     }
 
     pub fn qb64b(&self) -> Result<Vec<u8>, JsValue> {
-        Ok(self.0.qb64b().as_js()?)
+        self.0.qb64b().as_js().map_err(JsValue::from)
     }
 
     pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
-        Ok(self.0.qb2().as_js()?)
+        self.0.qb2().as_js().map_err(JsValue::from)
     }
 }
