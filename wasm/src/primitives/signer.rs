@@ -1,4 +1,4 @@
-use crate::{error::*, VerferWrapper};
+use crate::{error::*, CigarWrapper, SigerWrapper, VerferWrapper};
 use cesride_core::{Matter, Signer};
 use wasm_bindgen::prelude::*;
 
@@ -31,19 +31,19 @@ impl SignerWrapper {
         Ok(SignerWrapper(Signer::new_with_qb2(qb2).as_js()?))
     }
 
-    // pub fn sign_unindexed(&self, ser: &[u8]) -> Result<Cigar> {
-    //     todo!()
-    // }
+    pub fn sign_unindexed(&self, ser: &[u8]) -> Result<CigarWrapper, JsValue> {
+        Ok(CigarWrapper(self.0.sign_unindexed(ser).as_js()?))
+    }
 
-    // pub fn sign_indexed(
-    //     &self,
-    //     ser: &[u8],
-    //     only: bool,
-    //     index: u32,
-    //     ondex: Option<u32>,
-    // ) -> Result<Siger> {
-    //     todo!()
-    // }
+    pub fn sign_indexed(
+        &self,
+        ser: &[u8],
+        only: bool,
+        index: u32,
+        ondex: Option<u32>,
+    ) -> Result<SigerWrapper, JsValue> {
+        Ok(SigerWrapper(self.0.sign_indexed(ser, only, index, ondex).as_js()?))
+    }
 
     pub fn verfer(&self) -> VerferWrapper {
         VerferWrapper(self.0.verfer())
