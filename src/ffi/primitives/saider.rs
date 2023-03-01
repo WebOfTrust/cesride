@@ -1,5 +1,26 @@
 use crate::error::Result;
-use crate::{Matter, Saider};
+use crate::{CesrideMatterCodex, Matter, Saider};
+use crate::data::Value;
+
+pub fn saider_new(sad: Option<Value>,
+                  label: Option<String>,
+                  kind: Option<String>,
+                  ignore: Option<Vec<String>>,
+                  code: Option<CesrideMatterCodex>,
+                  raw: Option<Vec<u8>>,
+                  qb64b: Option<Vec<u8>>,
+                  qb64: Option<String>,
+                  qb2: Option<Vec<u8>>) -> Result<Saider> {
+    Saider::new(sad.as_ref(),
+                label.as_deref(),
+                kind.as_deref(),
+                ignore.as_deref().map(|allows| allows.iter().map(String::as_str).collect::<Vec<&str>>()).as_deref(),
+                code.as_ref().map(|code| code.code()),
+                raw.as_deref(),
+                qb64b.as_deref(),
+                qb64.as_deref(),
+                qb2.as_deref())
+}
 
 pub fn saider_new_with_qb64(qb64: &str) -> Result<Saider> {
     Saider::new_with_qb64(qb64)

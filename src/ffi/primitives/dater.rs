@@ -2,6 +2,20 @@ use crate::error::Result;
 use crate::ffi::primitives::CesrideMatterCodex;
 use crate::{Dater, Matter};
 
+pub fn dater_new(dts: Option<String>,
+                 code: Option<CesrideMatterCodex>,
+                 raw: Option<Vec<u8>>,
+                 qb64b: Option<Vec<u8>>,
+                 qb64: Option<String>,
+                 qb2: Option<Vec<u8>>) -> Result<Dater> {
+    Dater::new(dts.as_deref(),
+               code.as_ref().map(|code| code.code()),
+               raw.as_deref(),
+               qb64b.as_deref(),
+               qb64.as_deref(),
+               qb2.as_deref())
+}
+
 pub fn dater_new_with_code_and_raw(code: &CesrideMatterCodex, raw: &[u8]) -> Result<Dater> {
     Dater::new_with_code_and_raw(code.code(), raw)
 }

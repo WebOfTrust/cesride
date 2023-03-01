@@ -2,6 +2,18 @@ use crate::error::Result;
 use crate::ffi::primitives::CesrideMatterCodex;
 use crate::{Matter, Verfer};
 
+pub fn verfer_new(code: Option<CesrideMatterCodex>,
+                  raw: Option<Vec<u8>>,
+                  qb64b: Option<Vec<u8>>,
+                  qb64: Option<String>,
+                  qb2: Option<Vec<u8>>) -> Result<Verfer> {
+    Verfer::new(code.as_ref().map(|code| code.code()),
+                raw.as_deref(),
+                qb64b.as_deref(),
+                qb64.as_deref(),
+                qb2.as_deref())
+}
+
 pub fn verfer_new_with_code_and_raw(code: &CesrideMatterCodex, raw: &[u8]) -> Result<Verfer> {
     Verfer::new_with_code_and_raw(code.code(), raw)
 }

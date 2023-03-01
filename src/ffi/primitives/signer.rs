@@ -2,6 +2,20 @@ use crate::error::Result;
 use crate::ffi::primitives::CesrideMatterCodex;
 use crate::{Matter, Signer};
 
+pub fn signer_new(transferable: Option<bool>,
+                  code: Option<CesrideMatterCodex>,
+                  raw: Option<Vec<u8>>,
+                  qb64b: Option<Vec<u8>>,
+                  qb64: Option<String>,
+                  qb2: Option<Vec<u8>>) -> Result<Signer> {
+    Signer::new(transferable,
+                code.as_ref().map(|code| code.code()),
+                raw.as_deref(),
+                qb64b.as_deref(),
+                qb64.as_deref(),
+                qb2.as_deref())
+}
+
 pub fn signer_new_with_code_and_raw(code: &CesrideMatterCodex, raw: &[u8]) -> Result<Signer> {
     Signer::new_with_code_and_raw(code.code(), raw)
 }

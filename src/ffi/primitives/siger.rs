@@ -1,6 +1,24 @@
 use crate::error::Result;
 use crate::ffi::primitives::CesrideIndexerCodex;
-use crate::{Indexer, Siger, Verfer};
+use crate::{CesrideMatterCodex, Indexer, Siger, Verfer};
+
+pub fn siger_new(verfer: Option<Verfer>,
+                 index: Option<u32>,
+                 ondex: Option<u32>,
+                 code: Option<CesrideMatterCodex>,
+                 raw: Option<Vec<u8>>,
+                 qb64b: Option<Vec<u8>>,
+                 qb64: Option<String>,
+                 qb2: Option<Vec<u8>>) -> Result<Siger> {
+    Siger::new(verfer.as_ref(),
+               index,
+               ondex,
+               code.as_ref().map(|code| code.code()),
+               raw.as_deref(),
+               qb64b.as_deref(),
+               qb64.as_deref(),
+               qb2.as_deref())
+}
 
 pub fn siger_new_with_code_and_raw(
     code: &CesrideIndexerCodex,

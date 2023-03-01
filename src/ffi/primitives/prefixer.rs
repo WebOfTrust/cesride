@@ -1,6 +1,23 @@
 use crate::error::Result;
 use crate::ffi::primitives::CesrideMatterCodex;
 use crate::{Matter, Prefixer};
+use crate::data::Value;
+
+pub fn prefixer_new(ked: Option<Value>,
+                    allows: Option<Vec<String>>,
+                    code: Option<CesrideMatterCodex>,
+                    raw: Option<Vec<u8>>,
+                    qb64b: Option<Vec<u8>>,
+                    qb64: Option<String>,
+                    qb2: Option<Vec<u8>>) -> Result<Prefixer> {
+    Prefixer::new(ked.as_ref(),
+                  allows.as_deref().map(|allows| allows.iter().map(String::as_str).collect::<Vec<&str>>()).as_deref(),
+                  code.as_ref().map(|code| code.code()),
+                  raw.as_deref(),
+                  qb64b.as_deref(),
+                  qb64.as_deref(),
+                  qb2.as_deref())
+}
 
 pub fn prefixer_new_with_code_and_raw(code: &CesrideMatterCodex, raw: &[u8]) -> Result<Prefixer> {
     Prefixer::new_with_code_and_raw(code.code(), raw)

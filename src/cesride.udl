@@ -34,6 +34,9 @@ enum Error {
     "Derivation"
 };
 
+[Custom]
+typedef string Value;
+
 enum CesrideMatterCodex {
     "Ed25519Seed",
     "Ed25519N",
@@ -161,6 +164,8 @@ dictionary Siger {
 
 namespace cesride {
     [Throws=Error]
+    Dater dater_new(string? dts, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
+    [Throws=Error]
     Dater dater_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
     [Throws=Error]
     Dater dater_new_with_qb64([ByRef] string qb64);
@@ -178,6 +183,8 @@ namespace cesride {
     [Throws=Error]
     sequence<u8> dater_qb2([ByRef] Dater dater);
 
+    [Throws=Error]
+    Seqner seqner_new(u64? dts, string? snh, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
     [Throws=Error]
     Seqner seqner_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
     [Throws=Error]
@@ -197,6 +204,8 @@ namespace cesride {
     sequence<u8> seqner_qb2([ByRef] Seqner seqner);
 
     [Throws=Error]
+    Diger diger_new(sequence<u8>? ser, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
+    [Throws=Error]
     Diger diger_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
     [Throws=Error]
     Diger diger_new_with_qb64([ByRef] string qb64);
@@ -215,6 +224,8 @@ namespace cesride {
     sequence<u8> diger_qb2([ByRef] Diger diger);
 
     [Throws=Error]
+    Saider saider_new(Value? value, string? label, string? kind, sequence<string>? ignore, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
+    [Throws=Error]
     Saider saider_new_with_qb64([ByRef] string qb64);
     [Throws=Error]
     Saider saider_new_with_qb64b([ByRef] sequence<u8> qb64b);
@@ -230,6 +241,8 @@ namespace cesride {
     [Throws=Error]
     sequence<u8> saider_qb2([ByRef] Saider saider);
 
+    [Throws=Error]
+    Cigar cigar_new(Verfer? verfer, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
     [Throws=Error]
     Cigar cigar_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
     [Throws=Error]
@@ -249,6 +262,8 @@ namespace cesride {
     sequence<u8> cigar_qb2([ByRef] Cigar cigar);
 
     [Throws=Error]
+    Signer signer_new(boolean? transferable, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
+    [Throws=Error]
     Signer signer_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
     [Throws=Error]
     Signer signer_new_with_qb64([ByRef] string qb64);
@@ -267,6 +282,8 @@ namespace cesride {
     sequence<u8> signer_qb2([ByRef] Signer signer);
 
     [Throws=Error]
+    Siger siger_new(Verfer? verfer, u32? index, u32? ondex, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
+    [Throws=Error]
     Siger siger_new_with_code_and_raw([ByRef] CesrideIndexerCodex code, [ByRef] sequence<u8> raw, u32 index, u32? ondex);
     [Throws=Error]
     Siger siger_new_with_qb64([ByRef] string qb64, Verfer? verfer);
@@ -284,6 +301,8 @@ namespace cesride {
     sequence<u8> siger_qb2([ByRef] Siger siger);
 
     [Throws=Error]
+    Prefixer prefixer_new(Value? ked, sequence<string>? allows, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
+    [Throws=Error]
     Prefixer prefixer_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
     [Throws=Error]
     Prefixer prefixer_new_with_qb64([ByRef] string qb64);
@@ -300,6 +319,8 @@ namespace cesride {
     [Throws=Error]
     sequence<u8> prefixer_qb2([ByRef] Prefixer prefixer);
 
+    [Throws=Error]
+    Verfer verfer_new(CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
     [Throws=Error]
     Verfer verfer_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
     [Throws=Error]
