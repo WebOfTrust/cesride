@@ -1,8 +1,10 @@
-use crate::indexer::Codex as IndexerCodex;
-use crate::matter::Codex as MatterCodex;
+use cesride_core::indexer::Codex as IndexerCodex;
+use cesride_core::matter::Codex as MatterCodex;
+use wasm_bindgen::prelude::*;
 
 #[allow(non_camel_case_types)]
 #[derive(Debug)]
+#[wasm_bindgen(js_name = MatterCodex)]
 pub enum CesrideMatterCodex {
     Ed25519Seed,
     Ed25519N,
@@ -105,12 +107,14 @@ impl CesrideMatterCodex {
     }
 }
 
-pub fn matter_codex_code(codex: &CesrideMatterCodex) -> String {
+#[wasm_bindgen]
+pub fn matter_codex_code(codex: CesrideMatterCodex) -> String {
     codex.code().to_string()
 }
 
 #[allow(non_camel_case_types)]
 #[derive(Debug)]
+#[wasm_bindgen(js_name = IndexerCodex)]
 pub enum CesrideIndexerCodex {
     Ed25519,
     Ed25519_Crt,
@@ -151,6 +155,7 @@ impl CesrideIndexerCodex {
     }
 }
 
-pub fn indexer_codex_code(codex: &CesrideIndexerCodex) -> String {
+#[wasm_bindgen]
+pub fn indexer_codex_code(codex: CesrideIndexerCodex) -> String {
     codex.code().to_string()
 }
