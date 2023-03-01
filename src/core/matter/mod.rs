@@ -5,7 +5,7 @@ use crate::error::{err, Error, Result};
 
 pub mod tables;
 
-pub(crate) trait Matter: Default {
+pub trait Matter: Default {
     fn code(&self) -> String;
     fn size(&self) -> u32;
     fn raw(&self) -> Vec<u8>;

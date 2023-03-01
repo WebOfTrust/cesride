@@ -7,17 +7,22 @@ mod core;
 mod crypto;
 mod error;
 
-pub use crate::core::{
-    cigar::Cigar,
-    counter::{tables as counter, Counter}, // This seems like it shoudl be an abstract class
-    diger::Diger,
-    indexer::tables as indexer,
-    matter::tables as matter,
-    prefixer::Prefixer,
-    saider::Saider,
-    seqner::Seqner,
-    siger::Siger,
-    signer::Signer,
-    util,
-    verfer::Verfer,
+pub use crate::{
+    core::{
+        cigar::Cigar,
+        counter::{tables as counter, Counter}, // This seems like it shoudl be an abstract class
+        diger::Diger,
+        indexer::{tables as indexer, Indexer},
+        matter::{tables as matter, Matter},
+        number::{tables as number, Number},
+        prefixer::Prefixer,
+        sadder::Sadder,
+        saider::Saider,
+        seqner::Seqner,
+        siger::Siger,
+        signer::Signer,
+        verfer::Verfer,
+    },
+    data::Value,
+    error::Error,
 };
