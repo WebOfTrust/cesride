@@ -5,6 +5,7 @@ pub mod dater;
 pub mod diger;
 pub mod indexer;
 pub mod matter;
+pub mod number;
 pub mod prefixer;
 pub mod sadder;
 pub mod saider;

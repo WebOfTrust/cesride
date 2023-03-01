@@ -56,7 +56,7 @@ fn exhale(ked: &Value, kind: Option<&str>) -> Result<ExhaleResult> {
     })
 }
 
-pub(crate) trait Sadder: Default + Clone {
+pub trait Sadder: Default + Clone {
     fn code(&self) -> String;
     fn raw(&self) -> Vec<u8>;
     fn ked(&self) -> Value;
