@@ -53,3 +53,7 @@ pub fn verfer_qb64b(verfer: &Verfer) -> Result<Vec<u8>> {
 pub fn verfer_qb2(verfer: &Verfer) -> Result<Vec<u8>> {
     verfer.qb2()
 }
+
+pub fn verfer_verify(verfer: &Verfer, sig: &[u8], ser: &[u8]) -> Result<bool> {
+    verfer.verify( sig, ser)
+}

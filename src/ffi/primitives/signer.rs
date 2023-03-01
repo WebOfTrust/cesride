@@ -1,6 +1,6 @@
 use crate::error::Result;
 use crate::ffi::primitives::CesrideMatterCodex;
-use crate::{Matter, Signer};
+use crate::{Cigar, Matter, Siger, Signer};
 
 pub fn signer_new(transferable: Option<bool>,
                   code: Option<CesrideMatterCodex>,
@@ -54,4 +54,16 @@ pub fn signer_qb64b(signer: &Signer) -> Result<Vec<u8>> {
 
 pub fn signer_qb2(signer: &Signer) -> Result<Vec<u8>> {
     signer.qb2()
+}
+
+pub fn signer_sign_unindexed(signer: &Signer, ser: &[u8]) -> Result<Cigar> {
+    signer.sign_unindexed(ser)
+}
+
+pub fn signer_sign_indexed(signer: &Signer,
+                           ser: &[u8],
+                           only: bool,
+                           index: u32,
+                           ondex: Option<u32>, ) -> Result<Siger> {
+    signer.sign_indexed(ser, only, index, ondex)
 }

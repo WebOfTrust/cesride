@@ -49,6 +49,14 @@ pub fn siger_raw(siger: &Siger) -> Vec<u8> {
     siger.raw()
 }
 
+pub fn siger_index(siger: &Siger) -> u32 {
+    siger.index()
+}
+
+pub fn siger_ondex(siger: &Siger) -> u32 {
+    siger.ondex()
+}
+
 pub fn siger_qb64(siger: &Siger) -> Result<String> {
     siger.qb64()
 }
@@ -59,4 +67,8 @@ pub fn siger_qb64b(siger: &Siger) -> Result<Vec<u8>> {
 
 pub fn siger_qb2(siger: &Siger) -> Result<Vec<u8>> {
     siger.qb2()
+}
+
+pub fn siger_verfer(siger: &Siger) -> Verfer {
+    siger.verfer()
 }

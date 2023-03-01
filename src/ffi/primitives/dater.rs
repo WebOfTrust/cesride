@@ -16,6 +16,11 @@ pub fn dater_new(dts: Option<String>,
                qb2.as_deref())
 }
 
+pub fn new_with_dts(dts: &str, code: Option<CesrideMatterCodex>) -> Result<Dater> {
+    Dater::new_with_dts(dts,
+                        code.as_ref().map(|code| code.code()))
+}
+
 pub fn dater_new_with_code_and_raw(code: &CesrideMatterCodex, raw: &[u8]) -> Result<Dater> {
     Dater::new_with_code_and_raw(code.code(), raw)
 }
@@ -54,4 +59,8 @@ pub fn dater_qb64b(dater: &Dater) -> Result<Vec<u8>> {
 
 pub fn dater_qb2(dater: &Dater) -> Result<Vec<u8>> {
     dater.qb2()
+}
+
+pub fn dater_dtsb(dater: &Dater) -> Result<Vec<u8>> {
+    dater.dtsb()
 }

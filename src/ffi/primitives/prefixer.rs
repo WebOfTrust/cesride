@@ -58,3 +58,7 @@ pub fn prefixer_qb64b(prefixer: &Prefixer) -> Result<Vec<u8>> {
 pub fn prefixer_qb2(prefixer: &Prefixer) -> Result<Vec<u8>> {
     prefixer.qb2()
 }
+
+pub fn prefixer_verify(prefixer: &Prefixer, ked: &Value, prefixed: Option<bool>) -> Result<bool> {
+    prefixer.verify(ked, prefixed)
+}

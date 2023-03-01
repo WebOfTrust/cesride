@@ -166,6 +166,8 @@ namespace cesride {
     [Throws=Error]
     Dater dater_new(string? dts, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
     [Throws=Error]
+    Dater new_with_dts([ByRef] string dts, CesrideMatterCodex? code);
+    [Throws=Error]
     Dater dater_new_with_code_and_raw([ByRef] CesrideMatterCodex code, [ByRef] sequence<u8> raw);
     [Throws=Error]
     Dater dater_new_with_qb64([ByRef] string qb64);
@@ -182,6 +184,8 @@ namespace cesride {
     sequence<u8> dater_qb64b([ByRef] Dater dater);
     [Throws=Error]
     sequence<u8> dater_qb2([ByRef] Dater dater);
+    [Throws=Error]
+    sequence<u8> dater_dtsb([ByRef] Dater dater);
 
     [Throws=Error]
     Seqner seqner_new(u64? dts, string? snh, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
@@ -202,6 +206,10 @@ namespace cesride {
     sequence<u8> seqner_qb64b([ByRef] Seqner seqner);
     [Throws=Error]
     sequence<u8> seqner_qb2([ByRef] Seqner seqner);
+    [Throws=Error]
+    u64 seqner_sn([ByRef] Seqner seqner);
+    [Throws=Error]
+    string seqner_snh([ByRef] Seqner seqner);
 
     [Throws=Error]
     Diger diger_new(sequence<u8>? ser, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
@@ -222,6 +230,8 @@ namespace cesride {
     sequence<u8> diger_qb64b([ByRef] Diger diger);
     [Throws=Error]
     sequence<u8> diger_qb2([ByRef] Diger diger);
+    [Throws=Error]
+    boolean diger_verify([ByRef] Diger diger, [ByRef] sequence<u8> ser);
 
     [Throws=Error]
     Saider saider_new(Value? value, string? label, string? kind, sequence<string>? ignore, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
@@ -280,6 +290,10 @@ namespace cesride {
     sequence<u8> signer_qb64b([ByRef] Signer signer);
     [Throws=Error]
     sequence<u8> signer_qb2([ByRef] Signer signer);
+    [Throws=Error]
+    Cigar signer_sign_unindexed([ByRef] Signer signer, [ByRef] sequence<u8> ser);
+    [Throws=Error]
+    Siger signer_sign_indexed([ByRef] Signer signer, [ByRef] sequence<u8> ser, boolean only, u32 index, u32? ondex);
 
     [Throws=Error]
     Siger siger_new(Verfer? verfer, u32? index, u32? ondex, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
@@ -293,12 +307,15 @@ namespace cesride {
     Siger siger_new_with_qb2([ByRef] sequence<u8> qb2, Verfer? verfer);
     string siger_code([ByRef] Siger siger);
     sequence<u8> siger_raw([ByRef] Siger siger);
+    u32 siger_index([ByRef] Siger siger);
+    u32 siger_ondex([ByRef] Siger siger);
     [Throws=Error]
     string siger_qb64([ByRef] Siger siger);
     [Throws=Error]
     sequence<u8> siger_qb64b([ByRef] Siger siger);
     [Throws=Error]
     sequence<u8> siger_qb2([ByRef] Siger siger);
+    Verfer siger_verfer([ByRef] Siger siger);
 
     [Throws=Error]
     Prefixer prefixer_new(Value? ked, sequence<string>? allows, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
@@ -318,6 +335,8 @@ namespace cesride {
     sequence<u8> prefixer_qb64b([ByRef] Prefixer prefixer);
     [Throws=Error]
     sequence<u8> prefixer_qb2([ByRef] Prefixer prefixer);
+    [Throws=Error]
+    boolean prefixer_verify([ByRef] Prefixer prefixer, [ByRef] Value ked, boolean? prefixed);
 
     [Throws=Error]
     Verfer verfer_new(CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
@@ -337,6 +356,8 @@ namespace cesride {
     sequence<u8> verfer_qb64b([ByRef] Verfer verfer);
     [Throws=Error]
     sequence<u8> verfer_qb2([ByRef] Verfer verfer);
+    [Throws=Error]
+    boolean verfer_verify([ByRef] Verfer verfer, [ByRef] sequence<u8> sig, [ByRef] sequence<u8> ser);
 
     string matter_codex_code([ByRef] CesrideMatterCodex codex);
     string indexer_codex_code([ByRef] CesrideIndexerCodex codex);

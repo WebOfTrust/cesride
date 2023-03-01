@@ -55,3 +55,7 @@ pub fn diger_qb64b(diger: &Diger) -> Result<Vec<u8>> {
 pub fn diger_qb2(diger: &Diger) -> Result<Vec<u8>> {
     diger.qb2()
 }
+
+pub fn diger_verify(diger: &Diger, ser: &[u8]) -> Result<bool> {
+    diger.verify(ser)
+}

@@ -57,3 +57,10 @@ pub fn seqner_qb64b(seqner: &Seqner) -> Result<Vec<u8>> {
 pub fn seqner_qb2(seqner: &Seqner) -> Result<Vec<u8>> {
     seqner.qb2()
 }
+
+pub fn seqner_sn(seqner: &Seqner) -> Result<u64> {
+    seqner.sn().map(|value| value as u64)
+}
+pub fn seqner_snh(seqner: &Seqner) -> Result<String> {
+    seqner.snh()
+}
