@@ -10,10 +10,10 @@ use crate::error::{err, Error, Result};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Signer {
-    raw: Vec<u8>,
-    code: String,
-    size: u32,
-    verfer: Verfer,
+    pub(crate) raw: Vec<u8>,
+    pub(crate) code: String,
+    pub(crate) size: u32,
+    pub(crate) verfer: Verfer,
 }
 
 impl Default for Signer {

@@ -1,5 +1,6 @@
 pub mod tables;
 
+use self::tables::sizage;
 use crate::core::util;
 use crate::error::{err, Error, Result};
 
@@ -302,6 +303,16 @@ impl Counter {
         self.count = count;
 
         Ok(())
+    }
+
+    pub fn qb64b_size(&self) -> Result<u32> {
+        let sizes = sizage(&self.code)?;
+        Ok(sizes.fs)
+    }
+
+    pub fn qb2_size(&self) -> Result<u32> {
+        let sizes = sizage(&self.code)?;
+        Ok(sizes.fs * 3 / 4)
     }
 }
 

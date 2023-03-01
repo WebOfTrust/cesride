@@ -12,9 +12,9 @@ use crate::{
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Prefixer {
-    code: String,
-    raw: Vec<u8>,
-    size: u32,
+    pub(crate) code: String,
+    pub(crate) raw: Vec<u8>,
+    pub(crate) size: u32,
 }
 
 impl Default for Prefixer {

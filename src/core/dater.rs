@@ -3,9 +3,9 @@ use crate::error::{err, Error, Result};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Dater {
-    raw: Vec<u8>,
-    code: String,
-    size: u32,
+    pub(crate) raw: Vec<u8>,
+    pub(crate) code: String,
+    pub(crate) size: u32,
 }
 
 impl Default for Dater {

@@ -63,3 +63,25 @@ You are now ready to open a pull request!
 ### Slack
 - [Slack Invite](https://join.slack.com/t/keriworld/shared_invite/zt-14326yxue-p7P~GEmAZ65luGSZvbgFAQ)
     - `#cesr` channel.
+
+
+### FFI
+
+In order to build a proper system library, to need to use `ffi` feature.
+```
+cargo build --features ffi
+```
+
+### Generate foreign language bindings using [UniFFI](https://mozilla.github.io/uniffi-rs/Overview.html)
+* Kotlin
+  ```
+  cargo run --features ffi --bin uniffi-bindgen generate src/cesride.udl --language kotlin --config=src/ffi/uniffi.toml
+  ```
+* Python
+  ```
+  cargo run --features ffi --bin uniffi-bindgen generate src/cesride.udl --language python --config=src/ffi/uniffi.toml
+  ```
+* Swift
+  ```
+  cargo run --features ffi --bin uniffi-bindgen generate src/cesride.udl --language swift --config=src/ffi/uniffi.toml
+  ```
