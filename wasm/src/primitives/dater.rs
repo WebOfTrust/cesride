@@ -8,32 +8,23 @@ pub struct DaterWrapper(pub(crate) Dater);
 #[wasm_bindgen(js_class = Dater)]
 impl DaterWrapper {
     #[wasm_bindgen(constructor)]
-    pub fn new_with_dts(dts: &str, code: Option<String>) -> Result<DaterWrapper, JsValue> {
-        let dater = Dater::new_with_dts(dts, code.as_deref()).as_js()?;
-        Ok(DaterWrapper(dater))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<DaterWrapper, JsValue> {
-        let dater = Dater::new_with_raw(raw, code.as_deref()).as_js()?;
-        Ok(DaterWrapper(dater))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_qb64(qb64: &str) -> Result<DaterWrapper, JsValue> {
-        let dater = Dater::new_with_qb64(qb64).as_js()?;
-        Ok(DaterWrapper(dater))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<DaterWrapper, JsValue> {
-        let dater = Dater::new_with_qb64b(qb64b).as_js()?;
-        Ok(DaterWrapper(dater))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<DaterWrapper, JsValue> {
-        let dater = Dater::new_with_qb2(qb2).as_js()?;
+    pub fn new(
+        dts: Option<String>,
+        code: Option<String>,
+        raw: Option<Vec<u8>>,
+        qb64b: Option<Vec<u8>>,
+        qb64: Option<String>,
+        qb2: Option<Vec<u8>>,
+    ) -> Result<DaterWrapper, JsValue> {
+        let dater = Dater::new(
+            dts.as_deref(),
+            code.as_deref(),
+            raw.as_deref(),
+            qb64b.as_deref(),
+            qb64.as_deref(),
+            qb2.as_deref(),
+        )
+        .as_js()?;
         Ok(DaterWrapper(dater))
     }
 

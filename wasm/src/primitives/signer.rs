@@ -8,30 +8,23 @@ pub struct SignerWrapper(Signer);
 #[wasm_bindgen(js_class = Signer)]
 impl SignerWrapper {
     #[wasm_bindgen(constructor)]
-    pub fn new_with_raw(
-        raw: &[u8],
+    pub fn new(
         transferable: Option<bool>,
         code: Option<String>,
+        raw: Option<Vec<u8>>,
+        qb64b: Option<Vec<u8>>,
+        qb64: Option<String>,
+        qb2: Option<Vec<u8>>,
     ) -> Result<SignerWrapper, JsValue> {
-        let signer = Signer::new_with_raw(raw, transferable, code.as_deref()).as_js()?;
-        Ok(SignerWrapper(signer))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_qb64(qb64: &str) -> Result<SignerWrapper, JsValue> {
-        let signer = Signer::new_with_qb64(qb64).as_js()?;
-        Ok(SignerWrapper(signer))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<SignerWrapper, JsValue> {
-        let signer = Signer::new_with_qb64b(qb64b).as_js()?;
-        Ok(SignerWrapper(signer))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<SignerWrapper, JsValue> {
-        let signer = Signer::new_with_qb2(qb2).as_js()?;
+        let signer = Signer::new(
+            transferable,
+            code.as_deref(),
+            raw.as_deref(),
+            qb64b.as_deref(),
+            qb64.as_deref(),
+            qb2.as_deref(),
+        )
+        .as_js()?;
         Ok(SignerWrapper(signer))
     }
 

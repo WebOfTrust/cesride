@@ -9,38 +9,25 @@ pub struct SeqnerWrapper(pub(crate) Seqner);
 #[wasm_bindgen(js_class = Seqner)]
 impl SeqnerWrapper {
     #[wasm_bindgen(constructor)]
-    pub fn new_with_sn(sn: U128Wrapper) -> Result<SeqnerWrapper, JsValue> {
-        let seqner = Seqner::new_with_sn(sn.into()).as_js()?;
-        Ok(SeqnerWrapper(seqner))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_snh(snh: &str) -> Result<SeqnerWrapper, JsValue> {
-        let seqner = Seqner::new_with_snh(snh).as_js()?;
-        Ok(SeqnerWrapper(seqner))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<SeqnerWrapper, JsValue> {
-        let seqner = Seqner::new_with_raw(raw, code.as_deref()).as_js()?;
-        Ok(SeqnerWrapper(seqner))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_qb64(qb64: &str) -> Result<SeqnerWrapper, JsValue> {
-        let seqner = Seqner::new_with_qb64(qb64).as_js()?;
-        Ok(SeqnerWrapper(seqner))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<SeqnerWrapper, JsValue> {
-        let seqner = Seqner::new_with_qb64b(qb64b).as_js()?;
-        Ok(SeqnerWrapper(seqner))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<SeqnerWrapper, JsValue> {
-        let seqner = Seqner::new_with_qb2(qb2).as_js()?;
+    pub fn new_with_raw(
+        sn: Option<U128Wrapper>,
+        snh: Option<String>,
+        code: Option<String>,
+        raw: Option<Vec<u8>>,
+        qb64b: Option<Vec<u8>>,
+        qb64: Option<String>,
+        qb2: Option<Vec<u8>>,
+    ) -> Result<SeqnerWrapper, JsValue> {
+        let seqner = Seqner::new(
+            sn.map(Into::into),
+            snh.as_deref(),
+            code.as_deref(),
+            raw.as_deref(),
+            qb64b.as_deref(),
+            qb64.as_deref(),
+            qb2.as_deref(),
+        )
+        .as_js()?;
         Ok(SeqnerWrapper(seqner))
     }
 

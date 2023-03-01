@@ -8,32 +8,23 @@ pub struct DigerWrapper(pub(crate) Diger);
 #[wasm_bindgen(js_class = Diger)]
 impl DigerWrapper {
     #[wasm_bindgen(constructor)]
-    pub fn new_with_ser(ser: &[u8], code: Option<String>) -> Result<DigerWrapper, JsValue> {
-        let diger = Diger::new_with_ser(ser, code.as_deref()).as_js()?;
-        Ok(DigerWrapper(diger))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<DigerWrapper, JsValue> {
-        let diger = Diger::new_with_raw(raw, code.as_deref()).as_js()?;
-        Ok(DigerWrapper(diger))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_qb64(qb64: &str) -> Result<DigerWrapper, JsValue> {
-        let diger = Diger::new_with_qb64(qb64).as_js()?;
-        Ok(DigerWrapper(diger))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<DigerWrapper, JsValue> {
-        let diger = Diger::new_with_qb64b(qb64b).as_js()?;
-        Ok(DigerWrapper(diger))
-    }
-
-    #[wasm_bindgen(constructor)]
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<DigerWrapper, JsValue> {
-        let diger = Diger::new_with_qb2(qb2).as_js()?;
+    pub fn new(
+        ser: Option<Vec<u8>>,
+        code: Option<String>,
+        raw: Option<Vec<u8>>,
+        qb64b: Option<Vec<u8>>,
+        qb64: Option<String>,
+        qb2: Option<Vec<u8>>,
+    ) -> Result<DigerWrapper, JsValue> {
+        let diger = Diger::new(
+            ser.as_deref(),
+            code.as_deref(),
+            raw.as_deref(),
+            qb64b.as_deref(),
+            qb64.as_deref(),
+            qb2.as_deref(),
+        )
+        .as_js()?;
         Ok(DigerWrapper(diger))
     }
 
