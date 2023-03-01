@@ -1,43 +1,72 @@
-use crate::error::Result;
-use crate::ffi::primitives::CesrideMatterCodex;
-use crate::{Matter, Seqner};
+use crate::error::JsResult;
+use crate::util::U128Wrapper;
+use cesride_core::{Matter, Seqner};
+use wasm_bindgen::prelude::*;
 
-pub fn seqner_new_with_code_and_raw(code: &CesrideMatterCodex, raw: &[u8]) -> Result<Seqner> {
-    Seqner::new_with_code_and_raw(code.code(), raw)
-}
+#[wasm_bindgen(js_name = Seqner)]
+pub struct SeqnerWrapper(pub(crate) Seqner);
 
-pub fn seqner_new_with_qb64(qb64: &str) -> Result<Seqner> {
-    Seqner::new_with_qb64(qb64)
-}
+#[wasm_bindgen(js_class = Seqner)]
+impl SeqnerWrapper {
+    #[wasm_bindgen(constructor)]
+    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<SeqnerWrapper, JsValue> {
+        Ok(SeqnerWrapper(Seqner::new_with_raw(raw, code.as_deref()).as_js()?))
+    }
 
-pub fn seqner_new_with_qb64b(qb64b: &[u8]) -> Result<Seqner> {
-    Seqner::new_with_qb64b(qb64b)
-}
+    #[wasm_bindgen(constructor)]
+    pub fn new_with_qb64(qb64: &str) -> Result<SeqnerWrapper, JsValue> {
+        Ok(SeqnerWrapper(Seqner::new_with_qb64(qb64).as_js()?))
+    }
 
-pub fn seqner_new_with_qb2(qb2: &[u8]) -> Result<Seqner> {
-    Seqner::new_with_qb2(qb2)
-}
+    #[wasm_bindgen(constructor)]
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<SeqnerWrapper, JsValue> {
+        Ok(SeqnerWrapper(Seqner::new_with_qb64b(qb64b).as_js()?))
+    }
 
-pub fn seqner_code(seqner: &Seqner) -> String {
-    seqner.code()
-}
+    #[wasm_bindgen(constructor)]
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<SeqnerWrapper, JsValue> {
+        Ok(SeqnerWrapper(Seqner::new_with_qb2(qb2).as_js()?))
+    }
 
-pub fn seqner_size(seqner: &Seqner) -> u32 {
-    seqner.size()
-}
+    #[wasm_bindgen(constructor)]
+    pub fn new_with_sn(sn: U128Wrapper) -> Result<SeqnerWrapper, JsValue> {
+        Ok(SeqnerWrapper(Seqner::new_with_sn(sn.into()).as_js()?))
+    }
 
-pub fn seqner_raw(seqner: &Seqner) -> Vec<u8> {
-    seqner.raw()
-}
+    #[wasm_bindgen(constructor)]
+    pub fn new_with_snh(snh: &str) -> Result<SeqnerWrapper, JsValue> {
+        Ok(SeqnerWrapper(Seqner::new_with_snh(snh).as_js()?))
+    }
 
-pub fn seqner_qb64(seqner: &Seqner) -> Result<String> {
-    seqner.qb64()
-}
+    pub fn sn(&self) -> Result<U128Wrapper, JsValue> {
+        Ok(self.0.sn().as_js()?.into())
+    }
 
-pub fn seqner_qb64b(seqner: &Seqner) -> Result<Vec<u8>> {
-    seqner.qb64b()
-}
+    pub fn snh(&self) -> Result<String, JsValue> {
+        Ok(self.0.snh().as_js()?)
+    }
 
-pub fn seqner_qb2(seqner: &Seqner) -> Result<Vec<u8>> {
-    seqner.qb2()
+    pub fn code(&self) -> String {
+        self.0.code()
+    }
+
+    pub fn size(&self) -> u32 {
+        self.0.size()
+    }
+
+    pub fn raw(&self) -> Vec<u8> {
+        self.0.raw()
+    }
+
+    pub fn qb64(&self) -> Result<String, JsValue> {
+        Ok(self.0.qb64().as_js()?)
+    }
+
+    pub fn qb64b(&self) -> Result<Vec<u8>, JsValue> {
+        Ok(self.0.qb64b().as_js()?)
+    }
+
+    pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
+        Ok(self.0.qb2().as_js()?)
+    }
 }
