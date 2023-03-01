@@ -5,10 +5,14 @@ authors = ["The wasm-bindgen Developers"]
 edition = "2018"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [features]
 tmp_dev = []
+
+[dev-dependencies.getrandom]
+version = '0.2'
+features = ['js']
 
 [dependencies.cesride_core]
 path = '..'
