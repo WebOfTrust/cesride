@@ -1,38 +1,55 @@
-use crate::error::Result;
-use crate::{Matter, Saider};
+use crate::error::*;
+use cesride_core::{Matter, Saider};
+use wasm_bindgen::prelude::*;
 
-pub fn saider_new_with_qb64(qb64: &str) -> Result<Saider> {
-    Saider::new_with_qb64(qb64)
-}
+#[wasm_bindgen(js_name = Saider)]
+pub struct SaiderWrapper(pub(crate) Saider);
 
-pub fn saider_new_with_qb64b(qb64b: &[u8]) -> Result<Saider> {
-    Saider::new_with_qb64b(qb64b)
-}
+#[wasm_bindgen(js_class = Saider)]
+impl SaiderWrapper {
+    // TODO: new_with_sad
 
-pub fn saider_new_with_qb2(qb2: &[u8]) -> Result<Saider> {
-    Saider::new_with_qb2(qb2)
-}
+    #[wasm_bindgen(constructor)]
+    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<SaiderWrapper, JsValue> {
+        Ok(SaiderWrapper(Saider::new_with_raw(raw, code.as_deref()).as_js()?))
+    }
 
-pub fn saider_code(saider: &Saider) -> String {
-    saider.code()
-}
+    #[wasm_bindgen(constructor)]
+    pub fn new_with_qb64(qb64: &str) -> Result<SaiderWrapper, JsValue> {
+        Ok(SaiderWrapper(Saider::new_with_qb64(qb64).as_js()?))
+    }
 
-pub fn saider_size(saider: &Saider) -> u32 {
-    saider.size()
-}
+    #[wasm_bindgen(constructor)]
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<SaiderWrapper, JsValue> {
+        Ok(SaiderWrapper(Saider::new_with_qb64b(qb64b).as_js()?))
+    }
 
-pub fn saider_raw(saider: &Saider) -> Vec<u8> {
-    saider.raw()
-}
+    #[wasm_bindgen(constructor)]
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<SaiderWrapper, JsValue> {
+        Ok(SaiderWrapper(Saider::new_with_qb2(qb2).as_js()?))
+    }
 
-pub fn saider_qb64(saider: &Saider) -> Result<String> {
-    saider.qb64()
-}
+    pub fn code(&self) -> String {
+        self.0.code()
+    }
 
-pub fn saider_qb64b(saider: &Saider) -> Result<Vec<u8>> {
-    saider.qb64b()
-}
+    pub fn size(&self) -> u32 {
+        self.0.size()
+    }
 
-pub fn saider_qb2(saider: &Saider) -> Result<Vec<u8>> {
-    saider.qb2()
+    pub fn raw(&self) -> Vec<u8> {
+        self.0.raw()
+    }
+
+    pub fn qb64(&self) -> Result<String, JsValue> {
+        Ok(self.0.qb64().as_js()?)
+    }
+
+    pub fn qb64b(&self) -> Result<Vec<u8>, JsValue> {
+        Ok(self.0.qb64b().as_js()?)
+    }
+
+    pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
+        Ok(self.0.qb2().as_js()?)
+    }
 }
