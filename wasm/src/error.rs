@@ -14,7 +14,7 @@ impl<T> JsResult<T> for CesrResult<T> {
     }
 }
 
-// Alows convertion of javascript error to CesrError
+// Allows conversion of javascript error to CesrError
 pub(crate) trait FromJsResult<T> {
     fn from_js(self) -> CesrResult<T>;
 }

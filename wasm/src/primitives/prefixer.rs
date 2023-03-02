@@ -1,4 +1,5 @@
 use crate::error::*;
+use cesride_core::Value;
 use cesride_core::{Matter, Prefixer};
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
@@ -8,20 +9,23 @@ pub struct PrefixerWrapper(pub(crate) Prefixer);
 
 #[wasm_bindgen(js_class = Prefixer)]
 impl PrefixerWrapper {
-    // TODO: Value for ked and array of strings for allows
     #[wasm_bindgen(constructor)]
     pub fn new(
-        _ked: Option<String>,
-        _allows: Option<Array>,
+        ked: Option<String>,
+        allows: Option<Array>,
         code: Option<String>,
         raw: Option<Vec<u8>>,
         qb64b: Option<Vec<u8>>,
         qb64: Option<String>,
         qb2: Option<Vec<u8>>,
     ) -> Result<PrefixerWrapper, JsValue> {
+        let allows = allows
+            .map(|a| a.iter().map(|v| v.as_string().unwrap_or_default()).collect::<Vec<String>>());
+        let allows = allows.as_deref().map(|a| a.iter().map(String::as_str).collect::<Vec<&str>>());
+        let allows = allows.as_deref();
         let prefixer = Prefixer::new(
-            None, //ked.as_deref(),
-            None, //allows.as_deref(),
+            ked.as_deref().map(Value::from).as_ref(),
+            allows,
             code.as_deref(),
             raw.as_deref(),
             qb64b.as_deref(),
@@ -32,10 +36,9 @@ impl PrefixerWrapper {
         Ok(PrefixerWrapper(prefixer))
     }
 
-    // TODO:
-    // pub fn verify(&self, ked: &Value, prefixed: Option<bool>) -> Result<bool, JsValue> {
-    //     self.0.verify(ked, prefixed).as_js().map_err(JsValue::from)
-    // }
+    pub fn verify(&self, ked: String, prefixed: Option<bool>) -> Result<bool, JsValue> {
+        self.0.verify(&Value::from(ked.as_str()), prefixed).as_js().map_err(JsValue::from)
+    }
 
     pub fn code(&self) -> String {
         self.0.code()

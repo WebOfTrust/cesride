@@ -32,7 +32,6 @@ impl SeqnerWrapper {
     }
 
     pub fn sn(&self) -> Result<U128Wrapper, JsValue> {
-        //Ok(self.0.sn().as_js()?.into())
         let sn = self.0.sn().as_js()?;
         Ok(sn.into())
     }
