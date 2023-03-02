@@ -12,6 +12,7 @@ pub use crate::{
         cigar::Cigar,
         counter::{tables as counter, Counter}, // This seems like it shoudl be an abstract class
         diger::Diger,
+        dater::Dater,
         indexer::{tables as indexer, Indexer},
         matter::{tables as matter, Matter},
         number::{tables as number, Number},
@@ -25,4 +26,5 @@ pub use crate::{
     },
     data::Value,
     error::Error,
+    error::Result,
 };

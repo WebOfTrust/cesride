@@ -25,7 +25,7 @@ impl<T> FromJsResult<T> for Result<T, JsValue> {
             // String was thrown
             if let Some(e) = e.dyn_ref::<JsString>() {
                 let msg = e.to_string();
-                return CesrError::General(msg.into()).into();
+                return CesrError::Conversion(msg.into()).into();
             }
 
             // Error instance was thrown
@@ -33,13 +33,13 @@ impl<T> FromJsResult<T> for Result<T, JsValue> {
                 let message = e.message().as_string().unwrap_or(format!("{:?}", e));
                 return match e.name().as_string().as_deref() {
                     Some("CesrErrorCommon") => CesrError::InvalidVarSize(message),
-                    Some(msg) => CesrError::General(msg.to_string()),
-                    _ => CesrError::General("Unknown error".to_string()),
+                    Some(msg) => CesrError::Conversion(msg.to_string()),
+                    _ => CesrError::Conversion("Unknown error".to_string()),
                 }
                 .into();
             }
 
-            CesrError::General("Unknown error".to_string()).into()
+            CesrError::Conversion("Unknown error".to_string()).into()
         })
     }
 }

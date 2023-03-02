@@ -1,12 +1,11 @@
-# Hello, World!
+# WASM FFI for CESRIDE
 
-[View documentation for this example online][dox] or [View compiled example
-online][compiled]
+You can build the FFI with
+```
+$ wasm-pack build
+```
 
-[compiled]: https://rustwasm.github.io/wasm-bindgen/exbuild/hello_world/
-[dox]: https://rustwasm.github.io/docs/wasm-bindgen/examples/hello-world.html
-
-You can build the example locally with:
+You can run an PoC test with
 
 ```
 $ npm run serve
