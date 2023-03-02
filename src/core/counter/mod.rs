@@ -312,7 +312,7 @@ impl Counter {
 
     pub fn qb2_size(&self) -> Result<u32> {
         let sizes = sizage(&self.code)?;
-        Ok(sizes.fs  * 3 / 4)
+        Ok(sizes.fs * 3 / 4)
     }
 }
 
