@@ -2,18 +2,22 @@ use crate::error::Result;
 use crate::ffi::primitives::CesrideMatterCodex;
 use crate::{Diger, Matter};
 
-pub fn diger_new(ser: Option<Vec<u8>>,
-                 code: Option<CesrideMatterCodex>,
-                 raw: Option<Vec<u8>>,
-                 qb64b: Option<Vec<u8>>,
-                 qb64: Option<String>,
-                 qb2: Option<Vec<u8>>) -> Result<Diger> {
-    Diger::new(ser.as_deref(),
-               code.as_ref().map(|code| code.code()),
-               raw.as_deref(),
-               qb64b.as_deref(),
-               qb64.as_deref(),
-               qb2.as_deref())
+pub fn diger_new(
+    ser: Option<Vec<u8>>,
+    code: Option<CesrideMatterCodex>,
+    raw: Option<Vec<u8>>,
+    qb64b: Option<Vec<u8>>,
+    qb64: Option<String>,
+    qb2: Option<Vec<u8>>,
+) -> Result<Diger> {
+    Diger::new(
+        ser.as_deref(),
+        code.as_ref().map(|code| code.code()),
+        raw.as_deref(),
+        qb64b.as_deref(),
+        qb64.as_deref(),
+        qb2.as_deref(),
+    )
 }
 
 pub fn diger_new_with_code_and_raw(code: &CesrideMatterCodex, raw: &[u8]) -> Result<Diger> {

@@ -163,6 +163,8 @@ dictionary Siger {
 };
 
 namespace cesride {
+    string Ed25519_Seed;
+
     [Throws=Error]
     Dater dater_new(string? dts, CesrideMatterCodex? code, sequence<u8>? raw, sequence<u8>? qb64b, string? qb64, sequence<u8>? qb2);
     [Throws=Error]
