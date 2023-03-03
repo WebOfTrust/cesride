@@ -485,9 +485,10 @@ pub trait Matter: Default {
     }
 
     fn raw_size(&self) -> Result<u32> {
+        let code = &self.code();
         let sizes = tables::sizage(&self.code())?;
         if sizes.fs != 0 {
-            Ok(sizes.fs)
+            return Err(Box::new(Error::NonFixedSizeCode(code.to_string())))
         } else {
             let cs = sizes.hs + sizes.ss;
             Ok(((sizes.fs - cs) * 3 / 4) - sizes.ls)
