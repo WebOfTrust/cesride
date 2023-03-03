@@ -304,7 +304,7 @@ impl Counter {
         Ok(())
     }
 
-    fn full_size(&self) -> Result<u32> {
+    pub fn full_size(&self) -> Result<u32> {
         Ok(tables::sizage(&self.code())?.fs)
     }
 }
