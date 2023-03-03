@@ -49,6 +49,16 @@ pub(crate) fn bardage(b: &[u8]) -> Result<u32> {
     }
 }
 
+pub fn qb64_size(code: &str) -> Result<u32> {
+    let sizes = sizage(code)?;
+    Ok(sizes.fs)
+}
+
+pub fn qb2_size(code: &str) -> Result<u32> {
+    let sizes = sizage(code)?;
+    Ok(sizes.fs * 3 / 4)
+}
+
 #[allow(non_snake_case)]
 #[allow(non_upper_case_globals)]
 pub mod Codex {
@@ -164,9 +174,20 @@ mod test {
         assert_eq!(code, value);
     }
 
+    #[rstest]
+    #[case(matter::Codex::ControllerIdxSigs, 4, 3)]
+    #[case(matter::Codex::BigAttachedMaterialQuadlets, 8, 6)]
+    #[case(matter::Codex::KERIProtocolStack, 8, 6)]
+    fn qb_size(#[case] code: &str, #[case] qb64_size: u32, #[case] qb2_size: u32) {
+        assert_eq!(matter::qb64_size(code).unwrap(), qb64_size);
+        assert_eq!(matter::qb2_size(code).unwrap(), qb2_size);
+    }
+
     #[test]
     fn unhappy_paths() {
         assert!(matter::sizage("CESR").is_err());
         assert!(matter::bardage(&[63, 0]).is_err());
+        assert!(matter::qb64_size("CESR").is_err());
+        assert!(matter::qb2_size("CESR").is_err());
     }
 }

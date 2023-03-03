@@ -155,6 +155,11 @@ pub(crate) fn bardage(b: u8) -> Result<u32> {
     }
 }
 
+pub fn raw_size(code: &str) -> Result<u32> {
+    let sizes = sizage(code)?;
+    Ok((sizes.fs - (sizes.hs + sizes.ss)) * 3 / 4)
+}
+
 #[cfg(test)]
 mod test {
     use crate::core::indexer::tables::{
@@ -362,5 +367,19 @@ mod test {
     #[test]
     fn unknown_bardage() {
         assert!(indexer::bardage(0x39).is_err());
+    }
+
+    #[rstest]
+    #[case(Codex::Ed25519, 64)]
+    #[case(Codex::Ed448, 114)]
+    #[case(Codex::Ed25519_Big, 64)]
+    #[case(Codex::Ed448_Big, 114)]
+    fn raw_size(#[case] code: &str, #[case] value: u32) {
+        assert_eq!(indexer::raw_size(code).unwrap(), value);
+    }
+
+    #[test]
+    fn unknown_code_size() {
+        assert!(indexer::raw_size("CESR").is_err());
     }
 }

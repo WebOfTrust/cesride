@@ -87,6 +87,16 @@ pub(crate) fn bardage(b: u8) -> Result<u32> {
     }
 }
 
+pub fn raw_size(code: &str) -> Result<u32> {
+    let sizes = sizage(code)?;
+    if sizes.fs == 0 {
+        Err(Box::new(Error::NonFixedSizeCode(code.to_string())))
+    } else {
+        let cs = sizes.hs + sizes.ss;
+        Ok(((sizes.fs - cs) * 3 / 4) - sizes.ls)
+    }
+}
+
 #[allow(non_snake_case)]
 #[allow(non_upper_case_globals)]
 pub mod Codex {
@@ -322,11 +332,21 @@ mod test {
         assert_eq!(code, value);
     }
 
+    #[rstest]
+    #[case(Codex::Ed25519_Seed, 32)]
+    #[case(Codex::Ed448_Seed, 56)]
+    #[case(Codex::TBD1, 2)]
+    fn raw_size(#[case] code: &str, #[case] value: u32) {
+        assert_eq!(matter::raw_size(code).unwrap(), value);
+    }
+
     #[test]
     fn unhappy_paths() {
         assert!(matter::hardage('-').is_err());
         assert!(matter::hardage('_').is_err());
         assert!(matter::hardage('#').is_err());
         assert!(matter::bardage(0x40).is_err());
+        assert!(matter::raw_size(Codex::StrB64_L0).is_err());
+        assert!(matter::raw_size("CESR").is_err());
     }
 }

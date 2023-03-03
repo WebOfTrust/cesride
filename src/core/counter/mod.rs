@@ -1,6 +1,5 @@
 pub mod tables;
 
-use self::tables::sizage;
 use crate::core::util;
 use crate::error::{err, Error, Result};
 
@@ -304,16 +303,6 @@ impl Counter {
 
         Ok(())
     }
-
-    pub fn qb64b_size(&self) -> Result<u32> {
-        let sizes = sizage(&self.code)?;
-        Ok(sizes.fs)
-    }
-
-    pub fn qb2_size(&self) -> Result<u32> {
-        let sizes = sizage(&self.code)?;
-        Ok(sizes.fs * 3 / 4)
-    }
 }
 
 impl Default for Counter {
@@ -356,16 +345,14 @@ mod test {
     }
 
     #[rstest]
-    #[case("-AAB", 1, "B", counter::Codex::ControllerIdxSigs, 3, 4)]
-    #[case("-AAF", 5, "F", counter::Codex::ControllerIdxSigs, 3, 4)]
-    #[case("-0VAAAQA", 1024, "QA", counter::Codex::BigAttachedMaterialQuadlets, 6, 8)]
+    #[case("-AAB", 1, "B", counter::Codex::ControllerIdxSigs)]
+    #[case("-AAF", 5, "F", counter::Codex::ControllerIdxSigs)]
+    #[case("-0VAAAQA", 1024, "QA", counter::Codex::BigAttachedMaterialQuadlets)]
     fn creation(
         #[case] qsc: &str,
         #[case] count: u32,
         #[case] count_b64: &str,
         #[case] code: &str,
-        #[case] qb2size: u32,
-        #[case] qb64size: u32,
     ) {
         let qscb = qsc.as_bytes();
         let qscb2 = b64_engine::URL_SAFE.decode(qsc).unwrap();
@@ -384,8 +371,6 @@ mod test {
         assert_eq!(counter1.count(), counter4.count());
         assert_eq!(counter1.code(), counter5.code());
         assert_eq!(counter1.count(), counter5.count());
-        assert_eq!(qb2size, counter1.qb2_size().unwrap());
-        assert_eq!(qb64size, counter1.qb64b_size().unwrap());
     }
 
     #[rstest]

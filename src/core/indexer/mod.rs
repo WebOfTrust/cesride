@@ -632,11 +632,6 @@ pub trait Indexer: Default {
 
         Ok(())
     }
-
-    fn raw_size(&self) -> Result<u32> {
-        let sizes = tables::sizage(&self.code())?;
-        Ok((sizes.fs - (sizes.hs + sizes.ss)) * 3 / 4)
-    }
 }
 
 #[cfg(test)]
@@ -806,7 +801,6 @@ mod test {
         assert_eq!(indexer.index(), control.index());
         assert_eq!(indexer.ondex(), control.ondex());
         assert_eq!(indexer.qb64().unwrap(), qb64);
-        assert_eq!(indexer.raw_size().unwrap(), 64);
     }
 
     #[test]
