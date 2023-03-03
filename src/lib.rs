@@ -11,8 +11,8 @@ pub use crate::{
     core::{
         cigar::Cigar,
         counter::{tables as counter, Counter}, // This seems like it shoudl be an abstract class
-        diger::Diger,
         dater::Dater,
+        diger::Diger,
         indexer::{tables as indexer, Indexer},
         matter::{tables as matter, Matter},
         number::{tables as number, Number},
