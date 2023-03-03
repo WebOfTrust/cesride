@@ -488,7 +488,7 @@ pub trait Matter: Default {
         let code = &self.code();
         let sizes = tables::sizage(&self.code())?;
         if sizes.fs == 0 {
-            return Err(Box::new(Error::NonFixedSizeCode(code.to_string())))
+            Err(Box::new(Error::NonFixedSizeCode(code.to_string())))
         } else {
             let cs = sizes.hs + sizes.ss;
             Ok(((sizes.fs - cs) * 3 / 4) - sizes.ls)
@@ -619,6 +619,7 @@ mod test {
         assert_eq!(m.raw, b"a".to_vec());
         assert_eq!(m.code, matter::Codex::X25519_Cipher_Seed);
         assert_eq!(m.size, 1);
+        assert_eq!(m.raw_size().unwrap(), 92)
     }
 
     #[rstest]
@@ -639,6 +640,7 @@ mod test {
         assert_eq!(matter.raw(), control.raw());
         assert_eq!(matter.size(), control.size());
         assert_eq!(matter.qb64().unwrap(), qb64);
+        assert_eq!(matter.raw_size().unwrap(), 32);
     }
 
     #[test]
@@ -653,6 +655,7 @@ mod test {
         .unwrap();
         assert_eq!(m.raw().len(), 4095 * 3 + 1);
         assert_eq!(m.code(), matter::Codex::Bytes_Big_L2);
+        assert!(m.raw_size().is_err());
     }
 
     #[test]

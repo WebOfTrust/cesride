@@ -787,7 +787,7 @@ mod test {
     }
 
     #[rstest]
-    fn exfil_infil_bexfil_binfil(
+    fn exfil_infil_bexfil_binfil_size(
         #[values("AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ")]
         qb64: &str,
         #[values(TestIndexer::new(None, None, None, None, None, Some(qb64), None).unwrap())]
@@ -806,6 +806,7 @@ mod test {
         assert_eq!(indexer.index(), control.index());
         assert_eq!(indexer.ondex(), control.ondex());
         assert_eq!(indexer.qb64().unwrap(), qb64);
+        assert_eq!(indexer.raw_size().unwrap(), 64);
     }
 
     #[test]
