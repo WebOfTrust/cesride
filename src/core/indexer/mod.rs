@@ -782,7 +782,7 @@ mod test {
     }
 
     #[rstest]
-    fn exfil_infil_bexfil_binfil_size(
+    fn exfil_infil_bexfil_binfil(
         #[values("AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ")]
         qb64: &str,
         #[values(TestIndexer::new(None, None, None, None, None, Some(qb64), None).unwrap())]
