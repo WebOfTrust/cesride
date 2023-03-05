@@ -2,6 +2,26 @@ use crate::core::matter::{tables as matter, Matter};
 use crate::crypto::hash;
 use crate::error::{err, Error, Result};
 
+/// ```rust
+/// use cesride::{matter, Matter, Diger};
+/// use std::error::Error;
+/// // here we simply print a qualified digest in base64 to stdout after hashing serialized data
+/// // hash digests underpin core concepts of the KERI ecosystem/
+///
+/// fn example() -> Result<(), Box<dyn Error>> {
+///     let data = b"abcdefg";
+///
+///     // derive the digest, opting this time to specify the algorithm
+///     let diger = Diger::new_with_ser(data, Some(matter::Codex::SHA3_512))?;
+///
+///     // output the digest
+///     println!("Blake3 256 digest: #{d}", d=diger.qb64()?);
+///
+///     Ok(())
+/// }
+///
+/// example().unwrap();
+/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Diger {
     raw: Vec<u8>,

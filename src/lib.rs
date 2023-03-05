@@ -10,6 +10,7 @@ mod error;
 pub use crate::{
     core::{
         cigar::Cigar,
+        common,
         counter::{tables as counter, Counter}, // This seems like it shoudl be an abstract class
         diger::Diger,
         indexer::{tables as indexer, Indexer},
