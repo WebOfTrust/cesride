@@ -25,8 +25,6 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "H" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
         "I" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
         "J" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
-        "K" => Sizage { hs: 1, ss: 0, fs: 76, ls: 0 },
-        "L" => Sizage { hs: 1, ss: 0, fs: 76, ls: 0 },
         "M" => Sizage { hs: 1, ss: 0, fs: 4, ls: 0 },
         "N" => Sizage { hs: 1, ss: 0, fs: 12, ls: 0 },
         "O" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
@@ -43,10 +41,12 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "1AAB" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
         "1AAC" => Sizage { hs: 4, ss: 0, fs: 80, ls: 0 },
         "1AAD" => Sizage { hs: 4, ss: 0, fs: 80, ls: 0 },
-        "1AAE" => Sizage { hs: 4, ss: 0, fs: 56, ls: 0 },
+        "1AAE" => Sizage { hs: 4, ss: 0, fs: 156, ls: 0 },
         "1AAF" => Sizage { hs: 4, ss: 0, fs: 8, ls: 0 },
         "1AAG" => Sizage { hs: 4, ss: 0, fs: 36, ls: 0 },
         "1AAH" => Sizage { hs: 4, ss: 0, fs: 100, ls: 0 },
+        "1AAI" => Sizage { hs: 4, ss: 0, fs: 80, ls: 0 },
+        "1AAJ" => Sizage { hs: 4, ss: 0, fs: 80, ls: 0 },
         "2AAA" => Sizage { hs: 4, ss: 0, fs: 8, ls: 1 },
         "3AAA" => Sizage { hs: 4, ss: 0, fs: 8, ls: 2 },
         "4A" => Sizage { hs: 2, ss: 2, fs: 0, ls: 0 },
@@ -110,8 +110,6 @@ pub mod Codex {
     pub const SHA3_256: &str = "H"; // SHA3 256 bit digest self-addressing derivation.
     pub const SHA2_256: &str = "I"; // SHA2 256 bit digest self-addressing derivation.
     pub const ECDSA_256k1_Seed: &str = "J"; // ECDSA secp256k1 256 bit random Seed for private key
-    pub const Ed448_Seed: &str = "K"; // Ed448 448 bit random Seed for private key
-    pub const X448: &str = "L"; // X448 public encryption key, converted from Ed448
     pub const Short: &str = "M"; // Short 2 byte b2 number
     pub const Big: &str = "N"; // Big 8 byte b2 number
     pub const X25519_Private: &str = "O"; // X25519 private decryption key converted from Ed25519
@@ -132,6 +130,8 @@ pub mod Codex {
     pub const Tern: &str = "1AAF"; // 3 byte b2 number or 4 char B64 str.
     pub const DateTime: &str = "1AAG"; // Base64 custom encoded 32 char ISO-8601 DateTime
     pub const X25519_Cipher_Salt: &str = "1AAH"; // X25519 100 char b64 Cipher of 24 char qb64 Salt
+    pub const Ed448_Seed: &str = "1AAI"; // Ed448 448 bit random Seed for private key
+    pub const X448: &str = "1AAJ"; // X448 public encryption key, converted from Ed448
     pub const TBD1: &str = "2AAA"; // Testing purposes only fixed with lead size 1
     pub const TBD2: &str = "3AAA"; // Testing purposes only of fixed with lead size 2
     pub const StrB64_L0: &str = "4A"; // String Base64 Only Lead Size 0 (4095 * 3 | 4)
@@ -164,8 +164,6 @@ mod test {
     #[case("H", 1, 0, 44, 0)]
     #[case("I", 1, 0, 44, 0)]
     #[case("J", 1, 0, 44, 0)]
-    #[case("K", 1, 0, 76, 0)]
-    #[case("L", 1, 0, 76, 0)]
     #[case("M", 1, 0, 4, 0)]
     #[case("N", 1, 0, 12, 0)]
     #[case("O", 1, 0, 44, 0)]
@@ -182,10 +180,12 @@ mod test {
     #[case("1AAB", 4, 0, 48, 0)]
     #[case("1AAC", 4, 0, 80, 0)]
     #[case("1AAD", 4, 0, 80, 0)]
-    #[case("1AAE", 4, 0, 56, 0)]
+    #[case("1AAE", 4, 0, 156, 0)]
     #[case("1AAF", 4, 0, 8, 0)]
     #[case("1AAG", 4, 0, 36, 0)]
     #[case("1AAH", 4, 0, 100, 0)]
+    #[case("1AAI", 4, 0, 80, 0)]
+    #[case("1AAJ", 4, 0, 80, 0)]
     #[case("2AAA", 4, 0, 8, 1)]
     #[case("3AAA", 4, 0, 8, 2)]
     #[case("4A", 2, 2, 0, 0)]
@@ -292,8 +292,6 @@ mod test {
     #[case(Codex::SHA3_256, "H")]
     #[case(Codex::SHA2_256, "I")]
     #[case(Codex::ECDSA_256k1_Seed, "J")]
-    #[case(Codex::Ed448_Seed, "K")]
-    #[case(Codex::X448, "L")]
     #[case(Codex::Short, "M")]
     #[case(Codex::Big, "N")]
     #[case(Codex::X25519_Private, "O")]
@@ -314,6 +312,8 @@ mod test {
     #[case(Codex::Tern, "1AAF")]
     #[case(Codex::DateTime, "1AAG")]
     #[case(Codex::X25519_Cipher_Salt, "1AAH")]
+    #[case(Codex::Ed448_Seed, "1AAI")]
+    #[case(Codex::X448, "1AAJ")]
     #[case(Codex::TBD1, "2AAA")]
     #[case(Codex::TBD2, "3AAA")]
     #[case(Codex::StrB64_L0, "4A")]
