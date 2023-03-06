@@ -20,6 +20,7 @@ pub use crate::{
         prefixer::Prefixer,
         sadder::Sadder,
         saider::Saider,
+        salter::Salter,
         seqner::Seqner,
         serder::Serder,
         siger::Siger,
