@@ -27,7 +27,7 @@ pub struct Serder {
 
 fn validate_ident(ident: &str) -> Result<()> {
     if ident != Identage::KERI {
-        return err!(Error::Validation(format!("unexpected ident {}", ident)));
+        return err!(Error::Validation(format!("unexpected ident {ident}")));
     }
 
     Ok(())
