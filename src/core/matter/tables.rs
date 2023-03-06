@@ -87,6 +87,16 @@ pub(crate) fn bardage(b: u8) -> Result<u32> {
     }
 }
 
+pub(crate) fn raw_size(code: &str) -> Result<u32> {
+    let szg = sizage(code)?;
+    if szg.fs == 0 {
+        return err!(Error::UnexpectedCode(format!("cannot determine raw size for code={code}")));
+    }
+
+    let cs = szg.hs + szg.ss;
+    Ok((szg.fs - cs) * 3 / 4 - szg.ls)
+}
+
 #[allow(non_snake_case)]
 #[allow(non_upper_case_globals)]
 pub mod Codex {
@@ -323,10 +333,16 @@ mod test {
     }
 
     #[test]
+    fn raw_size() {
+        assert_eq!(matter::raw_size(matter::Codex::Ed25519).unwrap(), 32);
+    }
+
+    #[test]
     fn unhappy_paths() {
         assert!(matter::hardage('-').is_err());
         assert!(matter::hardage('_').is_err());
         assert!(matter::hardage('#').is_err());
         assert!(matter::bardage(0x40).is_err());
+        assert!(matter::raw_size(matter::Codex::Bytes_L0).is_err());
     }
 }

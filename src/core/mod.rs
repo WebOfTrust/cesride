@@ -10,6 +10,7 @@ pub mod number;
 pub mod prefixer;
 pub mod sadder;
 pub mod saider;
+pub mod salter;
 pub mod seqner;
 pub mod serder;
 pub mod siger;

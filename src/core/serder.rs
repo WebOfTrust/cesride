@@ -48,6 +48,10 @@ impl Serder {
         Ok(serder)
     }
 
+    pub fn new_with_ked(ked: &Value, code: Option<&str>, kind: Option<&str>) -> Result<Self> {
+        Self::new(code, None, kind, Some(ked), None)
+    }
+
     pub fn verfers(&self) -> Result<Vec<Verfer>> {
         let mut result: Vec<Verfer> = Vec::new();
         let map = self.ked.to_map()?;
@@ -266,7 +270,7 @@ impl Sadder for Serder {
 }
 
 #[cfg(test)]
-mod test {
+pub(crate) mod test {
     use crate::{
         core::{
             common::{
@@ -542,7 +546,7 @@ mod test {
         assert!(Serder::new(None, None, None, Some(&ked), None).is_err());
     }
 
-    mod traiter {
+    pub(crate) mod traiter {
         #[allow(non_upper_case_globals)]
         #[allow(non_snake_case)]
         mod Codex {
@@ -556,7 +560,7 @@ mod test {
 
     // this function uses convenience methods unlike most test code. it is likely that it will
     // be extracted and used elsewhere - and convenience methods make sense outside the tests.
-    fn incept(
+    pub(crate) fn incept(
         keys: &[&str],          // current keys qb64
         sith: Option<&Value>,   // current signing threshold
         ndigs: Option<&[&str]>, // next keys qb64

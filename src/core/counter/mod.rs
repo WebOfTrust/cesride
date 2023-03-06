@@ -108,7 +108,7 @@ impl Counter {
         Counter::sem_ver_parts_to_b64(parts)
     }
 
-    fn new_with_code_and_count(code: &str, count: u32) -> Result<Self> {
+    pub fn new_with_code_and_count(code: &str, count: u32) -> Result<Self> {
         if code.is_empty() {
             return err!(Error::EmptyMaterial("empty code".to_string()));
         }
@@ -133,13 +133,13 @@ impl Counter {
         Ok(Counter { code: code.to_string(), count })
     }
 
-    fn new_with_qb64(qb64: &str) -> Result<Self> {
+    pub fn new_with_qb64(qb64: &str) -> Result<Self> {
         let mut counter: Counter = Default::default();
         counter.exfil(qb64)?;
         Ok(counter)
     }
 
-    fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
         let qb64 = String::from_utf8(qb64b.to_vec())?;
 
         let mut counter: Counter = Default::default();
@@ -147,11 +147,12 @@ impl Counter {
         Ok(counter)
     }
 
-    fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
         let mut counter: Counter = Default::default();
         counter.bexfil(qb2)?;
         Ok(counter)
     }
+
     fn sem_ver_parts_to_b64(parts: &[u8]) -> Result<String> {
         for p in parts.iter().copied() {
             if p > 63 {

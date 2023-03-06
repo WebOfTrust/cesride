@@ -46,16 +46,7 @@ pub mod tables {
 }
 
 fn validate_code(code: &str) -> Result<()> {
-    const CODES: &[&str] = &[
-        matter::Codex::StrB64_L0,
-        matter::Codex::StrB64_L1,
-        matter::Codex::StrB64_L2,
-        matter::Codex::StrB64_Big_L0,
-        matter::Codex::StrB64_Big_L1,
-        matter::Codex::StrB64_Big_L2,
-    ];
-
-    if !CODES.contains(&code) {
+    if !tables::Codex::has_code(code) {
         return err!(Error::UnexpectedCode(code.to_string()));
     }
 

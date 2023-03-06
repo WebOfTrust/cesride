@@ -71,6 +71,15 @@ pub(crate) mod Ilkage {
 
 #[allow(non_snake_case)]
 #[allow(non_upper_case_globals)]
+pub mod Tierage {
+    pub(crate) const min: &str = "min";
+    pub const low: &str = "low";
+    pub const med: &str = "med";
+    pub const high: &str = "high";
+}
+
+#[allow(non_snake_case)]
+#[allow(non_upper_case_globals)]
 pub(crate) mod Ids {
     pub const dollar: &str = "$id";
     pub const at: &str = "@id";
