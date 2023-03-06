@@ -632,6 +632,16 @@ pub trait Indexer: Default {
 
         Ok(())
     }
+
+    fn full_size(&self) -> Result<u32> {
+        let sizage = tables::sizage(&self.code())?;
+        if sizage.fs != 0 {
+            Ok(sizage.fs)
+        } else {
+            let cs = sizage.hs + sizage.ss;
+            Ok(self.index() * 4 + cs)
+        }
+    }
 }
 
 #[cfg(test)]
@@ -1012,5 +1022,17 @@ mod test {
             .decode("1zAA_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
             .unwrap();
         assert!(TestIndexer::new(None, None, None, None, None, None, Some(&qb2),).is_err());
+    }
+
+    #[rstest]
+    #[case(indexer::Codex::Ed25519, 88)]
+    #[case(indexer::Codex::Ed448, 156)]
+    #[case(indexer::Codex::Ed25519_Big, 92)]
+    #[case(indexer::Codex::Ed448_Big, 160)]
+    fn raw_size(#[case] code: &str, #[case] full_size: u32) {
+        let raw = (0..full_size as usize - code.len()).map(|_| "A").collect::<String>();
+        let qb64 = [code, &raw].join("");
+        let indexer = TestIndexer::new(None, None, None, None, None, Some(&qb64), None).unwrap();
+        assert_eq!(indexer.full_size().unwrap(), full_size);
     }
 }

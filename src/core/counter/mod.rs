@@ -303,6 +303,10 @@ impl Counter {
 
         Ok(())
     }
+
+    pub fn full_size(&self) -> Result<u32> {
+        Ok(tables::sizage(&self.code())?.fs)
+    }
 }
 
 impl Default for Counter {
@@ -528,5 +532,15 @@ mod test {
         let c = Counter { code: code.to_string(), count };
         let qb64b = c.qb64b().unwrap();
         assert!(Counter::new(None, None, None, Some(&qb64b), None, None).is_ok());
+    }
+
+    #[rstest]
+    #[case("-AAB", counter::Codex::ControllerIdxSigs, 4)]
+    #[case("-0VAAAQA", counter::Codex::BigAttachedMaterialQuadlets, 8)]
+    #[case("--AAAAAA", counter::Codex::KERIProtocolStack, 8)]
+    fn qb_size(#[case] qsc: &str, #[case] code: &str, #[case] full_size: u32) {
+        let counter = Counter::new(None, None, None, None, Some(qsc), None).unwrap();
+        assert_eq!(counter.code(), code); // Just a self-check of the input data
+        assert_eq!(counter.full_size().unwrap(), full_size);
     }
 }
