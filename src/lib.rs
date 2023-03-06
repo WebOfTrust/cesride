@@ -9,6 +9,7 @@ mod error;
 
 pub use crate::{
     core::{
+        bexter::Bexter,
         cigar::Cigar,
         counter::{tables as counter, Counter}, // This seems like it shoudl be an abstract class
         dater::Dater,
@@ -20,8 +21,10 @@ pub use crate::{
         sadder::Sadder,
         saider::Saider,
         seqner::Seqner,
+        serder::Serder,
         siger::Siger,
         signer::Signer,
+        tholder::Tholder,
         verfer::Verfer,
     },
     data::Value,

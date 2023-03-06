@@ -17,6 +17,7 @@ ed25519-dalek = "~1"
 indexmap = "~1"
 k256 = "~0.12"
 lazy_static = "~1"
+num-rational = "~0.4"
 rand = "0.7.0" # this needs pinning for one of the seeding pieces of a signing suite
 rand_core = "~0.6"
 regex = "~1"
