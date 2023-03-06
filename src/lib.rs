@@ -11,6 +11,7 @@ pub use crate::{
     core::{
         bexter::Bexter,
         cigar::Cigar,
+        common,
         counter::{tables as counter, Counter}, // This seems like it shoudl be an abstract class
         dater::Dater,
         diger::Diger,
