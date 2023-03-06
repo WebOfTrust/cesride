@@ -1,6 +1,10 @@
 [package]
 name = "cesride"
+<<<<<<< Updated upstream
 version = "0.2.0-alpha"
+=======
+version = "0.2.2"
+>>>>>>> Stashed changes
 edition = "2021"
 description = "Cryptographic primitives for use with Composable Event Streaming Representation (CESR)"
 license = "Apache-2.0"
