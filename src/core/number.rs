@@ -18,6 +18,11 @@ pub mod tables {
         pub const Long: &str = matter::Codex::Long; // Long 4 octet unsigned integer
         pub const Big: &str = matter::Codex::Big; // Big 8 byte octet unsigned integer
         pub const Huge: &str = matter::Codex::Salt_128; // Huge 16 byte octet unsigned integer
+
+        pub fn has_code(code: &str) -> bool {
+            const CODES: &[&str] = &[Short, Long, Big, Huge];
+            CODES.contains(&code)
+        }
     }
 }
 
@@ -28,10 +33,7 @@ impl Default for Number {
 }
 
 fn validate_code(code: &str) -> Result<()> {
-    const CODES: &[&str] =
-        &[tables::Codex::Short, tables::Codex::Long, tables::Codex::Big, tables::Codex::Huge];
-
-    if !CODES.contains(&code) {
+    if !tables::Codex::has_code(code) {
         return err!(Error::UnexpectedCode(code.to_string()));
     }
 
