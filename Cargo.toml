@@ -28,6 +28,6 @@ sha3 = "~0.10"
 thiserror = "~1"
 
 [dev-dependencies]
-hex-literal = "*"
-hex = "*"
-rstest = "*"
+hex-literal = "0.3.4"
+hex = "0.4.3"
+rstest = "0.16.0"
