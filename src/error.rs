@@ -45,6 +45,8 @@ pub enum Error {
     Prepad(),
     #[error("non-zeroed prepad bits")]
     NonZeroedPrepad(),
+    #[error("Non-fixed raw size code: {0}")]
+    NonFixedSizeCode(String),
     #[error("non-zeroed lead byte")]
     NonZeroedLeadByte(),
     #[error("non-zeroed lead bytes")]

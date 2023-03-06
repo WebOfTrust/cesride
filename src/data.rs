@@ -50,28 +50,62 @@ pub enum Value {
 
 impl Value {
     pub fn to_bool(&self) -> Result<bool> {
-        bool::try_from(self)
+        match self {
+            Self::Boolean(boolean) => Ok(*boolean),
+            _ => err!(CESRError::Conversion("cannot convert to boolean".to_string())),
+        }
     }
 
     #[allow(clippy::inherent_to_string_shadow_display)]
     pub fn to_string(&self) -> Result<String> {
-        String::try_from(self)
+        match self {
+            Self::String(string) => Ok(string.clone()),
+            _ => err!(CESRError::Conversion("cannot convert to string".to_string())),
+        }
     }
 
     pub fn to_i64(&self) -> Result<i64> {
-        i64::try_from(self)
+        match self {
+            Self::Number(number) => {
+                if number.float {
+                    return err!(CESRError::Conversion(
+                        "cannot convert float to integer".to_string()
+                    ));
+                }
+
+                Ok(number.i)
+            }
+            _ => err!(CESRError::Conversion("cannot convert to integer".to_string())),
+        }
     }
 
     pub fn to_f64(&self) -> Result<f64> {
-        f64::try_from(self)
+        match self {
+            Self::Number(number) => {
+                if !number.float {
+                    return err!(CESRError::Conversion(
+                        "cannot convert integer to float".to_string()
+                    ));
+                }
+
+                Ok(number.f)
+            }
+            _ => err!(CESRError::Conversion("cannot convert to float".to_string())),
+        }
     }
 
     pub fn to_vec(&self) -> Result<Vec<Value>> {
-        Vec::try_from(self)
+        match self {
+            Self::Array(array) => Ok(array.clone()),
+            _ => err!(CESRError::Conversion("cannot convert to vec".to_string())),
+        }
     }
 
     pub fn to_map(&self) -> Result<IndexMap<String, Value>> {
-        IndexMap::try_from(self)
+        match self {
+            Self::Object(map) => Ok(map.clone()),
+            _ => err!(CESRError::Conversion("cannot convert to map".to_string())),
+        }
     }
 }
 
@@ -587,6 +621,7 @@ pub use data;
 #[cfg(test)]
 mod test {
     use crate::data::{data, Data, Value};
+    use indexmap::IndexMap;
 
     #[test]
     fn macros() {
@@ -667,11 +702,36 @@ mod test {
         assert!(d["hash map"].to_f64().is_err());
         assert!(d["f32"].to_vec().is_err());
         assert!(d["f32"].to_map().is_err());
-        assert!(d["f64"].to_i64().is_ok());
-        assert!(d["i64"].to_f64().is_ok());
+        assert!(d["f64"].to_i64().is_err());
+        assert!(d["i64"].to_f64().is_err());
 
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         let d2 = Value::from(&v);
         assert_eq!(json, d2.to_json().unwrap());
+    }
+
+    #[test]
+    fn try_from() {
+        let string = data!("string");
+        let boolean = data!(false);
+        let int64 = data!(3);
+        let float64 = data!(6.7);
+        let vector = data!([]);
+        let map = data!({});
+
+        assert!(String::try_from(&string).is_ok());
+        assert!(String::try_from(&boolean).is_err());
+        assert!(bool::try_from(&boolean).is_ok());
+        assert!(bool::try_from(&string).is_err());
+        assert!(i64::try_from(&int64).is_ok());
+        assert!(i64::try_from(&float64).is_ok());
+        assert!(i64::try_from(&string).is_err());
+        assert!(f64::try_from(&float64).is_ok());
+        assert!(f64::try_from(&int64).is_ok());
+        assert!(f64::try_from(&string).is_err());
+        assert!(Vec::try_from(&vector).is_ok());
+        assert!(Vec::try_from(&string).is_err());
+        assert!(IndexMap::try_from(&map).is_ok());
+        assert!(IndexMap::try_from(&string).is_err());
     }
 }
