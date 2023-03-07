@@ -132,45 +132,23 @@ impl SaiderWrapper {
         Ok(SaiderWrapper(saider))
     }
 
-    pub fn new_with_raw(
-        raw: &[u8],
-        code: Option<String>,
-    ) -> Result<SaiderWrapper, JsValue> {
-        let saider = Saider::new_with_raw(
-            raw,
-            code.as_deref(),
-        )
-        .as_js()?;
+    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<SaiderWrapper, JsValue> {
+        let saider = Saider::new_with_raw(raw, code.as_deref()).as_js()?;
         Ok(SaiderWrapper(saider))
     }
 
-    pub fn new_with_qb64b(
-        qb64b: &[u8],
-    ) -> Result<SaiderWrapper, JsValue> {
-        let saider = Saider::new_with_qb64b(
-            qb64b,
-        )
-        .as_js()?;
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<SaiderWrapper, JsValue> {
+        let saider = Saider::new_with_qb64b(qb64b).as_js()?;
         Ok(SaiderWrapper(saider))
     }
 
-    pub fn new_with_qb64(
-        qb64: &str,
-    ) -> Result<SaiderWrapper, JsValue> {
-        let saider = Saider::new_with_qb64(
-            qb64,
-        )
-        .as_js()?;
+    pub fn new_with_qb64(qb64: &str) -> Result<SaiderWrapper, JsValue> {
+        let saider = Saider::new_with_qb64(qb64).as_js()?;
         Ok(SaiderWrapper(saider))
     }
 
-    pub fn new_with_qb2(
-        qb2: &[u8],
-    ) -> Result<SaiderWrapper, JsValue> {
-        let saider = Saider::new_with_qb2(
-            qb2,
-        )
-        .as_js()?;
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<SaiderWrapper, JsValue> {
+        let saider = Saider::new_with_qb2(qb2).as_js()?;
         Ok(SaiderWrapper(saider))
     }
 

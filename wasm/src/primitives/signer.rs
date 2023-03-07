@@ -33,42 +33,22 @@ impl SignerWrapper {
         transferable: Option<bool>,
         code: Option<String>,
     ) -> Result<SignerWrapper, JsValue> {
-        let signer = Signer::new_with_raw(
-            raw,
-            transferable,
-            code.as_deref(),
-        )
-        .as_js()?;
+        let signer = Signer::new_with_raw(raw, transferable, code.as_deref()).as_js()?;
         Ok(SignerWrapper(signer))
     }
 
-    pub fn new_with_qb64b(
-        qb64b: &[u8],
-    ) -> Result<SignerWrapper, JsValue> {
-        let signer = Signer::new_with_qb64b(
-            qb64b,
-        )
-        .as_js()?;
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<SignerWrapper, JsValue> {
+        let signer = Signer::new_with_qb64b(qb64b).as_js()?;
         Ok(SignerWrapper(signer))
     }
 
-    pub fn new_with_qb64(
-        qb64: &str,
-    ) -> Result<SignerWrapper, JsValue> {
-        let signer = Signer::new_with_qb64(
-            qb64,
-        )
-        .as_js()?;
+    pub fn new_with_qb64(qb64: &str) -> Result<SignerWrapper, JsValue> {
+        let signer = Signer::new_with_qb64(qb64).as_js()?;
         Ok(SignerWrapper(signer))
     }
 
-    pub fn new_with_qb2(
-        qb2: &[u8],
-    ) -> Result<SignerWrapper, JsValue> {
-        let signer = Signer::new_with_qb2(
-            qb2,
-        )
-        .as_js()?;
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<SignerWrapper, JsValue> {
+        let signer = Signer::new_with_qb2(qb2).as_js()?;
         Ok(SignerWrapper(signer))
     }
 

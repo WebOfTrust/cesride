@@ -28,7 +28,7 @@ impl CigarWrapper {
         Ok(CigarWrapper(cigar))
     }
 
-        pub fn new_with_raw(
+    pub fn new_with_raw(
         raw: &[u8],
         verfer: Option<VerferWrapper>,
         code: Option<String>,

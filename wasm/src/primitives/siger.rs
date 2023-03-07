@@ -39,14 +39,8 @@ impl SigerWrapper {
         ondex: Option<u32>,
         code: Option<String>,
     ) -> Result<SigerWrapper, JsValue> {
-        let siger = Siger::new_with_raw(
-            raw,
-            verfer.as_deref(),
-            index,
-            ondex,
-            code.as_deref(),
-        )
-        .as_js()?;
+        let siger =
+            Siger::new_with_raw(raw, verfer.as_deref(), index, ondex, code.as_deref()).as_js()?;
         Ok(SigerWrapper(siger))
     }
 
@@ -54,11 +48,7 @@ impl SigerWrapper {
         qb64b: &[u8],
         verfer: Option<VerferWrapper>,
     ) -> Result<SigerWrapper, JsValue> {
-        let siger = Siger::new_with_qb64b(
-            qb64b,
-            verfer.as_deref(),
-        )
-        .as_js()?;
+        let siger = Siger::new_with_qb64b(qb64b, verfer.as_deref()).as_js()?;
         Ok(SigerWrapper(siger))
     }
 
@@ -66,11 +56,7 @@ impl SigerWrapper {
         qb64: &str,
         verfer: Option<VerferWrapper>,
     ) -> Result<SigerWrapper, JsValue> {
-        let siger = Siger::new_with_qb64(
-            qb64,
-            verfer.as_deref(),
-        )
-        .as_js()?;
+        let siger = Siger::new_with_qb64(qb64, verfer.as_deref()).as_js()?;
         Ok(SigerWrapper(siger))
     }
 
@@ -78,11 +64,7 @@ impl SigerWrapper {
         qb2: &[u8],
         verfer: Option<VerferWrapper>,
     ) -> Result<SigerWrapper, JsValue> {
-        let siger = Siger::new_with_qb2(
-            qb2,
-            verfer.as_deref(),
-        )
-        .as_js()?;
+        let siger = Siger::new_with_qb2(qb2, verfer.as_deref()).as_js()?;
         Ok(SigerWrapper(siger))
     }
 
