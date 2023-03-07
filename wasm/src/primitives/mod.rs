@@ -1,3 +1,4 @@
+pub mod bexter;
 pub mod cigar;
 pub mod codex;
 pub mod dater;
@@ -10,6 +11,7 @@ pub mod siger;
 pub mod signer;
 pub mod verfer;
 
+pub use bexter::*;
 pub use cigar::*;
 pub use codex::*;
 pub use dater::*;
