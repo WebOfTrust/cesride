@@ -8,6 +8,7 @@ pub struct SigerWrapper(pub(crate) Siger);
 #[wasm_bindgen(js_class = Siger)]
 impl SigerWrapper {
     #[wasm_bindgen(constructor)]
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         verfer: Option<VerferWrapper>,
         index: Option<u32>,

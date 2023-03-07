@@ -26,8 +26,8 @@ impl SaidifyRet {
 
 #[wasm_bindgen(js_class = Saider)]
 impl SaiderWrapper {
-    // TODO: Value for sad, string array for ignore
     #[wasm_bindgen(constructor)]
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         sad: Option<String>,
         label: Option<String>,

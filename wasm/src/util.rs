@@ -12,8 +12,8 @@ impl From<u128> for U128Wrapper {
     }
 }
 
-impl Into<u128> for U128Wrapper {
-    fn into(self) -> u128 {
-        u128::from(self.high) | u128::from(self.low)
+impl From<U128Wrapper> for u128 {
+    fn from(val: U128Wrapper) -> Self {
+        u128::from(val.high) | u128::from(val.low)
     }
 }
