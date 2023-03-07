@@ -1,4 +1,5 @@
 use base64::{engine::general_purpose as b64_engine, Engine};
+use zeroize::{Zeroize, Zeroizing};
 
 use crate::core::util;
 use crate::error::{err, Error, Result};
@@ -94,16 +95,7 @@ pub trait Matter: Default {
 
                 rize
             } else {
-                let szg = tables::sizage(&code)?;
-                if szg.fs == 0 {
-                    // unreachable
-                    // programmer error, variable length sizages should be the only ones with fs == 0
-                    return err!(Error::InvalidVarSize(format!(
-                        "unsupported variable size: code = '{code}'",
-                    )));
-                }
-                let cs = szg.hs + szg.ss;
-                ((szg.fs - cs) * 3 / 4) - szg.ls
+                tables::raw_size(&code)?
             };
 
         if raw.len() < rize as usize {
@@ -170,7 +162,7 @@ pub trait Matter: Default {
         let ps = (3 - raw.len() % 3) % 3;
         let szg = tables::sizage(code)?;
 
-        if szg.fs == 0 {
+        if szg.fs == u32::MAX {
             let cs = szg.hs + szg.ss;
             if cs % 4 != 0 {
                 // unreachable
@@ -197,11 +189,11 @@ pub trait Matter: Default {
                 )));
             }
 
-            for _ in 0..szg.ls {
-                raw.insert(0, 0);
-            }
+            let mut buffer = Zeroizing::new(vec![0u8; raw.len() + szg.ls as usize]);
+            buffer[szg.ls as usize..].clone_from_slice(&raw);
+            raw.zeroize();
 
-            let b64 = b64_engine::URL_SAFE.encode(raw);
+            let b64 = b64_engine::URL_SAFE.encode(&buffer);
 
             Ok(format!("{both}{b64}"))
         } else {
@@ -214,11 +206,11 @@ pub trait Matter: Default {
                 )));
             }
 
-            for _ in 0..ps {
-                raw.insert(0, 0);
-            }
+            let mut buffer = Zeroizing::new(vec![0u8; raw.len() + ps]);
+            buffer[ps..].clone_from_slice(&raw);
+            raw.zeroize();
 
-            let b64 = b64_engine::URL_SAFE.encode(raw);
+            let b64 = b64_engine::URL_SAFE.encode(&buffer);
 
             Ok(format!("{both}{}", &b64[cs % 4..]))
         }
@@ -229,12 +221,11 @@ pub trait Matter: Default {
         let size = self.size();
         let mut raw = self.raw();
 
-        let mut szg = tables::sizage(code)?;
+        let szg = tables::sizage(code)?;
         let cs = szg.hs + szg.ss;
 
-        let both: &str;
         let temp: String;
-        if szg.fs == 0 {
+        let (fs, both) = if szg.fs == u32::MAX {
             if cs % 4 != 0 {
                 // unreachable
                 // programmer error - sizages should not permit this
@@ -251,11 +242,10 @@ pub trait Matter: Default {
             }
 
             temp = format!("{code}{}", util::u32_to_b64(size, szg.ss as usize)?);
-            both = &temp;
-            szg.fs = cs + (size * 4)
+            (cs + (size * 4), &temp)
         } else {
-            both = code;
-        }
+            (szg.fs, code)
+        };
 
         if both.len() != cs as usize {
             // unreachable
@@ -269,32 +259,32 @@ pub trait Matter: Default {
         let n = ((cs + 1) * 3) / 4;
 
         // bcode
-        let mut full: Vec<u8>;
-        if n <= tables::SMALL_VRZ_BYTES {
-            full = (util::b64_to_u32(both)? << (2 * (cs % 4))).to_be_bytes().to_vec();
+        let full = if n <= tables::SMALL_VRZ_BYTES {
+            (util::b64_to_u32(both)? << (2 * (cs % 4))).to_be_bytes().to_vec()
         } else if n <= tables::LARGE_VRZ_BYTES {
-            full = (util::b64_to_u64(both)? << (2 * (cs % 4))).to_be_bytes().to_vec();
+            (util::b64_to_u64(both)? << (2 * (cs % 4))).to_be_bytes().to_vec()
         } else {
             // unreachable
             // programmer error - sizages will not permit cs > 8, thus:
             // (8 + 1) * 3 / 4 == 6, which is <= 6, always.
             return err!(Error::InvalidCodeSize(format!("unsupported code size: cs = {cs}",)));
-        }
-        // unpad code
-        full.drain(0..full.len() - n as usize);
-        // pad lead
-        full.resize(full.len() + szg.ls as usize, 0);
-        full.append(&mut raw);
+        };
 
-        let bfs = full.len();
-        if bfs % 3 != 0 || (bfs * 4 / 3) != szg.fs as usize {
+        let mut buffer = vec![0u8; raw.len() + (szg.ls + n) as usize];
+        // code + pad + raw
+        buffer[..(n as usize)].copy_from_slice(&full[(full.len() - n as usize)..full.len()]);
+        buffer[((n + szg.ls) as usize)..].copy_from_slice(&raw);
+
+        let bfs = buffer.len();
+        if bfs % 3 != 0 || (bfs * 4 / 3) != fs as usize {
             return err!(Error::InvalidCodeSize(format!(
                 "invalid code for raw size: code = '{both}', raw size = {}",
                 raw.len()
             )));
         }
 
-        Ok(full)
+        raw.zeroize();
+        Ok(buffer)
     }
 
     fn exfil(&mut self, qb64: &str) -> Result<()> {
@@ -315,11 +305,10 @@ pub trait Matter: Default {
 
         // bounds already checked
         let hard = &qb64[..hs];
-        let mut szg = tables::sizage(hard)?;
+        let szg = tables::sizage(hard)?;
         let cs = szg.hs + szg.ss;
 
-        let mut size: u32 = 0;
-        if szg.fs == 0 {
+        let (fs, size) = if szg.fs == u32::MAX {
             if cs % 4 != 0 {
                 // unreachable
                 // programmer error - cs is computed from sizages, code has been validated
@@ -335,30 +324,30 @@ pub trait Matter: Default {
                 )));
             }
             let soft = &qb64[szg.hs as usize..cs as usize];
-            size = util::b64_to_u32(soft)?;
-            szg.fs = (size * 4) + cs;
-        }
+            let size = util::b64_to_u32(soft)?;
+            ((size * 4) + cs, size)
+        } else {
+            (szg.fs, 0)
+        };
 
-        if qb64.len() < szg.fs as usize {
+        if qb64.len() < fs as usize {
             return err!(Error::Shortage(format!(
-                "insufficient material: qb64 size = {}, fs = {}",
-                qb64.len(),
-                szg.fs
+                "insufficient material: qb64 size = {}, fs = {fs}",
+                qb64.len()
             )));
         }
 
-        let trim = &qb64[..szg.fs as usize];
+        let trim = &qb64[..fs as usize];
         let ps = cs % 4;
         let pbs = 2 * if ps != 0 { ps } else { szg.ls };
 
-        let raw: Vec<u8>;
-        if ps != 0 {
-            let mut buf = "A".repeat(ps as usize);
-            buf.push_str(&trim[(cs as usize)..]);
+        let mut raw = if ps != 0 {
+            let mut buf = "A".repeat(ps as usize) + &trim[(cs as usize)..];
 
             // decode base to leave pre-padded raw
             let mut paw = Vec::<u8>::new();
-            b64_engine::URL_SAFE.decode_vec(buf, &mut paw)?;
+            b64_engine::URL_SAFE.decode_vec(&buf, &mut paw)?;
+            buf.zeroize();
 
             let mut pi: i32 = 0;
             // readInt
@@ -370,12 +359,12 @@ pub trait Matter: Default {
                 return err!(Error::Prepad());
             }
 
-            raw = paw[ps as usize..].to_vec();
-            paw.clear();
+            let raw = paw[ps as usize..].to_vec();
+            paw.zeroize();
+            raw
         } else {
-            let buf = &trim[cs as usize..];
             let mut paw = Vec::<u8>::new();
-            b64_engine::URL_SAFE.decode_vec(buf, &mut paw)?;
+            b64_engine::URL_SAFE.decode_vec(&trim[cs as usize..], &mut paw)?;
 
             let mut li: u32 = 0;
             for b in &paw[..szg.ls as usize] {
@@ -388,13 +377,15 @@ pub trait Matter: Default {
                     _ => return err!(Error::NonZeroedLeadBytes()),
                 }
             }
-            raw = paw[szg.ls as usize..].to_vec();
-            paw.clear();
-        }
+            let raw = paw[szg.ls as usize..].to_vec();
+            paw.zeroize();
+            raw
+        };
 
         self.set_code(hard);
         self.set_size(size);
         self.set_raw(&raw);
+        raw.zeroize();
 
         Ok(())
     }
@@ -415,11 +406,10 @@ pub trait Matter: Default {
         }
 
         let hard = util::code_b2_to_b64(qb2, hs)?;
-        let mut szg = tables::sizage(&hard)?;
+        let szg = tables::sizage(&hard)?;
         let cs = szg.hs + szg.ss;
         let bcs = ((cs + 1) * 3) / 4;
-        let mut size: u32 = 0;
-        if szg.fs == 0 {
+        let (fs, size) = if szg.fs == u32::MAX {
             if cs % 4 != 0 {
                 // unreachable
                 // programmer error - computed from sizages
@@ -436,11 +426,13 @@ pub trait Matter: Default {
             }
 
             let both = util::code_b2_to_b64(qb2, cs as usize)?;
-            size = util::b64_to_u32(&both[szg.hs as usize..cs as usize])?;
-            szg.fs = (size * 4) + cs;
-        }
+            let size = util::b64_to_u32(&both[szg.hs as usize..cs as usize])?;
+            ((size * 4) + cs, size)
+        } else {
+            (szg.fs, 0)
+        };
 
-        let bfs = ((szg.fs + 1) * 3) / 4;
+        let bfs = ((fs + 1) * 3) / 4;
         if qb2.len() < bfs as usize {
             return err!(Error::Shortage(format!(
                 "insufficient material: qb2 size = {}, bfs = {bfs}",
@@ -448,7 +440,7 @@ pub trait Matter: Default {
             )));
         }
 
-        let trim = qb2[..bfs as usize].to_vec();
+        let mut trim = qb2[..bfs as usize].to_vec();
         let ps = cs % 4;
         let pbs = 2 * if ps != 0 { ps } else { szg.ls };
         if ps != 0 {
@@ -469,24 +461,26 @@ pub trait Matter: Default {
             }
         }
 
-        let raw = trim[(bcs + szg.ls) as usize..].to_vec();
+        let mut raw = trim[(bcs + szg.ls) as usize..].to_vec();
         if raw.len() != (trim.len() - bcs as usize) - szg.ls as usize {
             // unreachable. rust prevents this by the definition of `raw` above.
             return err!(Error::Conversion(format!(
                 "improperly qualified material: qb2 = {qb2:?}",
             )));
         }
+        trim.zeroize();
 
         self.set_code(&hard);
         self.set_size(size);
         self.set_raw(&raw);
+        raw.zeroize();
 
         Ok(())
     }
 
     fn full_size(&self) -> Result<u32> {
         let sizage = tables::sizage(&self.code())?;
-        if sizage.fs != 0 {
+        if sizage.fs != u32::MAX {
             Ok(sizage.fs)
         } else {
             Ok(sizage.hs + sizage.ss + self.size() * 4)
@@ -776,7 +770,7 @@ mod test {
     #[rstest]
     #[case("NAAAAAAAAAAA", 12)]
     #[case("4AAC-A-1-B-3", 12)]
-    fn raw_size(#[case] qb64: &str, #[case] size: u32) {
+    fn full_size(#[case] qb64: &str, #[case] size: u32) {
         let matter = TestMatter::new(None, None, None, Some(qb64), None).unwrap();
         assert_eq!(matter.full_size().unwrap(), size);
     }

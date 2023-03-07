@@ -1,3 +1,5 @@
+use zeroize::{Zeroize, ZeroizeOnDrop};
+
 use crate::core::{
     cigar::Cigar,
     indexer::tables as indexer,
@@ -32,11 +34,14 @@ use crate::error::{err, Error, Result};
 ///
 /// example().unwrap();
 /// ```
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, ZeroizeOnDrop)]
 pub struct Signer {
     raw: Vec<u8>,
+    #[zeroize(skip)]
     code: String,
+    #[zeroize(skip)]
     size: u32,
+    #[zeroize(skip)]
     verfer: Verfer,
 }
 
@@ -97,8 +102,10 @@ impl Signer {
         let mut signer: Signer = if qb64b.is_none() && qb64.is_none() && qb2.is_none() {
             let code = code.unwrap_or(matter::Codex::Ed25519_Seed);
             validate_code(code)?;
-            let raw = if let Some(raw) = raw { raw.to_vec() } else { sign::generate(code)? };
-            Matter::new(Some(code), Some(&raw), None, None, None)?
+            let mut raw = if let Some(raw) = raw { raw.to_vec() } else { sign::generate(code)? };
+            let matter = Matter::new(Some(code), Some(&raw), None, None, None)?;
+            raw.zeroize();
+            matter
         } else {
             let signer: Self = Matter::new(code, raw, qb64b, qb64, qb2)?;
             validate_code(&signer.code())?;
@@ -189,7 +196,16 @@ impl Signer {
         };
 
         let sig = sign::sign(&self.code(), &self.raw(), ser)?;
-        Siger::new(None, Some(index), ondex, Some(code), Some(&sig), None, None, None)
+        Siger::new(
+            Some(&self.verfer()),
+            Some(index),
+            ondex,
+            Some(code),
+            Some(&sig),
+            None,
+            None,
+            None,
+        )
     }
 
     pub fn verfer(&self) -> Verfer {
