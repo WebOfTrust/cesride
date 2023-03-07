@@ -1,5 +1,7 @@
 use crate::error::{err, Error, Result};
 
+pub const REB64_STRING: &str = "^[A-Za-z0-9\\-_]*$";
+
 pub fn b64_char_to_index(c: char) -> Result<u8> {
     Ok(match c {
         'A' => 0,

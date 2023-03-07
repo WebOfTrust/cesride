@@ -71,6 +71,15 @@ pub(crate) mod Ilkage {
 
 #[allow(non_snake_case)]
 #[allow(non_upper_case_globals)]
+pub mod Tierage {
+    pub(crate) const min: &str = "min";
+    pub const low: &str = "low";
+    pub const med: &str = "med";
+    pub const high: &str = "high";
+}
+
+#[allow(non_snake_case)]
+#[allow(non_upper_case_globals)]
 pub(crate) mod Ids {
     pub const dollar: &str = "$id";
     pub const at: &str = "@id";
@@ -82,6 +91,12 @@ pub(crate) mod Ids {
     pub const n: &str = "n";
     pub const b: &str = "b";
     pub const a: &str = "a";
+    pub const s: &str = "s";
+    pub const f: &str = "f";
+    pub const v: &str = "v";
+    pub const kt: &str = "kt";
+    pub const nt: &str = "nt";
+    pub const di: &str = "di";
 }
 
 const REVER_STRING: &str = "(?P<ident>[A-Z]{4})(?P<major>[0-9a-f])(?P<minor>[0-9a-f])(?P<kind>[A-Z]{4})(?P<size>[0-9a-f]{6})_";
@@ -113,8 +128,8 @@ pub(crate) const DUMMY: u8 = b'#';
 pub const CURRENT_VERSION: &Version = &Version { major: 1, minor: 0 };
 
 const MAXIMUM_START_SIZE: usize = 12;
-const VERSION_FULL_SIZE: usize = 17;
-const MINIMUM_SNIFF_SIZE: usize = MAXIMUM_START_SIZE + VERSION_FULL_SIZE;
+pub(crate) const VERSION_FULL_SIZE: usize = 17;
+pub(crate) const MINIMUM_SNIFF_SIZE: usize = MAXIMUM_START_SIZE + VERSION_FULL_SIZE;
 
 pub(crate) fn deversify(vs: &str) -> Result<DeversifyResult> {
     lazy_static! {

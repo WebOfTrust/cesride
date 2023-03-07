@@ -29,14 +29,14 @@ fn validate_code(code: &str) -> Result<()> {
         indexer::Codex::Ed25519_Crt,
         indexer::Codex::ECDSA_256k1,
         indexer::Codex::ECDSA_256k1_Crt,
-        indexer::Codex::Ed448,
-        indexer::Codex::Ed448_Crt,
+        // indexer::Codex::Ed448,
+        // indexer::Codex::Ed448_Crt,
         indexer::Codex::Ed25519_Big,
         indexer::Codex::Ed25519_Big_Crt,
         indexer::Codex::ECDSA_256k1_Big,
         indexer::Codex::ECDSA_256k1_Big_Crt,
-        indexer::Codex::Ed448_Big,
-        indexer::Codex::Ed448_Big_Crt,
+        // indexer::Codex::Ed448_Big,
+        // indexer::Codex::Ed448_Big_Crt,
     ];
 
     if !CODES.contains(&code) {
@@ -205,19 +205,21 @@ mod test {
             Siger::new(Some(&verfer), None, None, None, None, None, Some(qsig64), None).unwrap();
         assert_eq!(siger.verfer(), verfer);
 
-        let raw = b"abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdef";
-        let siger = Siger::new(
-            None,
-            Some(4),
-            None,
-            Some(indexer::Codex::Ed448),
-            Some(raw),
-            None,
-            None,
-            None,
-        )
-        .unwrap();
-        assert_eq!(siger.qb64().unwrap(), "0AEEYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVm");
+        // we don't support ed448 yet
+
+        // let raw = b"abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdef";
+        // let siger = Siger::new(
+        //     None,
+        //     Some(4),
+        //     None,
+        //     Some(indexer::Codex::Ed448),
+        //     Some(raw),
+        //     None,
+        //     None,
+        //     None,
+        // )
+        // .unwrap();
+        // assert_eq!(siger.qb64().unwrap(), "0AEEYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5YWJjZGVm");
     }
 
     #[test]

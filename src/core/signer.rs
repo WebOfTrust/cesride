@@ -8,6 +8,30 @@ use crate::core::{
 use crate::crypto::sign;
 use crate::error::{err, Error, Result};
 
+/// ```rust
+/// use cesride::{Signer, Indexer, Matter};
+/// use std::error::Error;
+/// // here we verify that a cigar primitive and a siger primitive have the same underlying
+/// // cryptographic material
+///
+/// fn example() -> Result<(), Box<dyn Error>> {
+///     let data = b"abcdefg";
+///
+///     // defaults to Ed25519
+///     let signer = Signer::new_with_defaults(None, None)?;
+///
+///     // create our signatures
+///     let cigar = signer.sign_unindexed(data)?;
+///     let siger = signer.sign_indexed(data, false, 0, None)?;
+///
+///     // compare the raw signatures
+///     assert_eq!(cigar.raw(), siger.raw());
+///
+///     Ok(())
+/// }
+///
+/// example().unwrap();
+/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Signer {
     raw: Vec<u8>,
@@ -83,6 +107,10 @@ impl Signer {
         signer.derive_and_assign_verfer(transferable)?;
 
         Ok(signer)
+    }
+
+    pub fn new_with_defaults(transferable: Option<bool>, code: Option<&str>) -> Result<Self> {
+        Self::new(transferable, code, None, None, None, None)
     }
 
     pub fn new_with_raw(
@@ -210,9 +238,21 @@ mod test {
     use rstest::rstest;
 
     #[test]
+    fn cigar_siger_raw_material_equivalence() {
+        let data = b"abcdef";
+        let signer = Signer::new_with_defaults(None, None).unwrap();
+
+        let cigar = signer.sign_unindexed(data).unwrap();
+        let siger = signer.sign_indexed(data, false, 0, None).unwrap();
+
+        assert_eq!(cigar.raw(), siger.raw());
+    }
+
+    #[test]
     fn convenience() {
         let signer = Signer::new(None, None, None, None, None, None).unwrap();
 
+        assert!(Signer::new_with_defaults(None, None).is_ok());
         assert!(Signer::new_with_raw(&signer.raw(), None, Some(&signer.code())).is_ok());
         assert!(Signer::new_with_qb64b(&signer.qb64b().unwrap()).is_ok());
         assert!(Signer::new_with_qb64(&signer.qb64().unwrap()).is_ok());

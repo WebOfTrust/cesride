@@ -1,3 +1,4 @@
+pub mod bexter;
 pub mod cigar;
 pub mod common;
 pub mod counter;
@@ -9,8 +10,11 @@ pub mod number;
 pub mod prefixer;
 pub mod sadder;
 pub mod saider;
+pub mod salter;
 pub mod seqner;
+pub mod serder;
 pub mod siger;
 pub mod signer;
+pub mod tholder;
 pub mod util;
 pub mod verfer;

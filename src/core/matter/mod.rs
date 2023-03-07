@@ -483,6 +483,15 @@ pub trait Matter: Default {
 
         Ok(())
     }
+
+    fn full_size(&self) -> Result<u32> {
+        let sizage = tables::sizage(&self.code())?;
+        if sizage.fs != 0 {
+            Ok(sizage.fs)
+        } else {
+            Ok(sizage.hs + sizage.ss + self.size() * 4)
+        }
+    }
 }
 
 #[cfg(test)]
@@ -762,5 +771,13 @@ mod test {
         assert!(TestMatter::new(None, None, None, None, Some(&[0xf8]),).is_err()); // count code
         assert!(TestMatter::new(None, None, None, None, Some(&[0xfc]),).is_err());
         // op code
+    }
+
+    #[rstest]
+    #[case("NAAAAAAAAAAA", 12)]
+    #[case("4AAC-A-1-B-3", 12)]
+    fn raw_size(#[case] qb64: &str, #[case] size: u32) {
+        let matter = TestMatter::new(None, None, None, Some(qb64), None).unwrap();
+        assert_eq!(matter.full_size().unwrap(), size);
     }
 }
