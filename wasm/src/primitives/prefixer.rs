@@ -36,6 +36,66 @@ impl PrefixerWrapper {
         Ok(PrefixerWrapper(prefixer))
     }
 
+    pub fn new_with_ked(
+        ked: &str,
+        allows: Option<Array>,
+        code: Option<String>,
+    ) -> Result<PrefixerWrapper, JsValue> {
+        let allows = allows
+            .map(|a| a.iter().map(|v| v.as_string().unwrap_or_default()).collect::<Vec<String>>());
+        let allows = allows.as_deref().map(|a| a.iter().map(String::as_str).collect::<Vec<&str>>());
+        let allows = allows.as_deref();
+        let prefixer = Prefixer::new_with_ked(
+            &Value::from(ked),
+            allows,
+            code.as_deref(),
+        )
+        .as_js()?;
+        Ok(PrefixerWrapper(prefixer))
+    }
+
+    pub fn new_with_raw(
+        raw: &[u8],
+        code: Option<String>,
+    ) -> Result<PrefixerWrapper, JsValue> {
+        let prefixer = Prefixer::new_with_raw(
+            raw,
+            code.as_deref(),
+        )
+        .as_js()?;
+        Ok(PrefixerWrapper(prefixer))
+    }
+
+    pub fn new_with_qb64b(
+        qb64b: &[u8],
+    ) -> Result<PrefixerWrapper, JsValue> {
+        let prefixer = Prefixer::new_with_qb64b(
+            qb64b,
+        )
+        .as_js()?;
+        Ok(PrefixerWrapper(prefixer))
+    }
+
+    pub fn new_with_qb64(
+        qb64: &str,
+    ) -> Result<PrefixerWrapper, JsValue> {
+        let prefixer = Prefixer::new_with_qb64(
+            qb64,
+        )
+        .as_js()?;
+        Ok(PrefixerWrapper(prefixer))
+    }
+
+    pub fn new_with_qb2(
+        qb2: &[u8],
+    ) -> Result<PrefixerWrapper, JsValue> {
+        let prefixer = Prefixer::new_with_qb2(
+            qb2,
+        )
+        .as_js()?;
+        Ok(PrefixerWrapper(prefixer))
+    }
+
     pub fn verify(&self, ked: String, prefixed: Option<bool>) -> Result<bool, JsValue> {
         self.0.verify(&Value::from(ked.as_str()), prefixed).as_js().map_err(JsValue::from)
     }

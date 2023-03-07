@@ -27,6 +27,26 @@ impl VerferWrapper {
         Ok(VerferWrapper(verfer))
     }
 
+    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<VerferWrapper, JsValue> {
+        let verfer = Verfer::new_with_raw(raw, code.as_deref()).as_js()?;
+        Ok(VerferWrapper(verfer))
+    }
+
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<VerferWrapper, JsValue> {
+        let verfer = Verfer::new_with_qb64b(qb64b).as_js()?;
+        Ok(VerferWrapper(verfer))
+    }
+
+    pub fn new_with_qb64(qb64: &str) -> Result<VerferWrapper, JsValue> {
+        let verfer = Verfer::new_with_qb64(qb64).as_js()?;
+        Ok(VerferWrapper(verfer))
+    }
+
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<VerferWrapper, JsValue> {
+        let verfer = Verfer::new_with_qb2(qb2).as_js()?;
+        Ok(VerferWrapper(verfer))
+    }
+
     pub fn verify(&self, sig: &[u8], ser: &[u8]) -> Result<bool, JsValue> {
         self.0.verify(sig, ser).as_js().map_err(JsValue::from)
     }

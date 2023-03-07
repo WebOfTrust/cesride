@@ -28,6 +28,60 @@ impl DigerWrapper {
         Ok(DigerWrapper(diger))
     }
 
+    pub fn new_with_ser(
+        ser: &[u8],
+        code: Option<String>,
+    ) -> Result<DigerWrapper, JsValue> {
+        let diger = Diger::new_with_ser(
+            ser,
+            code.as_deref(),
+        )
+        .as_js()?;
+        Ok(DigerWrapper(diger))
+    }
+
+    pub fn new_with_raw(
+        raw: &[u8],
+        code: Option<String>,
+    ) -> Result<DigerWrapper, JsValue> {
+        let diger = Diger::new_with_raw(
+            raw,
+            code.as_deref(),
+        )
+        .as_js()?;
+        Ok(DigerWrapper(diger))
+    }
+
+    pub fn new_with_qb64b(
+        qb64b: &[u8],
+    ) -> Result<DigerWrapper, JsValue> {
+        let diger = Diger::new_with_qb64b(
+            qb64b,
+        )
+        .as_js()?;
+        Ok(DigerWrapper(diger))
+    }
+
+    pub fn new_with_qb64(
+        qb64: &str,
+    ) -> Result<DigerWrapper, JsValue> {
+        let diger = Diger::new_with_qb64(
+            qb64,
+        )
+        .as_js()?;
+        Ok(DigerWrapper(diger))
+    }
+
+    pub fn new_with_qb2(
+        qb2: &[u8],
+    ) -> Result<DigerWrapper, JsValue> {
+        let diger = Diger::new_with_qb2(
+            qb2,
+        )
+        .as_js()?;
+        Ok(DigerWrapper(diger))
+    }
+
     pub fn verify(&self, ser: &[u8]) -> Result<bool, JsValue> {
         self.0.verify(ser).as_js().map_err(JsValue::from)
     }

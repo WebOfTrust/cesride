@@ -28,6 +28,50 @@ impl SignerWrapper {
         Ok(SignerWrapper(signer))
     }
 
+    pub fn new_with_raw(
+        raw: &[u8],
+        transferable: Option<bool>,
+        code: Option<String>,
+    ) -> Result<SignerWrapper, JsValue> {
+        let signer = Signer::new_with_raw(
+            raw,
+            transferable,
+            code.as_deref(),
+        )
+        .as_js()?;
+        Ok(SignerWrapper(signer))
+    }
+
+    pub fn new_with_qb64b(
+        qb64b: &[u8],
+    ) -> Result<SignerWrapper, JsValue> {
+        let signer = Signer::new_with_qb64b(
+            qb64b,
+        )
+        .as_js()?;
+        Ok(SignerWrapper(signer))
+    }
+
+    pub fn new_with_qb64(
+        qb64: &str,
+    ) -> Result<SignerWrapper, JsValue> {
+        let signer = Signer::new_with_qb64(
+            qb64,
+        )
+        .as_js()?;
+        Ok(SignerWrapper(signer))
+    }
+
+    pub fn new_with_qb2(
+        qb2: &[u8],
+    ) -> Result<SignerWrapper, JsValue> {
+        let signer = Signer::new_with_qb2(
+            qb2,
+        )
+        .as_js()?;
+        Ok(SignerWrapper(signer))
+    }
+
     pub fn sign_unindexed(&self, ser: &[u8]) -> Result<CigarWrapper, JsValue> {
         let cigar = self.0.sign_unindexed(ser).as_js()?;
         Ok(CigarWrapper(cigar))

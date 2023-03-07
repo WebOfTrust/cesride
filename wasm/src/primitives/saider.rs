@@ -110,6 +110,70 @@ impl SaiderWrapper {
         Ok(ret)
     }
 
+    pub fn new_with_sad(
+        sad: &str,
+        label: Option<String>,
+        kind: Option<String>,
+        ignore: Option<Array>,
+        code: Option<String>,
+    ) -> Result<SaiderWrapper, JsValue> {
+        let ignore = ignore
+            .map(|a| a.iter().map(|v| v.as_string().unwrap_or_default()).collect::<Vec<String>>());
+        let ignore = ignore.as_deref().map(|a| a.iter().map(String::as_str).collect::<Vec<&str>>());
+        let ignore = ignore.as_deref();
+        let saider = Saider::new_with_sad(
+            &Value::from(sad),
+            label.as_deref(),
+            kind.as_deref(),
+            ignore,
+            code.as_deref(),
+        )
+        .as_js()?;
+        Ok(SaiderWrapper(saider))
+    }
+
+    pub fn new_with_raw(
+        raw: &[u8],
+        code: Option<String>,
+    ) -> Result<SaiderWrapper, JsValue> {
+        let saider = Saider::new_with_raw(
+            raw,
+            code.as_deref(),
+        )
+        .as_js()?;
+        Ok(SaiderWrapper(saider))
+    }
+
+    pub fn new_with_qb64b(
+        qb64b: &[u8],
+    ) -> Result<SaiderWrapper, JsValue> {
+        let saider = Saider::new_with_qb64b(
+            qb64b,
+        )
+        .as_js()?;
+        Ok(SaiderWrapper(saider))
+    }
+
+    pub fn new_with_qb64(
+        qb64: &str,
+    ) -> Result<SaiderWrapper, JsValue> {
+        let saider = Saider::new_with_qb64(
+            qb64,
+        )
+        .as_js()?;
+        Ok(SaiderWrapper(saider))
+    }
+
+    pub fn new_with_qb2(
+        qb2: &[u8],
+    ) -> Result<SaiderWrapper, JsValue> {
+        let saider = Saider::new_with_qb2(
+            qb2,
+        )
+        .as_js()?;
+        Ok(SaiderWrapper(saider))
+    }
+
     pub fn code(&self) -> String {
         self.0.code()
     }
