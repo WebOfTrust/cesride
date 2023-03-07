@@ -3,7 +3,8 @@ use cesride_core::{Matter, Signer};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(js_name = Signer)]
-pub struct SignerWrapper(Signer);
+#[derive(Clone)]
+pub struct SignerWrapper(pub(crate) Signer);
 
 #[wasm_bindgen(js_class = Signer)]
 impl SignerWrapper {
@@ -94,5 +95,28 @@ impl SignerWrapper {
 
     pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
         self.0.qb2().as_js().map_err(JsValue::from)
+    }
+}
+
+#[wasm_bindgen]
+pub struct Signers(pub(crate) Vec<SignerWrapper>);
+
+// TODO: Make this iterable in JS
+#[wasm_bindgen]
+impl Signers {
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
+    pub fn get(&self, index: usize) -> Option<SignerWrapper> {
+        if index < self.0.len() {
+            Some(self.0[index].clone())
+        } else {
+            None
+        }
     }
 }

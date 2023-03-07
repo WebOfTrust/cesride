@@ -4,6 +4,7 @@ use std::ops::Deref;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(js_name = Verfer)]
+#[derive(Clone)]
 pub struct VerferWrapper(pub(crate) Verfer);
 
 #[wasm_bindgen(js_class = Verfer)]
@@ -81,5 +82,28 @@ impl Deref for VerferWrapper {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+#[wasm_bindgen]
+pub struct Verfers(pub(crate) Vec<VerferWrapper>);
+
+// TODO: Make this iterable in JS
+#[wasm_bindgen]
+impl Verfers {
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
+    pub fn get(&self, index: usize) -> Option<VerferWrapper> {
+        if index < self.0.len() {
+            Some(self.0[index].clone())
+        } else {
+            None
+        }
     }
 }
