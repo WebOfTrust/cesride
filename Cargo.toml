@@ -26,6 +26,7 @@ serde_json = { version = "~1", features = ["preserve_order"] }
 sha2 = "~0.10"
 sha3 = "~0.10"
 thiserror = "~1"
+zeroize = "~1"
 
 [dev-dependencies]
 hex-literal = "0.3.4"

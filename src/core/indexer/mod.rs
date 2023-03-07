@@ -112,7 +112,7 @@ pub trait Indexer: Default {
 
         // compute fs from index
         let mut fs = szg.fs;
-        if fs == 0 {
+        if fs == u32::MAX {
             if cs % 4 != 0 {
                 // unreachable unless sizages are broken
                 return err!(Error::InvalidCodeSize(format!(
@@ -202,7 +202,7 @@ pub trait Indexer: Default {
         let code = &self.code();
         let index = self.index();
         let ondex = self.ondex();
-        let mut raw = self.raw();
+        let raw = self.raw();
 
         let ps = (3 - (raw.len() % 3)) % 3;
         let szg = tables::sizage(code)?;
@@ -210,7 +210,7 @@ pub trait Indexer: Default {
         let ms = szg.ss - szg.os;
 
         let mut fs = szg.fs;
-        if szg.fs == 0 {
+        if szg.fs == u32::MAX {
             if (cs % 4) != 0 {
                 // unreachable unless sizages broken
                 return err!(Error::InvalidCodeSize(format!(
@@ -244,14 +244,13 @@ pub trait Indexer: Default {
         // both is hard code + converted index + converted ondex
         let both = format!(
             "{code}{}{}",
-            util::u32_to_b64(index, ms as usize)?,
-            util::u32_to_b64(ondex, szg.os as usize)?
+            &util::u32_to_b64(index, ms as usize)?,
+            &util::u32_to_b64(ondex, szg.os as usize)?
         );
         if both.len() != cs as usize {
             // unreachable, sizage() will have validated the code, and if tables aren't broken...
             return err!(Error::InvalidCodeSize(format!(
-                "Mismatch code size = {} with table = {}.",
-                cs,
+                "Mismatch code size = {} with table = {cs}.",
                 both.len()
             )));
         }
@@ -262,11 +261,10 @@ pub trait Indexer: Default {
             )));
         }
 
-        for _ in 0..ps {
-            raw.insert(0, 0);
-        }
+        let mut buffer = vec![0u8; raw.len() + ps];
+        buffer[ps..].clone_from_slice(&raw);
 
-        let b64 = b64_engine::URL_SAFE.encode(raw);
+        let b64 = b64_engine::URL_SAFE.encode(&buffer);
         let full = format!("{both}{}", &b64[(ps - szg.ls as usize)..]);
 
         if full.len() != fs as usize {
@@ -287,7 +285,7 @@ pub trait Indexer: Default {
         let code = &self.code();
         let index = self.index();
         let ondex = self.ondex();
-        let mut raw = self.raw();
+        let raw = self.raw();
 
         let ps = (3 - (raw.len() % 3)) % 3;
         let szg = tables::sizage(code)?;
@@ -307,8 +305,7 @@ pub trait Indexer: Default {
             )));
         }
 
-        let mut fs = szg.fs;
-        if fs == 0 {
+        let fs = if szg.fs == u32::MAX {
             if (cs % 4) != 0 {
                 // unreachable unless sizages are broken
                 return err!(Error::InvalidCodeSize(format!(
@@ -324,8 +321,10 @@ pub trait Indexer: Default {
                 )));
             }
 
-            fs = (index * 4) + cs;
-        }
+            (index * 4) + cs
+        } else {
+            szg.fs
+        };
 
         // both is hard code + converted index
         let both = format!(
@@ -349,24 +348,23 @@ pub trait Indexer: Default {
         }
 
         let n = ((cs + 1) * 3) / 4;
-        let mut full: Vec<u8>;
-        if n <= tables::SMALL_VRZ_BYTES {
-            full = (util::b64_to_u32(&both)? << (2 * (cs % 4))).to_be_bytes().to_vec();
+        let full = if n <= tables::SMALL_VRZ_BYTES {
+            (util::b64_to_u32(&both)? << (2 * (cs % 4))).to_be_bytes().to_vec()
         } else if n <= tables::LARGE_VRZ_BYTES {
-            full = (util::b64_to_u64(&both)? << (2 * (cs % 4))).to_be_bytes().to_vec();
+            (util::b64_to_u64(&both)? << (2 * (cs % 4))).to_be_bytes().to_vec()
         } else {
             // unreachable
             // programmer error - sizages will not permit cs > 8, thus:
             // (8 + 1) * 3 / 4 == 6, which means n <= 6, always.
             return err!(Error::InvalidCodeSize(format!("Unsupported code size: cs = '{cs}'",)));
-        }
-        // unpad code
-        full.drain(0..full.len() - n as usize);
-        // pad lead
-        full.resize(full.len() + szg.ls as usize, 0);
-        full.append(&mut raw);
+        };
 
-        let bfs = full.len();
+        let mut buffer = vec![0u8; raw.len() + (szg.ls + n) as usize];
+        // code + pad + raw
+        buffer[..(n as usize)].copy_from_slice(&full[(full.len() - n as usize)..full.len()]);
+        buffer[((n + szg.ls) as usize)..].copy_from_slice(&raw);
+
+        let bfs = buffer.len();
         if bfs % 3 != 0 || (bfs * 4 / 3) != fs as usize {
             return err!(Error::InvalidCodeSize(format!(
                 "Invalid code for raw size: code = '{both}', raw size = '{}'",
@@ -374,7 +372,7 @@ pub trait Indexer: Default {
             )));
         }
 
-        Ok(full)
+        Ok(buffer)
     }
 
     /// Extracts self.code, self.index, and self.raw from qualified base64 bytes qb64b
@@ -431,8 +429,7 @@ pub trait Indexer: Default {
         }
 
         // index is index for some codes and variable length for others
-        let mut fs = szg.fs;
-        if fs == 0 {
+        let fs = if szg.fs == u32::MAX {
             if (cs % 4) != 0 {
                 // unreachable unless sizages are broken
                 return err!(Error::Validation(format!(
@@ -448,8 +445,10 @@ pub trait Indexer: Default {
                 )));
             }
 
-            fs = (index * 4) + cs;
-        }
+            (index * 4) + cs
+        } else {
+            szg.fs
+        };
 
         if qb64.len() < (fs as usize) {
             return err!(Error::Shortage(format!(
@@ -462,8 +461,7 @@ pub trait Indexer: Default {
         let ps = cs % 4;
         let pbs = 2 * if ps != 0 { ps } else { szg.ls };
 
-        let raw: Vec<u8>;
-        if ps != 0 {
+        let raw = if ps != 0 {
             let mut buf = "A".repeat(ps as usize);
             buf.push_str(&qb64[(cs as usize)..]);
 
@@ -479,8 +477,7 @@ pub trait Indexer: Default {
                 return err!(Error::Prepad());
             }
 
-            raw = paw[ps as usize..].to_owned();
-            paw.clear();
+            paw[ps as usize..].to_owned()
         } else {
             let buf = &qb64[cs as usize..];
             let mut paw = Vec::<u8>::new();
@@ -499,9 +496,8 @@ pub trait Indexer: Default {
                 }
             }
 
-            raw = paw[ps as usize..].to_owned();
-            paw.clear();
-        }
+            paw[ps as usize..].to_owned()
+        };
 
         self.set_code(hard);
         self.set_raw(&raw);
@@ -568,8 +564,7 @@ pub trait Indexer: Default {
             ondex = Some(index);
         }
 
-        let mut fs = szg.fs;
-        if fs == 0 {
+        let fs = if szg.fs == u32::MAX {
             if cs % 4 != 0 {
                 // unreachable unless sizages are broken
                 return err!(Error::ParseQb2(format!(
@@ -584,8 +579,10 @@ pub trait Indexer: Default {
                 )));
             }
 
-            fs = (index * 4) + cs
-        }
+            (index * 4) + cs
+        } else {
+            szg.fs
+        };
 
         let bfs = ((fs + 1) * 3) / 4;
         if qb2.len() < bfs as usize {
@@ -635,7 +632,7 @@ pub trait Indexer: Default {
 
     fn full_size(&self) -> Result<u32> {
         let sizage = tables::sizage(&self.code())?;
-        if sizage.fs != 0 {
+        if sizage.fs != u32::MAX {
             Ok(sizage.fs)
         } else {
             let cs = sizage.hs + sizage.ss;

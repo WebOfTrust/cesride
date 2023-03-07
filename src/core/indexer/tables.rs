@@ -128,7 +128,7 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "2D" => Sizage { hs: 2, ss: 4, os: 2, fs: 92, ls: 0 },
         "3A" => Sizage { hs: 2, ss: 6, os: 3, fs: 160, ls: 0 },
         "3B" => Sizage { hs: 2, ss: 6, os: 3, fs: 160, ls: 0 },
-        "0z" => Sizage { hs: 2, ss: 2, os: 0, fs: 0, ls: 0 },
+        "0z" => Sizage { hs: 2, ss: 2, os: 0, fs: u32::MAX, ls: 0 },
         "1z" => Sizage { hs: 2, ss: 2, os: 1, fs: 76, ls: 1 },
         "4z" => Sizage { hs: 2, ss: 6, os: 3, fs: 80, ls: 1 },
         _ => return Err(Box::new(Error::UnknownSizage(s.to_string()))),
@@ -234,7 +234,7 @@ mod test {
     #[case("2D", 2, 4, 2, 92, 0)]
     #[case("3A", 2, 6, 3, 160, 0)]
     #[case("3B", 2, 6, 3, 160, 0)]
-    #[case("0z", 2, 2, 0, 0, 0)]
+    #[case("0z", 2, 2, 0, u32::MAX, 0)]
     #[case("1z", 2, 2, 1, 76, 1)]
     #[case("4z", 2, 6, 3, 80, 1)]
     fn sizage(
