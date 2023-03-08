@@ -21,8 +21,8 @@ fn validate_code(code: &str) -> Result<()> {
         matter::Codex::Ed25519,
         matter::Codex::ECDSA_256k1N,
         matter::Codex::ECDSA_256k1,
-        // matter::Codex::Ed448N,
-        // matter::Codex::Ed448,
+        matter::Codex::Ed448N,
+        matter::Codex::Ed448,
     ];
 
     if !CODES.contains(&code) {

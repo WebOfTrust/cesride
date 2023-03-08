@@ -22,11 +22,8 @@ impl Default for Cigar {
 }
 
 fn validate_code(code: &str) -> Result<()> {
-    const CODES: &[&str] = &[
-        matter::Codex::Ed25519_Sig,
-        matter::Codex::ECDSA_256k1_Sig,
-        // matter::Codex::Ed448_Sig,
-    ];
+    const CODES: &[&str] =
+        &[matter::Codex::Ed25519_Sig, matter::Codex::ECDSA_256k1_Sig, matter::Codex::Ed448_Sig];
 
     if !CODES.contains(&code) {
         return err!(Error::UnexpectedCode(code.to_string()));
