@@ -333,9 +333,9 @@ mod test {
 
             let serder = incept(
                 &ckeys,
-                Some(&data!(2)),
+                Some(&dat!(2)),
                 Some(&ndigs),
-                Some(&data!(3)),
+                Some(&dat!(3)),
                 Some(4),
                 Some(&wkeys),
                 None,
@@ -454,7 +454,7 @@ mod test {
 
         let sner = Number::new_with_num(sn)?;
 
-        let ked = data!({
+        let ked = dat!({
             "v": &vs,
             "t": ilk,
             "d": said,

@@ -156,8 +156,8 @@ fn derive_digest(ked: &Value, code: &str) -> Result<(Vec<u8>, String)> {
     let szg = matter::sizage(code)?;
     let dummy = String::from_utf8(vec![DUMMY; szg.fs as usize])?;
 
-    ked[label_i] = data!(&dummy);
-    ked[label_d] = data!(&dummy);
+    ked[label_i] = dat!(&dummy);
+    ked[label_d] = dat!(&dummy);
 
     let result = sizeify(&ked, None)?;
     let dig = hash::digest(code, &result.raw)?;
@@ -409,7 +409,7 @@ mod test {
             signer::Signer,
             verfer::Verfer,
         },
-        data::data,
+        data::dat,
     };
     use rstest::rstest;
 
@@ -420,7 +420,7 @@ mod test {
         let prefix = "BKxy2sgzfplyr-tgwIxS19f2OchFHtLwPWD3v4oYimBx";
 
         let verfer = Verfer::new(Some(code), Some(vkey), None, None, None).unwrap();
-        let ked = data!({
+        let ked = dat!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
@@ -542,22 +542,22 @@ mod test {
         #[case] prefix: Option<&str>,
         #[case] code: Option<&str>,
     ) {
-        let mut ked = data!({});
+        let mut ked = dat!({});
 
         if let Some(version_string) = version_string {
-            ked["v"] = data!(version_string);
+            ked["v"] = dat!(version_string);
         }
         if !keys.is_empty() {
             let mut v = vec![];
             for key in keys {
-                v.push(data!(*key))
+                v.push(dat!(*key))
             }
-            ked["k"] = data!(v.as_slice());
+            ked["k"] = dat!(v.as_slice());
         }
-        ked["n"] = data!(next_keys);
-        ked["t"] = data!(ilk);
+        ked["n"] = dat!(next_keys);
+        ked["t"] = dat!(ilk);
         if let Some(prefix) = prefix {
-            ked["i"] = data!(prefix);
+            ked["i"] = dat!(prefix);
         }
 
         assert!(Prefixer::new(Some(&ked), None, code, None, None, None, None).is_err());
@@ -578,17 +578,17 @@ mod test {
 
         let verfer = Verfer::new(Some(code), Some(verkey), None, None, None).unwrap();
 
-        let mut ked = data!({
+        let mut ked = dat!({
             "k": [&verfer.qb64().unwrap()],
             "n": next_key,
             "t": "icp",
             "i": pre_n,
         });
         if let Some(a) = a {
-            ked["a"] = data!(a);
+            ked["a"] = dat!(a);
         }
         if let Some(b) = b {
-            ked["b"] = data!(b);
+            ked["b"] = dat!(b);
         }
 
         assert!(Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).is_err());
@@ -604,7 +604,7 @@ mod test {
 
         // missing key
         let verfer = Verfer::new(Some(code), Some(verkey), None, None, None).unwrap();
-        let mut ked = data!({
+        let mut ked = dat!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
@@ -614,13 +614,13 @@ mod test {
 
         let mut map = ked.to_map().unwrap();
         map.remove("k");
-        ked = data!(&map);
+        ked = dat!(&map);
 
         assert!(!prefixer.verify(&ked, None).unwrap());
 
         // multiple keys
         let verfer = Verfer::new(Some(code), Some(verkey), None, None, None).unwrap();
-        let mut ked = data!({
+        let mut ked = dat!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
@@ -628,13 +628,13 @@ mod test {
         });
         let prefixer = Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).unwrap();
 
-        ked["k"] = data!([&verfer.qb64().unwrap(), &verfer.qb64().unwrap()]);
+        ked["k"] = dat!([&verfer.qb64().unwrap(), &verfer.qb64().unwrap()]);
 
         assert!(!prefixer.verify(&ked, None).unwrap());
 
         // key != prefix
         let verfer = Verfer::new(Some(code), Some(verkey), None, None, None).unwrap();
-        let mut ked = data!({
+        let mut ked = dat!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
@@ -642,13 +642,13 @@ mod test {
         });
         let prefixer = Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).unwrap();
 
-        ked["k"] = data!(["ABC"]);
+        ked["k"] = dat!(["ABC"]);
 
         assert!(!prefixer.verify(&ked, None).unwrap());
 
         // bad key (doesn't match)
         let verfer = Verfer::new(Some(code), Some(verkey), None, None, None).unwrap();
-        let mut ked = data!({
+        let mut ked = dat!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
@@ -657,13 +657,13 @@ mod test {
         let prefixer = Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).unwrap();
 
         let nxtfer = Verfer::new(Some(code), Some(nxtkey), None, None, None).unwrap();
-        ked["k"] = data!([&nxtfer.qb64().unwrap()]);
+        ked["k"] = dat!([&nxtfer.qb64().unwrap()]);
 
         assert!(!prefixer.verify(&ked, None).unwrap());
 
         // non-incepting
         let verfer = Verfer::new(Some(code), Some(verkey), None, None, None).unwrap();
-        let mut ked = data!({
+        let mut ked = dat!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
@@ -671,7 +671,7 @@ mod test {
         });
         let prefixer = Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).unwrap();
 
-        ked["t"] = data!("ksn");
+        ked["t"] = dat!("ksn");
 
         assert!(prefixer.verify(&ked, None).is_err());
     }
@@ -684,7 +684,7 @@ mod test {
         // next keys present, non-transferable
         let verfer =
             Verfer::new(Some(matter::Codex::Ed25519N), Some(verkey), None, None, None).unwrap();
-        let mut ked = data!({
+        let mut ked = dat!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
@@ -694,7 +694,7 @@ mod test {
             Prefixer::new(Some(&ked), None, Some(matter::Codex::Ed25519N), None, None, None, None)
                 .unwrap();
 
-        ked["n"] = data!([&verfer.qb64().unwrap()]);
+        ked["n"] = dat!([&verfer.qb64().unwrap()]);
 
         assert!(!prefixer.verify(&ked, None).unwrap());
     }
@@ -771,7 +771,7 @@ mod test {
         #[case] prefixed_result: bool,
     ) {
         let prefixer = Prefixer::new(None, None, Some(code), Some(raw), None, None, None).unwrap();
-        let ked = data!({
+        let ked = dat!({
             "k": [&prefixer.qb64().unwrap()],
             "n": n,
             "t": "icp"
@@ -809,7 +809,7 @@ mod test {
         #[case] prefixed_result: bool,
     ) {
         let prefixer = Prefixer::new(None, None, Some(code), Some(raw), None, None, None).unwrap();
-        let ked = data!({
+        let ked = dat!({
             "k": [&prefixer.qb64().unwrap()],
             "t": "icp"
         });
@@ -833,7 +833,7 @@ mod test {
         #[case] prefixed_result: bool,
     ) {
         let verfer = Verfer::new(Some(vcode), Some(vkey), None, None, None).unwrap();
-        let ked = data!({
+        let ked = dat!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp"
@@ -868,7 +868,7 @@ mod test {
         #[case] prefixed_result: bool,
     ) {
         let verfer = Verfer::new(Some(vcode), Some(vkey), None, None, None).unwrap();
-        let ked = data!({
+        let ked = dat!({
             "k": [&verfer.qb64().unwrap()],
             "n": "",
             "t": "icp",
@@ -897,7 +897,7 @@ mod test {
     ) {
         let diger = Diger::new(Some(b""), Some(code), None, None, None, None).unwrap();
         let vs = versify(None, Some(CURRENT_VERSION), Some(Serialage::JSON), Some(0)).unwrap();
-        let ked = data!({
+        let ked = dat!({
             "v": &vs,
             "k": [&diger.qb64().unwrap()],
             "n": "",
@@ -928,7 +928,7 @@ mod test {
     ) {
         let diger = Diger::new(Some(b""), Some(code), None, None, None, None).unwrap();
         let vs = versify(None, Some(CURRENT_VERSION), Some(Serialage::JSON), Some(0)).unwrap();
-        let ked = data!({
+        let ked = dat!({
             "v": &vs,
             "k": [&diger.qb64().unwrap()],
             "n": "",
@@ -943,8 +943,8 @@ mod test {
         assert!(prefixer.verify(&ked, None).unwrap());
         assert!(!prefixer.verify(&ked, Some(true)).unwrap());
 
-        ked["i"] = data!(&prefixer.qb64().unwrap());
-        ked["d"] = data!(&prefixer.qb64().unwrap());
+        ked["i"] = dat!(&prefixer.qb64().unwrap());
+        ked["d"] = dat!(&prefixer.qb64().unwrap());
 
         assert!(prefixer.verify(&ked, None).unwrap());
         assert!(prefixer.verify(&ked, Some(true)).unwrap());
@@ -969,7 +969,7 @@ mod test {
         let sn = "0"; // hex string
         let ilk = Ilkage::icp;
         let sith = "1";
-        let keys = data!([&Prefixer::new(
+        let keys = dat!([&Prefixer::new(
             None,
             None,
             Some(matter::Codex::Ed25519),
@@ -983,10 +983,10 @@ mod test {
         .unwrap()]);
         let nxt = "";
         let toad = "0"; // hex string
-        let wits = data!([]);
-        let cnfg = data!([]);
+        let wits = dat!([]);
+        let cnfg = dat!([]);
 
-        let ked = data!({
+        let ked = dat!({
             "v": &vs,
             "i": "",
             "s": sn,
@@ -1014,11 +1014,11 @@ mod test {
         assert!(!prefixer.verify(&ked, Some(true)).unwrap());
 
         let n_digs =
-            data!([&Diger::new(Some(&nxtfer.qb64b().unwrap()), None, None, None, None, None)
+            dat!([&Diger::new(Some(&nxtfer.qb64b().unwrap()), None, None, None, None, None)
                 .unwrap()
                 .qb64()
                 .unwrap()]);
-        let ked = data!({
+        let ked = dat!({
             "v": &vs,
             "i": "",
             "s": sn,
@@ -1070,19 +1070,19 @@ mod test {
             assert_eq!(secrets[i], signers[i].qb64().unwrap());
         }
 
-        let keys = data!([
+        let keys = dat!([
             &signers[0].verfer().qb64().unwrap(),
             &signers[1].verfer().qb64().unwrap(),
             &signers[2].verfer().qb64().unwrap(),
         ]);
-        let sith = data!([["1/2", "1/2", "1"]]);
+        let sith = dat!([["1/2", "1/2", "1"]]);
         let n_dig =
             Diger::new(Some(&signers[3].verfer().qb64b().unwrap()), None, None, None, None, None)
                 .unwrap()
                 .qb64()
                 .unwrap();
-        let n_digs = data!([&n_dig]);
-        let ked = data!({
+        let n_digs = dat!([&n_dig]);
+        let ked = dat!({
             "v": &vs,
             "i": "",
             "s": sn,
@@ -1109,8 +1109,8 @@ mod test {
         assert!(prefixer.verify(&ked, None).unwrap());
         assert!(!prefixer.verify(&ked, Some(true)).unwrap());
 
-        let sith = data!([["1/2", "1/2"], ["1"]]);
-        let ked = data!({
+        let sith = dat!([["1/2", "1/2"], ["1"]]);
+        let ked = dat!({
             "v": &vs,
             "i": "",
             "s": sn,
@@ -1137,14 +1137,14 @@ mod test {
         assert!(!prefixer.verify(&ked, Some(true)).unwrap());
 
         let sith = "1";
-        let seal = data!({
+        let seal = dat!({
             "i": "EBfPkd-A2CQfJmfpmtc1V-yuleSeCcyWBIrTAygUgQ_T",
             "s": "2",
             "t": Ilkage::ixn,
             "d": "EB0_D51cTh_q6uOQ-byFiv5oNXZ-cxdqCqBAa4JmBLtb"
         });
         let ilk2 = Ilkage::dip;
-        let ked = data!({
+        let ked = dat!({
             "v": &vs,
             "i": "",
             "s": sn,
