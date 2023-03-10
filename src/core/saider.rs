@@ -1,7 +1,7 @@
 use crate::core::common::{deversify, dumps, sizeify, Ids, Serialage, DUMMY};
 use crate::core::matter::{tables as matter, Matter};
 use crate::crypto::hash;
-use crate::data::{data, Value};
+use crate::data::{dat, Value};
 use crate::error::{err, Error, Result};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -63,7 +63,7 @@ fn derive(
     let szg = matter::sizage(code)?;
     let mut sad = sad.clone();
 
-    sad[label] = data!(&String::from_utf8(vec![DUMMY; szg.fs as usize])?);
+    sad[label] = dat!(&String::from_utf8(vec![DUMMY; szg.fs as usize])?);
 
     let (kind, sad) = if sad.to_map()?.contains_key("v") {
         let result = sizeify(&sad, kind)?;
@@ -79,7 +79,7 @@ fn derive(
             map.remove(*key);
         }
     }
-    let ser = data!(&map);
+    let ser = dat!(&map);
 
     let cpa =
         if let Some(kind) = kind { serialize(&ser, Some(&kind))? } else { serialize(&ser, None)? };
@@ -139,7 +139,7 @@ impl Saider {
 
                 validate_code(&code)?;
 
-                let sad = if let Some(sad) = sad { sad.clone() } else { data!({}) };
+                let sad = if let Some(sad) = sad { sad.clone() } else { dat!({}) };
                 let (raw, _) = derive(&sad, Some(&code), kind, Some(label), ignore)?;
 
                 (code, raw)
@@ -182,7 +182,7 @@ impl Saider {
         let saider =
             Self::new(Some(&sad), Some(label), kind, ignore, Some(code), None, None, None, None)?;
         let mut sad = sad;
-        sad[label] = data!(&saider.qb64()?);
+        sad[label] = dat!(&saider.qb64()?);
 
         Ok((saider, sad))
     }
@@ -299,12 +299,12 @@ mod test {
     use crate::core::common::{versify, Identage, Ids, Serialage, Version};
     use crate::core::matter::{tables as matter, Matter};
     use crate::core::saider::Saider;
-    use crate::data::data;
+    use crate::data::dat;
     use rstest::rstest;
 
     #[test]
     fn convenience() {
-        let sad = data!({"d":""});
+        let sad = dat!({"d":""});
 
         let saider =
             Saider::new(Some(&sad), None, None, None, None, None, None, None, None).unwrap();
@@ -319,7 +319,7 @@ mod test {
     #[test]
     fn new() {
         let saider = Saider::new(
-            Some(&data!({"d":""})),
+            Some(&dat!({"d":""})),
             Some(Ids::d),
             None,
             None,
@@ -388,7 +388,7 @@ mod test {
         #[case] kind: Option<&str>,
         #[case] label: Option<&str>,
     ) {
-        let sad1 = data!({
+        let sad1 = dat!({
             "$id": "",
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -402,7 +402,7 @@ mod test {
         let (saider, _) = Saider::saidify(&sad1, code, kind, label, None).unwrap();
         assert_eq!(saider.qb64().unwrap(), said);
 
-        let sad2 = data!({
+        let sad2 = dat!({
             "$id": said,
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -432,7 +432,7 @@ mod test {
         )
         .unwrap();
         assert_eq!(vs, "KERI10JSON000000_");
-        let sad6 = data!({
+        let sad6 = dat!({
             "v": &vs,
             "t": "rep",
             "d": "",
@@ -455,17 +455,17 @@ mod test {
         assert!(!saider.verify(&sad6, Some(true), Some(false), None, None, None).unwrap());
 
         let mut sad7 = sad6.clone();
-        sad7[label] = data!(&saider.qb64().unwrap());
+        sad7[label] = dat!(&saider.qb64().unwrap());
         assert!(saider.verify(&sad7, Some(true), Some(false), None, None, None).unwrap());
 
         let mut sad8 = sad7.clone();
         let (_, dsad) = derive(&sad6, Some(code), None, Some(label), None).unwrap();
-        sad8["v"] = data!(&dsad["v"].to_string().unwrap());
+        sad8["v"] = dat!(&dsad["v"].to_string().unwrap());
         assert!(saider.verify(&sad8, Some(true), None, None, None, None).unwrap());
 
         // let said8 = saider.qb64().unwrap();
 
-        let sad9 = data!({
+        let sad9 = dat!({
             "d": "",
             "first": "John",
             "last": "Doe",
@@ -498,7 +498,7 @@ mod test {
             .unwrap());
 
         // Change the 'read' field that is ignored and make sure it still verifies
-        sad10["read"] = data!(true);
+        sad10["read"] = dat!(true);
         assert!(saider1
             .verify(&sad10, Some(true), None, None, Some(Ids::d), Some(&vec!["read"]))
             .unwrap());
@@ -522,7 +522,7 @@ mod test {
     #[test]
     fn new_with_things() {
         let saider = Saider::new(
-            Some(&data!({"d":""})),
+            Some(&dat!({"d":""})),
             Some(Ids::d),
             None,
             None,
@@ -534,7 +534,7 @@ mod test {
         )
         .unwrap();
         let saider2 = Saider::new(
-            Some(&data!({"d":&saider.qb64().unwrap()})),
+            Some(&dat!({"d":&saider.qb64().unwrap()})),
             Some(Ids::d),
             None,
             None,
@@ -579,7 +579,7 @@ mod test {
         v.append(&mut saider4.raw[1..].to_vec());
         saider4.raw = v;
         assert!(!saider4
-            .verify(&data!({"d":&saider.qb64().unwrap()}), None, None, None, None, None)
+            .verify(&dat!({"d":&saider.qb64().unwrap()}), None, None, None, None, None)
             .unwrap());
     }
 
@@ -589,7 +589,7 @@ mod test {
 
         assert!(Saider::new(None, None, None, None, None, Some(&[]), None, None, None).is_err());
         assert!(Saider::new(
-            Some(&data!({})),
+            Some(&dat!({})),
             Some(Ids::d),
             None,
             None,
@@ -601,7 +601,7 @@ mod test {
         )
         .is_err());
         assert!(Saider::new(
-            Some(&data!({"d":true})),
+            Some(&dat!({"d":true})),
             Some(Ids::d),
             None,
             None,
@@ -614,8 +614,8 @@ mod test {
         .is_err());
         assert!(Saider::new(None, None, None, None, None, None, None, None, None).is_err());
         assert!(!Saider { code: "CESR".to_string(), raw: vec![], size: 0 }
-            .verify(&data!({}), None, None, None, None, None)
+            .verify(&dat!({}), None, None, None, None, None)
             .unwrap());
-        assert!(Saider::saidify(&data!({}), None, None, None, None).is_err());
+        assert!(Saider::saidify(&dat!({}), None, None, None, None).is_err());
     }
 }

@@ -128,16 +128,16 @@ impl Signer {
         Self::new(transferable, code, Some(raw), None, None, None)
     }
 
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
-        Self::new(None, None, None, Some(qb64b), None, None)
+    pub fn new_with_qb64b(qb64b: &[u8], transferable: Option<bool>) -> Result<Self> {
+        Self::new(transferable, None, None, Some(qb64b), None, None)
     }
 
-    pub fn new_with_qb64(qb64: &str) -> Result<Self> {
-        Self::new(None, None, None, None, Some(qb64), None)
+    pub fn new_with_qb64(qb64: &str, transferable: Option<bool>) -> Result<Self> {
+        Self::new(transferable, None, None, None, Some(qb64), None)
     }
 
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
-        Self::new(None, None, None, None, None, Some(qb2))
+    pub fn new_with_qb2(qb2: &[u8], transferable: Option<bool>) -> Result<Self> {
+        Self::new(transferable, None, None, None, None, Some(qb2))
     }
 
     pub fn sign_unindexed(&self, ser: &[u8]) -> Result<Cigar> {
@@ -270,9 +270,9 @@ mod test {
 
         assert!(Signer::new_with_defaults(None, None).is_ok());
         assert!(Signer::new_with_raw(&signer.raw(), None, Some(&signer.code())).is_ok());
-        assert!(Signer::new_with_qb64b(&signer.qb64b().unwrap()).is_ok());
-        assert!(Signer::new_with_qb64(&signer.qb64().unwrap()).is_ok());
-        assert!(Signer::new_with_qb2(&signer.qb2().unwrap()).is_ok());
+        assert!(Signer::new_with_qb64b(&signer.qb64b().unwrap(), None).is_ok());
+        assert!(Signer::new_with_qb64(&signer.qb64().unwrap(), None).is_ok());
+        assert!(Signer::new_with_qb2(&signer.qb2().unwrap(), None).is_ok());
     }
 
     #[test]
