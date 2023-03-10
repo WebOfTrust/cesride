@@ -36,7 +36,7 @@ fn values_to_rationals(value: &Value) -> Result<Vec<Vec<Rational32>>> {
         let _clause = _clause.to_vec()?;
         for weight in _clause {
             let weight = weight.to_string()?;
-            let parts: Vec<&str> = weight.split(separator).into_iter().collect();
+            let parts: Vec<&str> = weight.split(separator).collect();
             if parts.len() != 2 {
                 // must be 0 or 1
                 if parts[0] == "0" {
@@ -275,10 +275,10 @@ impl Tholder {
         } else if bexter::Codex::has_code(code) {
             let bexter = Bexter::new(None, None, None, None, Some(&limen), None)?;
             let t = bexter.bext()?.replace('s', "/");
-            let clauses: Vec<&str> = t.split('a').into_iter().collect();
+            let clauses: Vec<&str> = t.split('a').collect();
             let mut oclauses: Array = Vec::new();
             for clause in clauses {
-                let weights: Vec<&str> = clause.split('c').into_iter().collect();
+                let weights: Vec<&str> = clause.split('c').collect();
                 let mut oweights: Array = Vec::new();
                 for weight in weights {
                     oweights.push(data!(weight));

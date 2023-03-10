@@ -60,6 +60,7 @@ fn validate_code(code: &str) -> Result<()> {
     const CODES: &[&str] = &[
         matter::Codex::Ed25519_Seed,
         matter::Codex::ECDSA_256k1_Seed,
+        matter::Codex::ECDSA_256r1_Seed,
         // matter::Codex::Ed448_Seed,
     ];
 
@@ -75,11 +76,13 @@ fn derive_verfer(code: &str, private_key: &[u8], transferable: bool) -> Result<V
         true => match code {
             matter::Codex::Ed25519_Seed => matter::Codex::Ed25519,
             matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1,
+            matter::Codex::ECDSA_256r1_Seed => matter::Codex::ECDSA_256r1,
             _ => return err!(Error::UnexpectedCode(code.to_string())),
         },
         false => match code {
             matter::Codex::Ed25519_Seed => matter::Codex::Ed25519N,
             matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1N,
+            matter::Codex::ECDSA_256r1_Seed => matter::Codex::ECDSA_256r1N,
             _ => return err!(Error::UnexpectedCode(code.to_string())),
         },
     };
@@ -144,6 +147,7 @@ impl Signer {
         let code = match self.code().as_str() {
             matter::Codex::Ed25519_Seed => matter::Codex::Ed25519_Sig,
             matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1_Sig,
+            matter::Codex::ECDSA_256r1_Seed => matter::Codex::ECDSA_256r1_Sig,
             _ => return err!(Error::UnexpectedCode(self.code())),
         };
 
@@ -164,12 +168,14 @@ impl Signer {
                 match self.code().as_str() {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Crt,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Crt,
+                    matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1_Crt,
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             } else {
                 match self.code().as_str() {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Big_Crt,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Big_Crt,
+                    matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1_Big_Crt,
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             };
@@ -182,12 +188,14 @@ impl Signer {
                 match self.code().as_str() {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1,
+                    matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1,
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             } else {
                 match self.code().as_str() {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Big,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Big,
+                    matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1_Big,
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             };
@@ -283,7 +291,12 @@ mod test {
 
     #[rstest]
     fn conversions(
-        #[values(matter::Codex::Ed25519_Seed, matter::Codex::ECDSA_256k1_Seed)] code: &str,
+        #[values(
+            matter::Codex::Ed25519_Seed,
+            matter::Codex::ECDSA_256k1_Seed,
+            matter::Codex::ECDSA_256r1_Seed
+        )]
+        code: &str,
     ) {
         let signer = Signer::new(Some(false), Some(code), None, None, None, None).unwrap();
 
@@ -337,6 +350,21 @@ mod test {
 
         let cigar = signer.sign_unindexed(ser).unwrap();
         assert_eq!(cigar.code(), matter::Codex::ECDSA_256k1_Sig);
+        assert!(signer.verfer().verify(&cigar.raw(), ser).unwrap());
+        assert!(!signer.verfer().verify(&cigar.raw(), bad_ser).unwrap());
+    }
+
+    #[test]
+    fn sign_ecdsa_256r1_unindexed() {
+        let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
+        let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
+
+        let signer =
+            Signer::new(Some(true), Some(matter::Codex::ECDSA_256r1_Seed), None, None, None, None)
+                .unwrap();
+
+        let cigar = signer.sign_unindexed(ser).unwrap();
+        assert_eq!(cigar.code(), matter::Codex::ECDSA_256r1_Sig);
         assert!(signer.verfer().verify(&cigar.raw(), ser).unwrap());
         assert!(!signer.verfer().verify(&cigar.raw(), bad_ser).unwrap());
     }
@@ -407,6 +435,38 @@ mod test {
 
         let signer =
             Signer::new(Some(true), Some(matter::Codex::ECDSA_256k1_Seed), None, None, None, None)
+                .unwrap();
+
+        let siger = signer.sign_indexed(ser, only, index, input_ondex).unwrap();
+        assert_eq!(siger.code(), siger_code);
+        assert_eq!(siger.index(), index);
+        assert_eq!(siger.ondex(), output_ondex);
+        assert!(signer.verfer().verify(&siger.raw(), ser).unwrap());
+        assert!(!signer.verfer().verify(&siger.raw(), bad_ser).unwrap());
+    }
+
+    #[rstest]
+    #[case(false, 0, None, 0, indexer::Codex::ECDSA_256r1)]
+    #[case(false, 1, None, 1, indexer::Codex::ECDSA_256r1)]
+    #[case(false, 1, Some(3), 3, indexer::Codex::ECDSA_256r1_Big)]
+    #[case(false, 67, Some(3), 3, indexer::Codex::ECDSA_256r1_Big)]
+    #[case(false, 67, Some(67), 67, indexer::Codex::ECDSA_256r1_Big)]
+    #[case(true, 4, None, 0, indexer::Codex::ECDSA_256r1_Crt)]
+    #[case(true, 4, Some(6), 0, indexer::Codex::ECDSA_256r1_Crt)]
+    #[case(true, 65, None, 0, indexer::Codex::ECDSA_256r1_Big_Crt)]
+    #[case(true, 65, Some(67), 0, indexer::Codex::ECDSA_256r1_Big_Crt)]
+    fn sign_ecdsa_256r1_indexed(
+        #[case] only: bool,
+        #[case] index: u32,
+        #[case] input_ondex: Option<u32>,
+        #[case] output_ondex: u32,
+        #[case] siger_code: &str,
+    ) {
+        let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
+        let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
+
+        let signer =
+            Signer::new(Some(true), Some(matter::Codex::ECDSA_256r1_Seed), None, None, None, None)
                 .unwrap();
 
         let siger = signer.sign_indexed(ser, only, index, input_ondex).unwrap();
