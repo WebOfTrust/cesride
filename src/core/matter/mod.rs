@@ -193,8 +193,10 @@ pub trait Matter: Default {
             buffer[szg.ls as usize..].clone_from_slice(&raw);
             raw.zeroize();
 
-            let b64 = b64_engine::URL_SAFE.encode(&buffer);
-
+            let mut b64_vec = Zeroizing::new(vec![0u8; buffer.len() * 4 / 3]);
+            b64_engine::URL_SAFE.encode_slice(&buffer, &mut b64_vec)?;
+            // this does a transmute of pointers under the hood so zeroizing the vec should be enough
+            let b64 = std::str::from_utf8(&b64_vec)?;
             Ok(format!("{both}{b64}"))
         } else {
             let both = code;
@@ -210,8 +212,9 @@ pub trait Matter: Default {
             buffer[ps..].clone_from_slice(&raw);
             raw.zeroize();
 
-            let b64 = b64_engine::URL_SAFE.encode(&buffer);
-
+            let mut b64_vec = Zeroizing::new(vec![0u8; buffer.len() * 4 / 3]);
+            b64_engine::URL_SAFE.encode_slice(&buffer, &mut b64_vec)?;
+            let b64 = std::str::from_utf8(&b64_vec)?;
             Ok(format!("{both}{}", &b64[cs % 4..]))
         }
     }
