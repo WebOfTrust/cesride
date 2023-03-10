@@ -1,4 +1,4 @@
-use crate::data::{data, Data, Value};
+use crate::data::{dat, Value};
 use crate::error::{err, Error, Result};
 
 use lazy_static::lazy_static;
@@ -209,7 +209,7 @@ pub(crate) fn sizeify(ked: &Value, kind: Option<&str>) -> Result<SizeifyResult> 
     }
 
     let mut ked = ked.clone();
-    ked["v"] = data!(&vs);
+    ked["v"] = dat!(&vs);
 
     Ok(SizeifyResult { raw, ident: result.ident, kind, ked, version: result.version })
 }
@@ -314,12 +314,12 @@ pub(crate) fn sniff(raw: &[u8]) -> Result<SniffResult> {
 #[cfg(test)]
 mod test {
     use crate::core::common;
-    use crate::data::{data, Data};
+    use crate::data::dat;
     use rstest::rstest;
 
     #[test]
     fn loads() {
-        let raw = &data!({}).to_json().unwrap().as_bytes().to_vec();
+        let raw = &dat!({}).to_json().unwrap().as_bytes().to_vec();
         assert!(common::loads(raw, None, None).is_ok());
     }
 
@@ -327,35 +327,33 @@ mod test {
     fn sniff_unhappy_paths() {
         assert!(common::sniff(&[]).is_err()); // minimum 29 octets
         assert!(common::sniff(
-            &data!({"v":"version string must be valid!"}).to_json().unwrap().as_bytes()
+            &dat!({"v":"version string must be valid!"}).to_json().unwrap().as_bytes()
         )
         .is_err());
         assert!(common::sniff(
-            &data!({"i":"needs to start within 12 characters!","v":"KERI10JSON000000_"})
+            &dat!({"i":"needs to start within 12 characters!","v":"KERI10JSON000000_"})
                 .to_json()
                 .unwrap()
                 .as_bytes()
         )
         .is_err());
-        assert!(common::sniff(&data!({"v":"KERI10ABCD000000_","confusing but necessary filler":"hmm...maybe a 12 octet magic prefix?"}).to_json().unwrap().as_bytes()).is_err());
+        assert!(common::sniff(&dat!({"v":"KERI10ABCD000000_","confusing but necessary filler":"hmm...maybe a 12 octet magic prefix?"}).to_json().unwrap().as_bytes()).is_err());
         // needs to have a valid serialization kind
     }
 
     #[test]
     fn loads_unhappy_paths() {
-        let raw = &data!({}).to_json().unwrap().as_bytes().to_vec();
+        let raw = &dat!({}).to_json().unwrap().as_bytes().to_vec();
         assert!(common::loads(raw, None, Some("CESR")).is_err());
         assert!(common::loads(raw, Some(1024), Some("CESR")).is_err());
     }
 
     #[test]
     fn sizeify_unhappy_paths() {
-        assert!(common::sizeify(&data!({}), None).is_err());
-        assert!(common::sizeify(&data!({"v":"KERIffJSON000000_"}), None).is_err());
-        assert!(common::sizeify(&data!({"v":"KERI10JSON000000_"}), Some("CESR")).is_err());
-        assert!(
-            common::sizeify(&data!({"i":"filler entry","v":"KERI10JSON000000_"}), None).is_err()
-        );
+        assert!(common::sizeify(&dat!({}), None).is_err());
+        assert!(common::sizeify(&dat!({"v":"KERIffJSON000000_"}), None).is_err());
+        assert!(common::sizeify(&dat!({"v":"KERI10JSON000000_"}), Some("CESR")).is_err());
+        assert!(common::sizeify(&dat!({"i":"filler entry","v":"KERI10JSON000000_"}), None).is_err());
     }
 
     #[test]
@@ -373,6 +371,6 @@ mod test {
 
     #[test]
     fn dumps_unhappy_paths() {
-        assert!(common::dumps(&data!({}), Some("CESR")).is_err());
+        assert!(common::dumps(&dat!({}), Some("CESR")).is_err());
     }
 }
