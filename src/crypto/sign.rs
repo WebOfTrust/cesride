@@ -200,7 +200,6 @@ mod test {
         let signature = sign::sign(code, &private_key, ser).unwrap();
         let public_key = sign::public_key(code, &private_key).unwrap();
         assert!(sign::verify(code, &public_key, &signature, ser).unwrap());
-        println!("{code}, {}, {}, {}", private_key.len(), public_key.len(), signature.len());
     }
 
     #[test]
