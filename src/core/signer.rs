@@ -293,30 +293,44 @@ mod test {
     fn hardcoded() {
         let seed = b"\x9f{\xa8\xa7\xa8C9\x96&\xfa\xb1\x99\xeb\xaa \xc4\x1bG\x11\xc4\xaeSAR\xc9\xbd\x04\x9d\x85)~\x93";
 
-        let signer = Signer::new_with_raw(seed, None, Some(matter::Codex::ECDSA_256r1_Seed)).unwrap();
+        let signer =
+            Signer::new_with_raw(seed, None, Some(matter::Codex::ECDSA_256r1_Seed)).unwrap();
         assert_eq!(signer.code(), matter::Codex::ECDSA_256r1_Seed);
 
         assert_eq!(signer.raw().len(), matter::raw_size(&signer.code()).unwrap() as usize);
         assert_eq!(signer.raw(), seed);
         assert_eq!(signer.verfer().code(), matter::Codex::ECDSA_256r1);
-        assert_eq!(signer.verfer().raw().len(), matter::raw_size(&signer.verfer().code()).unwrap() as usize);
+        assert_eq!(
+            signer.verfer().raw().len(),
+            matter::raw_size(&signer.verfer().code()).unwrap() as usize
+        );
         assert_eq!(signer.qb64().unwrap(), "QJ97qKeoQzmWJvqxmeuqIMQbRxHErlNBUsm9BJ2FKX6T");
-        assert_eq!(signer.verfer().qb64().unwrap(), "1AAJA3cK_P2CDlh-_EMFPvyqTPI1POkw-dr14DANx5JEXDCZ");
+        assert_eq!(
+            signer.verfer().qb64().unwrap(),
+            "1AAJA3cK_P2CDlh-_EMFPvyqTPI1POkw-dr14DANx5JEXDCZ"
+        );
 
         // openssl ecparam -name prime256v1 -genkey | openssl ec -pubout -text -param_enc explicit -conv_form compressed
         let seed = b"\x35\x86\xc9\xa0\x4d\x33\x67\x85\xd5\xe4\x6a\xda\x62\xf0\x54\xc5\xa5\xf4\x32\x3f\x46\xcb\x92\x23\x07\xe0\xe2\x79\xb7\xe5\xf5\x0a";
         let public_key = b"\x03\x16\x99\xbc\xa0\x51\x8f\xa6\x6c\xb3\x5d\x6b\x0a\x92\xf6\x84\x96\x28\x7b\xb6\x64\xe8\xe8\x57\x69\x15\xb8\xea\x9a\x02\x06\x2a\xff";
 
-        let signer = Signer::new_with_raw(seed, None, Some(matter::Codex::ECDSA_256r1_Seed)).unwrap();
+        let signer =
+            Signer::new_with_raw(seed, None, Some(matter::Codex::ECDSA_256r1_Seed)).unwrap();
         assert_eq!(signer.code(), matter::Codex::ECDSA_256r1_Seed);
 
         assert_eq!(signer.raw().len(), matter::raw_size(&signer.code()).unwrap() as usize);
         assert_eq!(signer.raw(), seed);
         assert_eq!(signer.verfer().code(), matter::Codex::ECDSA_256r1);
-        assert_eq!(signer.verfer().raw().len(), matter::raw_size(&signer.verfer().code()).unwrap() as usize);
+        assert_eq!(
+            signer.verfer().raw().len(),
+            matter::raw_size(&signer.verfer().code()).unwrap() as usize
+        );
         assert_eq!(signer.verfer().raw(), public_key);
         assert_eq!(signer.qb64().unwrap(), "QDWGyaBNM2eF1eRq2mLwVMWl9DI_RsuSIwfg4nm35fUK");
-        assert_eq!(signer.verfer().qb64().unwrap(), "1AAJAxaZvKBRj6Zss11rCpL2hJYoe7Zk6OhXaRW46poCBir_");
+        assert_eq!(
+            signer.verfer().qb64().unwrap(),
+            "1AAJAxaZvKBRj6Zss11rCpL2hJYoe7Zk6OhXaRW46poCBir_"
+        );
     }
 
     #[rstest]
