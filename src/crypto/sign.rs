@@ -112,7 +112,7 @@ mod ed25519 {
 
 mod ecdsa_256k1 {
     use k256::ecdsa::{
-        signature::{Signer, Verifier},
+        signature::{RandomizedSigner, Verifier},
         Signature, SigningKey, VerifyingKey,
     };
     use rand_core::OsRng;
@@ -126,14 +126,15 @@ mod ecdsa_256k1 {
     }
 
     pub(crate) fn public_key(private_key: &[u8]) -> Result<Vec<u8>> {
-        let private_key = SigningKey::try_from(private_key)?;
+        let private_key = SigningKey::from_slice(private_key)?;
         let public_key = VerifyingKey::from(private_key);
         Ok(public_key.to_encoded_point(true).as_bytes().to_vec())
     }
 
     pub(crate) fn sign(private_key: &[u8], ser: &[u8]) -> Result<Vec<u8>> {
-        let private_key = SigningKey::try_from(private_key)?;
-        Ok(<SigningKey as Signer<Signature>>::sign(&private_key, ser).to_bytes().to_vec())
+        let private_key = SigningKey::from_slice(private_key)?;
+        let signature: Signature = private_key.sign_with_rng(&mut OsRng, ser);
+        Ok(signature.to_vec())
     }
 
     pub(crate) fn verify(public_key: &[u8], sig: &[u8], ser: &[u8]) -> Result<bool> {
@@ -149,7 +150,7 @@ mod ecdsa_256k1 {
 
 mod ecdsa_256r1 {
     use p256::ecdsa::{
-        signature::{Signer, Verifier},
+        signature::{RandomizedSigner, Verifier},
         Signature, SigningKey, VerifyingKey,
     };
     use rand_core::OsRng;
@@ -163,14 +164,15 @@ mod ecdsa_256r1 {
     }
 
     pub(crate) fn public_key(private_key: &[u8]) -> Result<Vec<u8>> {
-        let private_key = SigningKey::try_from(private_key)?;
+        let private_key = SigningKey::from_slice(private_key)?;
         let public_key = VerifyingKey::from(private_key);
         Ok(public_key.to_encoded_point(true).as_bytes().to_vec())
     }
 
     pub(crate) fn sign(private_key: &[u8], ser: &[u8]) -> Result<Vec<u8>> {
-        let private_key = SigningKey::try_from(private_key)?;
-        Ok(<SigningKey as Signer<Signature>>::sign(&private_key, ser).to_bytes().to_vec())
+        let private_key = SigningKey::from_slice(private_key)?;
+        let signature: Signature = private_key.sign_with_rng(&mut OsRng, ser);
+        Ok(signature.to_vec())
     }
 
     pub(crate) fn verify(public_key: &[u8], sig: &[u8], ser: &[u8]) -> Result<bool> {

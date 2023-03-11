@@ -255,6 +255,7 @@ impl Matter for Signer {
 #[cfg(test)]
 mod test {
     use crate::core::{
+        cigar::Cigar,
         indexer::{tables as indexer, Indexer},
         matter::{tables as matter, Matter},
         signer::Signer,
@@ -389,11 +390,18 @@ mod test {
         assert_eq!(signer.verfer().raw(), public_key);
         assert_eq!(signer.verfer().qb64().unwrap(), verfer_qb64);
 
+        // the signatures we generate for ecdsa contain a random element and differ each time
+        // so we test that the one generated verifies
+        assert_eq!(cigar.code(), cigar_code);
+        assert_eq!(cigar.raw().len(), matter::raw_size(cigar_code).unwrap() as usize);
+        assert!(signer.verfer().verify(&cigar.raw(), ser).unwrap());
+
+        // and then we test that a precomputed signature verifies
+        let cigar = Cigar::new(None, Some(cigar_code), Some(signature), None, None, None).unwrap();
         assert_eq!(cigar.code(), cigar_code);
         assert_eq!(cigar.raw().len(), matter::raw_size(cigar_code).unwrap() as usize);
         assert_eq!(cigar.raw(), signature);
         assert_eq!(cigar.qb64().unwrap(), cigar_qb64);
-
         assert!(signer.verfer().verify(&cigar.raw(), ser).unwrap());
     }
 
