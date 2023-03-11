@@ -8,6 +8,7 @@ fix:
 preflight:
 	cargo audit
 	cargo fmt --check
+	cargo outdated -R --ignore rand --exit-code 1
 	cargo clippy -- -D warnings
 	cargo build --release
 	cargo test --release
