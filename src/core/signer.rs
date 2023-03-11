@@ -290,6 +290,58 @@ mod test {
     }
 
     #[test]
+    fn hardcoded_ed25519() {
+        let signer_code = matter::Codex::Ed25519_Seed;
+        let verfer_code = matter::Codex::Ed25519;
+        let cigar_code = matter::Codex::Ed25519_Sig;
+
+        let seed = b"\x9f{\xa8\xa7\xa8C9\x96&\xfa\xb1\x99\xeb\xaa \xc4\x1bG\x11\xc4\xaeSAR\xc9\xbd\x04\x9d\x85)~\x93";
+
+        let signer = Signer::new_with_raw(seed, None, Some(signer_code)).unwrap();
+
+        assert_eq!(signer.code(), signer_code);
+        assert_eq!(signer.raw().len(), matter::raw_size(&signer.code()).unwrap() as usize);
+        assert_eq!(signer.raw(), seed);
+        assert_eq!(signer.qb64().unwrap(), "AJ97qKeoQzmWJvqxmeuqIMQbRxHErlNBUsm9BJ2FKX6T");
+
+        assert_eq!(signer.verfer().code(), verfer_code);
+        assert_eq!(
+            signer.verfer().raw().len(),
+            matter::raw_size(&signer.verfer().code()).unwrap() as usize
+        );
+        assert_eq!(signer.verfer().qb64().unwrap(), "DFs8BBx86uytIM0D2BhsE5rrqVIT8ef8mflpNceHo4XH");
+
+        // openssl genpkey -algorithm ed25519 -text
+        let seed = b"\xaa\xd1\x4e\x47\xa8\xc9\x59\xd1\x04\xe2\x46\xd3\x76\x57\x79\x2a\xe8\x2a\x13\x3b\x8f\xf6\x32\x36\xea\xc7\xb9\x6c\x5f\xf3\x08\x33";
+        let public_key = b"\x05\x91\xa1\x24\x0d\x9a\x69\xc3\x4d\xc5\x72\x20\x5a\xdf\x90\x66\x09\xba\xb0\x38\x54\x7b\xe6\xb1\x2e\x78\x7e\x67\xd3\xe9\xf0\x6f";
+        let signature = b"\x1c\x6d\x3c\xef\x3a\x57\x55\xe3\x70\x06\x01\x6e\xb2\xbf\x59\x6e\xca\x5a\xf8\x04\xf6\xf4\xe8\x1f\x0f\x8b\x27\x10\xd5\x26\xce\x37\x4f\x50\x3d\x05\xb7\xf3\x5d\xa7\xce\x5c\xda\x8a\xd7\xfe\x86\x6c\x82\x48\x6f\xa6\x7a\xf7\x37\xfe\x43\x87\x0d\x3d\xe9\x8f\xa0\x00";
+        let ser = b"abc";
+
+        let signer = Signer::new_with_raw(seed, None, Some(signer_code)).unwrap();
+        let cigar = signer.sign_unindexed(ser).unwrap();
+
+        assert_eq!(signer.code(), signer_code);
+        assert_eq!(signer.raw().len(), matter::raw_size(&signer.code()).unwrap() as usize);
+        assert_eq!(signer.raw(), seed);
+        assert_eq!(signer.qb64().unwrap(), "AKrRTkeoyVnRBOJG03ZXeSroKhM7j_YyNurHuWxf8wgz");
+
+        assert_eq!(signer.verfer().code(), verfer_code);
+        assert_eq!(
+            signer.verfer().raw().len(),
+            matter::raw_size(&signer.verfer().code()).unwrap() as usize
+        );
+        assert_eq!(signer.verfer().raw(), public_key);
+        assert_eq!(signer.verfer().qb64().unwrap(), "DAWRoSQNmmnDTcVyIFrfkGYJurA4VHvmsS54fmfT6fBv");
+
+        assert_eq!(cigar.code(), cigar_code);
+        assert_eq!(cigar.raw().len(), matter::raw_size(&cigar.code()).unwrap() as usize);
+        assert_eq!(cigar.raw(), signature);
+        assert_eq!(cigar.qb64().unwrap(), "0BAcbTzvOldV43AGAW6yv1luylr4BPb06B8PiycQ1SbON09QPQW3812nzlzaitf-hmyCSG-mevc3_kOHDT3pj6AA");
+
+        assert!(signer.verfer().verify(&cigar.raw(), ser).unwrap());
+    }
+
+    #[test]
     fn hardcoded_secp256r1() {
         let signer_code = matter::Codex::ECDSA_256r1_Seed;
         let verfer_code = matter::Codex::ECDSA_256r1;
