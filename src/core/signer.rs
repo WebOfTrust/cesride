@@ -315,18 +315,15 @@ mod test {
         #[case] verfer_qb64: &str,
     ) {
         let seed = b"\x9f{\xa8\xa7\xa8C9\x96&\xfa\xb1\x99\xeb\xaa \xc4\x1bG\x11\xc4\xaeSAR\xc9\xbd\x04\x9d\x85)~\x93";
-
         let signer = Signer::new_with_raw(seed, None, Some(signer_code)).unwrap();
-        assert_eq!(signer.code(), signer_code);
 
-        assert_eq!(signer.raw().len(), matter::raw_size(&signer.code()).unwrap() as usize);
+        assert_eq!(signer.code(), signer_code);
+        assert_eq!(signer.raw().len(), matter::raw_size(signer_code).unwrap() as usize);
         assert_eq!(signer.raw(), seed);
-        assert_eq!(signer.verfer().code(), verfer_code);
-        assert_eq!(
-            signer.verfer().raw().len(),
-            matter::raw_size(&signer.verfer().code()).unwrap() as usize
-        );
         assert_eq!(signer.qb64().unwrap(), signer_qb64);
+
+        assert_eq!(signer.verfer().code(), verfer_code);
+        assert_eq!(signer.verfer().raw().len(), matter::raw_size(verfer_code).unwrap() as usize);
         assert_eq!(signer.verfer().qb64().unwrap(), verfer_qb64);
     }
 
@@ -383,20 +380,17 @@ mod test {
         let cigar = signer.sign_unindexed(ser).unwrap();
 
         assert_eq!(signer.code(), signer_code);
-        assert_eq!(signer.raw().len(), matter::raw_size(&signer.code()).unwrap() as usize);
+        assert_eq!(signer.raw().len(), matter::raw_size(signer_code).unwrap() as usize);
         assert_eq!(signer.raw(), seed);
         assert_eq!(signer.qb64().unwrap(), signer_qb64);
 
         assert_eq!(signer.verfer().code(), verfer_code);
-        assert_eq!(
-            signer.verfer().raw().len(),
-            matter::raw_size(&signer.verfer().code()).unwrap() as usize
-        );
+        assert_eq!(signer.verfer().raw().len(), matter::raw_size(verfer_code).unwrap() as usize);
         assert_eq!(signer.verfer().raw(), public_key);
         assert_eq!(signer.verfer().qb64().unwrap(), verfer_qb64);
 
         assert_eq!(cigar.code(), cigar_code);
-        assert_eq!(cigar.raw().len(), matter::raw_size(&cigar.code()).unwrap() as usize);
+        assert_eq!(cigar.raw().len(), matter::raw_size(cigar_code).unwrap() as usize);
         assert_eq!(cigar.raw(), signature);
         assert_eq!(cigar.qb64().unwrap(), cigar_qb64);
 
