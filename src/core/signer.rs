@@ -290,16 +290,18 @@ mod test {
     }
 
     #[test]
-    fn hardcoded() {
+    fn hardcoded_secp256r1() {
+        let signer_code = matter::Codex::ECDSA_256r1_Seed;
+        let verfer_code = matter::Codex::ECDSA_256r1;
+
         let seed = b"\x9f{\xa8\xa7\xa8C9\x96&\xfa\xb1\x99\xeb\xaa \xc4\x1bG\x11\xc4\xaeSAR\xc9\xbd\x04\x9d\x85)~\x93";
 
-        let signer =
-            Signer::new_with_raw(seed, None, Some(matter::Codex::ECDSA_256r1_Seed)).unwrap();
-        assert_eq!(signer.code(), matter::Codex::ECDSA_256r1_Seed);
+        let signer = Signer::new_with_raw(seed, None, Some(signer_code)).unwrap();
+        assert_eq!(signer.code(), signer_code);
 
         assert_eq!(signer.raw().len(), matter::raw_size(&signer.code()).unwrap() as usize);
         assert_eq!(signer.raw(), seed);
-        assert_eq!(signer.verfer().code(), matter::Codex::ECDSA_256r1);
+        assert_eq!(signer.verfer().code(), verfer_code);
         assert_eq!(
             signer.verfer().raw().len(),
             matter::raw_size(&signer.verfer().code()).unwrap() as usize
@@ -314,13 +316,12 @@ mod test {
         let seed = b"\x35\x86\xc9\xa0\x4d\x33\x67\x85\xd5\xe4\x6a\xda\x62\xf0\x54\xc5\xa5\xf4\x32\x3f\x46\xcb\x92\x23\x07\xe0\xe2\x79\xb7\xe5\xf5\x0a";
         let public_key = b"\x03\x16\x99\xbc\xa0\x51\x8f\xa6\x6c\xb3\x5d\x6b\x0a\x92\xf6\x84\x96\x28\x7b\xb6\x64\xe8\xe8\x57\x69\x15\xb8\xea\x9a\x02\x06\x2a\xff";
 
-        let signer =
-            Signer::new_with_raw(seed, None, Some(matter::Codex::ECDSA_256r1_Seed)).unwrap();
-        assert_eq!(signer.code(), matter::Codex::ECDSA_256r1_Seed);
+        let signer = Signer::new_with_raw(seed, None, Some(signer_code)).unwrap();
+        assert_eq!(signer.code(), signer_code);
 
         assert_eq!(signer.raw().len(), matter::raw_size(&signer.code()).unwrap() as usize);
         assert_eq!(signer.raw(), seed);
-        assert_eq!(signer.verfer().code(), matter::Codex::ECDSA_256r1);
+        assert_eq!(signer.verfer().code(), verfer_code);
         assert_eq!(
             signer.verfer().raw().len(),
             matter::raw_size(&signer.verfer().code()).unwrap() as usize
@@ -330,6 +331,51 @@ mod test {
         assert_eq!(
             signer.verfer().qb64().unwrap(),
             "1AAJAxaZvKBRj6Zss11rCpL2hJYoe7Zk6OhXaRW46poCBir_"
+        );
+    }
+
+    #[test]
+    fn hardcoded_secp256k1() {
+        let signer_code = matter::Codex::ECDSA_256k1_Seed;
+        let verfer_code = matter::Codex::ECDSA_256k1;
+
+        let seed = b"\x9f{\xa8\xa7\xa8C9\x96&\xfa\xb1\x99\xeb\xaa \xc4\x1bG\x11\xc4\xaeSAR\xc9\xbd\x04\x9d\x85)~\x93";
+
+        let signer = Signer::new_with_raw(seed, None, Some(signer_code)).unwrap();
+        assert_eq!(signer.code(), signer_code);
+
+        assert_eq!(signer.raw().len(), matter::raw_size(&signer.code()).unwrap() as usize);
+        assert_eq!(signer.raw(), seed);
+        assert_eq!(signer.verfer().code(), verfer_code);
+        assert_eq!(
+            signer.verfer().raw().len(),
+            matter::raw_size(&signer.verfer().code()).unwrap() as usize
+        );
+        assert_eq!(signer.qb64().unwrap(), "JJ97qKeoQzmWJvqxmeuqIMQbRxHErlNBUsm9BJ2FKX6T");
+        assert_eq!(
+            signer.verfer().qb64().unwrap(),
+            "1AABAg299p5IMvuw71HW_TlbzGq5cVOQ7bRbeDuhheF-DPYk"
+        );
+
+        // openssl ecparam -name secp256k1 -genkey | openssl ec -pubout -text -param_enc explicit -conv_form compressed
+        let seed = b"\x7f\x98\x0a\x3b\xe4\x45\xd7\x8c\xc9\x79\xa1\xee\x26\x20\x9c\x17\x71\x16\xab\xa6\xd6\xf1\x6a\x01\xe7\xb3\xce\xfe\xe2\x6c\x06\x08";
+        let public_key = b"\x02\xdb\x98\x33\x85\xa8\x0e\xbb\x7c\x15\x5d\xdd\xc6\x47\x6a\x24\x07\x9a\x7c\x96\x5f\x05\x0f\x62\xde\x2d\x47\x56\x9b\x54\x29\x16\x79";
+
+        let signer = Signer::new_with_raw(seed, None, Some(signer_code)).unwrap();
+        assert_eq!(signer.code(), signer_code);
+
+        assert_eq!(signer.raw().len(), matter::raw_size(&signer.code()).unwrap() as usize);
+        assert_eq!(signer.raw(), seed);
+        assert_eq!(signer.verfer().code(), verfer_code);
+        assert_eq!(
+            signer.verfer().raw().len(),
+            matter::raw_size(&signer.verfer().code()).unwrap() as usize
+        );
+        assert_eq!(signer.verfer().raw(), public_key);
+        assert_eq!(signer.qb64().unwrap(), "JH-YCjvkRdeMyXmh7iYgnBdxFqum1vFqAeezzv7ibAYI");
+        assert_eq!(
+            signer.verfer().qb64().unwrap(),
+            "1AABAtuYM4WoDrt8FV3dxkdqJAeafJZfBQ9i3i1HVptUKRZ5"
         );
     }
 
