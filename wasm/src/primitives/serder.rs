@@ -1,11 +1,12 @@
 use std::ops::Deref;
 
 use crate::{
-    error::*, Digers, NumberWrapper, SaiderWrapper, TholderWrapper, U128Wrapper, Verfers,
-    VersionWrapper,
+    error::*, DigerWrapper, NumberWrapper, SaiderWrapper, TholderWrapper, U128Wrapper,
+    VerferWrapper, VersionWrapper,
 };
 use cesride_core::Serder;
 use cesride_core::{Sadder, Value};
+use js_sys::Array;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(js_name = Serder)]
@@ -42,22 +43,34 @@ impl SerderWrapper {
         Ok(SerderWrapper(serder))
     }
 
-    pub fn verfers(&self) -> Result<Verfers, JsValue> {
+    pub fn verfers(&self) -> Result<Array, JsValue> {
         let verfers = self.0.verfers().as_js()?;
-        let verfers = verfers.iter().map(|x| crate::VerferWrapper(x.clone())).collect();
-        Ok(Verfers(verfers))
+        let arr = Array::new_with_length(verfers.len() as u32);
+        (0..verfers.len()).for_each(|i| {
+            let v = verfers[i].clone();
+            arr.set(i as u32, VerferWrapper(v).into());
+        });
+        Ok(arr)
     }
 
-    pub fn digers(&self) -> Result<Digers, JsValue> {
+    pub fn digers(&self) -> Result<Array, JsValue> {
         let digers = self.0.digers().as_js()?;
-        let digers = digers.iter().map(|x| crate::DigerWrapper(x.clone())).collect();
-        Ok(Digers(digers))
+        let arr = Array::new_with_length(digers.len() as u32);
+        (0..digers.len()).for_each(|i| {
+            let v = digers[i].clone();
+            arr.set(i as u32, DigerWrapper(v).into());
+        });
+        Ok(arr)
     }
 
-    pub fn werfers(&self) -> Result<Verfers, JsValue> {
+    pub fn werfers(&self) -> Result<Array, JsValue> {
         let werfers = self.0.werfers().as_js()?;
-        let werfers = werfers.iter().map(|x| crate::VerferWrapper(x.clone())).collect();
-        Ok(Verfers(werfers))
+        let arr = Array::new_with_length(werfers.len() as u32);
+        (0..werfers.len()).for_each(|i| {
+            let v = werfers[i].clone();
+            arr.set(i as u32, VerferWrapper(v).into());
+        });
+        Ok(arr)
     }
 
     pub fn tholder(&self) -> Result<Option<TholderWrapper>, JsValue> {

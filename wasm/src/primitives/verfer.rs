@@ -84,26 +84,3 @@ impl Deref for VerferWrapper {
         &self.0
     }
 }
-
-#[wasm_bindgen]
-pub struct Verfers(pub(crate) Vec<VerferWrapper>);
-
-// TODO: Make this iterable in JS
-#[wasm_bindgen]
-impl Verfers {
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
-    }
-
-    pub fn get(&self, index: usize) -> Option<VerferWrapper> {
-        if index < self.0.len() {
-            Some(self.0[index].clone())
-        } else {
-            None
-        }
-    }
-}

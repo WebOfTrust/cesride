@@ -90,26 +90,3 @@ impl DigerWrapper {
         self.0.qb2().as_js().map_err(JsValue::from)
     }
 }
-
-#[wasm_bindgen]
-pub struct Digers(pub(crate) Vec<DigerWrapper>);
-
-// TODO: Make this iterable in JS
-#[wasm_bindgen]
-impl Digers {
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
-    }
-
-    pub fn get(&self, index: usize) -> Option<DigerWrapper> {
-        if index < self.0.len() {
-            Some(self.0[index].clone())
-        } else {
-            None
-        }
-    }
-}
