@@ -30,4 +30,5 @@ pub use crate::{
         verfer::Verfer,
     },
     error::Error,
+    error::Result,
 };
