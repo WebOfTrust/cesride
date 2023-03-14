@@ -194,13 +194,13 @@ impl Tholder {
     }
 
     pub fn satisfy(&self, indices: &[u32]) -> Result<bool> {
-        return if self.number().is_some() {
+        if self.number().is_some() {
             self.satisfy_numeric(indices)
         } else if self.bexter().is_some() {
             self.satisfy_weighted(indices)
         } else {
             Ok(false)
-        };
+        }
     }
 
     fn satisfy_numeric(&self, indices: &[u32]) -> Result<bool> {
