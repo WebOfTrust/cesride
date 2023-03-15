@@ -28,9 +28,11 @@ fn validate_code(code: &str) -> Result<()> {
         // non-transferable
         matter::Codex::Ed25519N,
         matter::Codex::ECDSA_256k1N,
+        matter::Codex::ECDSA_256r1N,
         // transferable
         matter::Codex::Ed25519,
         matter::Codex::ECDSA_256k1,
+        matter::Codex::ECDSA_256r1,
         // digests
         matter::Codex::Blake3_256,
         matter::Codex::Blake3_512,
@@ -61,9 +63,13 @@ fn derive(ked: &Value, code: &str) -> Result<(Vec<u8>, String)> {
 
     match code {
         // non-transferable codes
-        matter::Codex::Ed25519N | matter::Codex::ECDSA_256k1N => derive_nontransferable(ked, code),
+        matter::Codex::Ed25519N | matter::Codex::ECDSA_256k1N | matter::Codex::ECDSA_256r1N => {
+            derive_nontransferable(ked, code)
+        }
         // transferable codes
-        matter::Codex::Ed25519 | matter::Codex::ECDSA_256k1 => derive_transferable(ked, code),
+        matter::Codex::Ed25519 | matter::Codex::ECDSA_256k1 | matter::Codex::ECDSA_256r1 => {
+            derive_transferable(ked, code)
+        }
         // digests
         matter::Codex::Blake3_256
         | matter::Codex::Blake3_512
@@ -333,11 +339,11 @@ impl Prefixer {
 
         match self.code().as_str() {
             // non-transferable codes
-            matter::Codex::Ed25519N | matter::Codex::ECDSA_256k1N => {
+            matter::Codex::Ed25519N | matter::Codex::ECDSA_256k1N | matter::Codex::ECDSA_256r1N => {
                 verify_nontransferable(ked, &self.qb64()?, prefixed)
             }
             // transferable codes
-            matter::Codex::Ed25519 | matter::Codex::ECDSA_256k1 => {
+            matter::Codex::Ed25519 | matter::Codex::ECDSA_256k1 | matter::Codex::ECDSA_256r1 => {
                 verify_transferable(ked, &self.qb64()?, prefixed)
             }
             // digests

@@ -25,6 +25,7 @@ fn validate_code(code: &str) -> Result<()> {
     const CODES: &[&str] = &[
         matter::Codex::Ed25519_Sig,
         matter::Codex::ECDSA_256k1_Sig,
+        matter::Codex::ECDSA_256r1_Sig,
         // matter::Codex::Ed448_Sig,
     ];
 

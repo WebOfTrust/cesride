@@ -21,6 +21,8 @@ fn validate_code(code: &str) -> Result<()> {
         matter::Codex::Ed25519,
         matter::Codex::ECDSA_256k1N,
         matter::Codex::ECDSA_256k1,
+        matter::Codex::ECDSA_256r1N,
+        matter::Codex::ECDSA_256r1,
         // matter::Codex::Ed448N,
         // matter::Codex::Ed448,
     ];
@@ -244,6 +246,37 @@ mod test {
         assert!(m.verify(&[], &ser).is_err());
 
         m.set_code(&matter::Codex::ECDSA_256k1N);
+        assert!(m.verify(&sig, &ser).unwrap());
+        assert!(!m.verify(&bad_sig, &ser).unwrap());
+        assert!(!m.verify(&sig, &bad_ser).unwrap());
+    }
+
+    #[test]
+    fn verify_ecdsa_256r1() {
+        use p256::ecdsa::{signature::Signer, Signature, SigningKey, VerifyingKey};
+
+        let ser = hex!("e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f"
+                                 "5b49b82f805a538c68915c1ae8035c900fd1d4b13902920fd05e1450822f36de");
+        let bad_ser = hex!("badd");
+
+        let mut csprng = rand_core::OsRng;
+        let private_key = SigningKey::random(&mut csprng);
+
+        let sig = <SigningKey as Signer<Signature>>::sign(&private_key, &ser).to_bytes();
+        let mut bad_sig = sig.clone();
+        bad_sig[0] ^= 0xff;
+
+        let public_key = VerifyingKey::from(private_key);
+        let raw = public_key.to_encoded_point(true).to_bytes();
+
+        let mut m =
+            Verfer::new(Some(matter::Codex::ECDSA_256r1), Some(&raw), None, None, None).unwrap();
+        assert!(m.verify(&sig, &ser).unwrap());
+        assert!(!m.verify(&bad_sig, &ser).unwrap());
+        assert!(!m.verify(&sig, &bad_ser).unwrap());
+        assert!(m.verify(&[], &ser).is_err());
+
+        m.set_code(&matter::Codex::ECDSA_256r1N);
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());
