@@ -38,18 +38,21 @@ impl SignerWrapper {
         Ok(SignerWrapper(signer))
     }
 
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<SignerWrapper, JsValue> {
-        let signer = Signer::new_with_qb64b(qb64b).as_js()?;
+    pub fn new_with_qb64b(
+        qb64b: &[u8],
+        transferable: Option<bool>,
+    ) -> Result<SignerWrapper, JsValue> {
+        let signer = Signer::new_with_qb64b(qb64b, transferable).as_js()?;
         Ok(SignerWrapper(signer))
     }
 
-    pub fn new_with_qb64(qb64: &str) -> Result<SignerWrapper, JsValue> {
-        let signer = Signer::new_with_qb64(qb64).as_js()?;
+    pub fn new_with_qb64(qb64: &str, transferable: Option<bool>) -> Result<SignerWrapper, JsValue> {
+        let signer = Signer::new_with_qb64(qb64, transferable).as_js()?;
         Ok(SignerWrapper(signer))
     }
 
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<SignerWrapper, JsValue> {
-        let signer = Signer::new_with_qb2(qb2).as_js()?;
+    pub fn new_with_qb2(qb2: &[u8], transferable: Option<bool>) -> Result<SignerWrapper, JsValue> {
+        let signer = Signer::new_with_qb2(qb2, transferable).as_js()?;
         Ok(SignerWrapper(signer))
     }
 

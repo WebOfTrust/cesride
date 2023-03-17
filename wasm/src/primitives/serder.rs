@@ -2,10 +2,9 @@ use std::ops::Deref;
 
 use crate::{
     error::*, DigerWrapper, NumberWrapper, SaiderWrapper, TholderWrapper, U128Wrapper,
-    VerferWrapper, VersionWrapper,
+    ValueWrapper, VerferWrapper, VersionWrapper,
 };
-use cesride_core::Serder;
-use cesride_core::{Sadder, Value};
+use cesride_core::{data::Value, Sadder, Serder};
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
 
@@ -19,14 +18,14 @@ impl SerderWrapper {
         code: Option<String>,
         raw: Option<Vec<u8>>,
         kind: Option<String>,
-        ked: Option<String>,
+        ked: Option<ValueWrapper>,
         sad: Option<SerderWrapper>,
     ) -> Result<SerderWrapper, JsValue> {
         let serder = Serder::new(
             code.as_deref(),
             raw.as_deref(),
             kind.as_deref(),
-            ked.as_deref().map(Value::from).as_ref(),
+            ked.map(Value::from).as_ref(),
             sad.as_deref(),
         )
         .as_js()?;
@@ -34,7 +33,7 @@ impl SerderWrapper {
     }
 
     pub fn new_with_ked(
-        ked: &str,
+        ked: ValueWrapper,
         code: Option<String>,
         kind: Option<String>,
     ) -> Result<SerderWrapper, JsValue> {
@@ -111,8 +110,9 @@ impl SerderWrapper {
         self.0.raw()
     }
 
-    pub fn ked(&self) -> String {
-        self.0.ked().to_string().expect("unable unwrap value")
+    pub fn ked(&self) -> ValueWrapper {
+        let value = self.0.ked().to_string().expect("unable unwrap value");
+        ValueWrapper(value)
     }
 
     pub fn ident(&self) -> String {

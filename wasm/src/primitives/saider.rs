@@ -1,6 +1,5 @@
-use crate::error::*;
-use cesride_core::Value;
-use cesride_core::{Matter, Saider};
+use crate::{error::*, ValueWrapper};
+use cesride_core::{data::Value, Matter, Saider};
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
 
@@ -29,7 +28,7 @@ impl SaiderWrapper {
     #[wasm_bindgen(constructor)]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        sad: Option<String>,
+        sad: Option<ValueWrapper>,
         label: Option<String>,
         kind: Option<String>,
         ignore: Option<Array>,
@@ -44,7 +43,7 @@ impl SaiderWrapper {
         let ignore = ignore.as_deref().map(|a| a.iter().map(String::as_str).collect::<Vec<&str>>());
         let ignore = ignore.as_deref();
         let saider = Saider::new(
-            sad.as_deref().map(Value::from).as_ref(),
+            sad.map(Value::from).as_ref(),
             label.as_deref(),
             kind.as_deref(),
             ignore,
@@ -59,7 +58,7 @@ impl SaiderWrapper {
     }
 
     pub fn saidify(
-        sad: &str,
+        sad: ValueWrapper,
         code: Option<String>,
         kind: Option<String>,
         label: Option<String>,
@@ -85,7 +84,7 @@ impl SaiderWrapper {
 
     pub fn verify(
         &self,
-        sad: &str,
+        sad: ValueWrapper,
         prefixed: Option<bool>,
         versioned: Option<bool>,
         kind: Option<String>,
@@ -111,7 +110,7 @@ impl SaiderWrapper {
     }
 
     pub fn new_with_sad(
-        sad: &str,
+        sad: ValueWrapper,
         label: Option<String>,
         kind: Option<String>,
         ignore: Option<Array>,

@@ -1,6 +1,7 @@
+use crate::ValueWrapper;
 use crate::{error::*, BexterWrapper, NumberWrapper};
+use cesride_core::data::Value;
 use cesride_core::Tholder;
-use cesride_core::Value;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(js_name = Tholder)]
@@ -28,20 +29,20 @@ impl TholderWrapper {
     #[wasm_bindgen(constructor)]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        thold: Option<String>,
+        thold: Option<ValueWrapper>,
         limen: Option<Vec<u8>>,
-        sith: Option<String>,
+        sith: Option<ValueWrapper>,
     ) -> Result<TholderWrapper, JsValue> {
         let tholder = Tholder::new(
-            thold.as_deref().map(Value::from).as_ref(),
+            thold.map(Value::from).as_ref(),
             limen.as_deref(),
-            sith.as_deref().map(Value::from).as_ref(),
+            sith.map(Value::from).as_ref(),
         )
         .as_js()?;
         Ok(TholderWrapper(tholder))
     }
 
-    pub fn new_with_thold(thold: &str) -> Result<TholderWrapper, JsValue> {
+    pub fn new_with_thold(thold: ValueWrapper) -> Result<TholderWrapper, JsValue> {
         let tholder = Tholder::new_with_thold(&Value::from(thold)).as_js()?;
         Ok(TholderWrapper(tholder))
     }
@@ -51,13 +52,14 @@ impl TholderWrapper {
         Ok(TholderWrapper(tholder))
     }
 
-    pub fn new_with_sith(sith: &str) -> Result<TholderWrapper, JsValue> {
+    pub fn new_with_sith(sith: ValueWrapper) -> Result<TholderWrapper, JsValue> {
         let tholder = Tholder::new_with_sith(&Value::from(sith)).as_js()?;
         Ok(TholderWrapper(tholder))
     }
 
-    pub fn thold(&self) -> String {
-        self.0.thold().to_string().expect("unable unwrap value")
+    pub fn thold(&self) -> ValueWrapper {
+        let value = self.0.thold().to_json().expect("unable unwrap value");
+        ValueWrapper(value)
     }
 
     pub fn weighted(&self) -> bool {
@@ -84,9 +86,10 @@ impl TholderWrapper {
         self.0.limen().as_js().map_err(JsValue::from)
     }
 
-    pub fn sith(&self) -> Result<String, JsValue> {
+    pub fn sith(&self) -> Result<ValueWrapper, JsValue> {
         let sith = self.0.sith().as_js()?;
-        Ok(sith.to_string().expect("unable unwrap value"))
+        let value = sith.to_json().expect("unable unwrap value");
+        Ok(ValueWrapper(value))
     }
 
     pub fn to_json(&self) -> Result<String, JsValue> {
