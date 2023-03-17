@@ -1,8 +1,8 @@
 [package]
 name = "cesride-wasm"
 version = "0.1.0"
-authors = ["The wasm-bindgen Developers"]
-edition = "2018"
+authors = ['Dmitry Kuzmenko <dmitry.kuzmenko@dsr-corporation.com>']
+edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

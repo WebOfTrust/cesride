@@ -8,22 +8,6 @@ use wasm_bindgen::prelude::*;
 #[derive(Clone)]
 pub struct TholderWrapper(pub(crate) Tholder);
 
-#[wasm_bindgen]
-pub struct SaidifyRet {
-    tholder: TholderWrapper,
-    value: String,
-}
-
-#[wasm_bindgen]
-impl SaidifyRet {
-    pub fn tholder(&self) -> TholderWrapper {
-        self.tholder.clone()
-    }
-    pub fn value(&self) -> String {
-        self.value.clone()
-    }
-}
-
 #[wasm_bindgen(js_class = Tholder)]
 impl TholderWrapper {
     #[wasm_bindgen(constructor)]
