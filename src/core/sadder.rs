@@ -3,7 +3,7 @@ use crate::core::{
     matter::{tables as matter, Matter},
     saider::Saider,
 };
-use crate::data::{Data, Value};
+use crate::data::Value;
 use crate::error::{err, Error, Result};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -220,7 +220,7 @@ mod test {
         sadder::Sadder,
         saider::Saider,
     };
-    use crate::data::{data, Data, Value};
+    use crate::data::{dat, Value};
 
     #[derive(Debug, Clone, PartialEq)]
     struct TestSadder {
@@ -239,7 +239,7 @@ mod test {
             TestSadder {
                 code: matter::Codex::Blake3_256.to_string(),
                 raw: vec![],
-                ked: data!({}),
+                ked: dat!({}),
                 ident: Identage::KERI.to_string(),
                 kind: Serialage::JSON.to_string(),
                 size: 0,
@@ -303,7 +303,7 @@ mod test {
 
     #[test]
     fn new() {
-        let ked = data!({
+        let ked = dat!({
             "v": "KERI10JSON000000_",
             "d": "",
         });
@@ -336,14 +336,14 @@ mod test {
 
     #[test]
     fn new_unhappy_paths() {
-        let ked = data!({
+        let ked = dat!({
             "v": "KERI10JSON000000_",
             "d": "",
         });
 
         let (saider, ked) = Saider::saidify(&ked, None, None, None, None).unwrap();
         let mut ked2 = ked.clone();
-        ked2["v"] = data!("KERI11JSON000000_");
+        ked2["v"] = dat!("KERI11JSON000000_");
 
         let raw = &ked.to_json().unwrap().as_bytes().to_vec();
         let raw2 = &ked2.to_json().unwrap().as_bytes().to_vec();
@@ -361,7 +361,7 @@ mod test {
 
     #[test]
     fn populate_from_kind_and_self() {
-        let ked = data!({
+        let ked = dat!({
             "v": "KERI10JSON000000_",
             "d": "",
         });
@@ -374,7 +374,7 @@ mod test {
 
     #[test]
     fn populate_from_kind_and_self_unhappy_paths() {
-        let ked = data!({
+        let ked = dat!({
             "v": "KERI10JSON000000_",
             "d": "",
         });
@@ -384,7 +384,7 @@ mod test {
         let (saider_blake2b, _) =
             Saider::saidify(&ked, Some(matter::Codex::Blake2b_256), None, None, None).unwrap();
 
-        ked_blake3["d"] = data!(&saider_blake2b.qb64().unwrap());
+        ked_blake3["d"] = dat!(&saider_blake2b.qb64().unwrap());
 
         // saider code and sadder code must match
         let mut sadder = TestSadder::default();
@@ -395,7 +395,7 @@ mod test {
 
     #[test]
     fn pretty() {
-        let ked = data!({
+        let ked = dat!({
             "v": "KERI10JSON000000_",
             "d": "",
         });

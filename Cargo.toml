@@ -1,6 +1,6 @@
 [package]
 name = "cesride"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2021"
 description = "Cryptographic primitives for use with Composable Event Streaming Representation (CESR)"
 license = "Apache-2.0"
@@ -9,6 +9,7 @@ keywords = ["cesr", "keri", "acdc"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "~1"
 argon2 = "~0.5"
 base64 = "~0.21"
 blake2 = "~0.10"
@@ -26,6 +27,7 @@ serde_json = { version = "~1", features = ["preserve_order"] }
 sha2 = "~0.10"
 sha3 = "~0.10"
 thiserror = "~1"
+zeroize = "~1"
 
 [dev-dependencies]
 hex-literal = "0.3.4"

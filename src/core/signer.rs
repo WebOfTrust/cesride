@@ -1,3 +1,5 @@
+use zeroize::{Zeroize, ZeroizeOnDrop};
+
 use crate::core::{
     cigar::Cigar,
     indexer::tables as indexer,
@@ -32,11 +34,14 @@ use crate::error::{err, Error, Result};
 ///
 /// example().unwrap();
 /// ```
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, ZeroizeOnDrop)]
 pub struct Signer {
     raw: Vec<u8>,
+    #[zeroize(skip)]
     code: String,
+    #[zeroize(skip)]
     size: u32,
+    #[zeroize(skip)]
     verfer: Verfer,
 }
 
@@ -97,8 +102,10 @@ impl Signer {
         let mut signer: Signer = if qb64b.is_none() && qb64.is_none() && qb2.is_none() {
             let code = code.unwrap_or(matter::Codex::Ed25519_Seed);
             validate_code(code)?;
-            let raw = if let Some(raw) = raw { raw.to_vec() } else { sign::generate(code)? };
-            Matter::new(Some(code), Some(&raw), None, None, None)?
+            let mut raw = if let Some(raw) = raw { raw.to_vec() } else { sign::generate(code)? };
+            let matter = Matter::new(Some(code), Some(&raw), None, None, None)?;
+            raw.zeroize();
+            matter
         } else {
             let signer: Self = Matter::new(code, raw, qb64b, qb64, qb2)?;
             validate_code(&signer.code())?;
@@ -121,16 +128,16 @@ impl Signer {
         Self::new(transferable, code, Some(raw), None, None, None)
     }
 
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<Self> {
-        Self::new(None, None, None, Some(qb64b), None, None)
+    pub fn new_with_qb64b(qb64b: &[u8], transferable: Option<bool>) -> Result<Self> {
+        Self::new(transferable, None, None, Some(qb64b), None, None)
     }
 
-    pub fn new_with_qb64(qb64: &str) -> Result<Self> {
-        Self::new(None, None, None, None, Some(qb64), None)
+    pub fn new_with_qb64(qb64: &str, transferable: Option<bool>) -> Result<Self> {
+        Self::new(transferable, None, None, None, Some(qb64), None)
     }
 
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
-        Self::new(None, None, None, None, None, Some(qb2))
+    pub fn new_with_qb2(qb2: &[u8], transferable: Option<bool>) -> Result<Self> {
+        Self::new(transferable, None, None, None, None, Some(qb2))
     }
 
     pub fn sign_unindexed(&self, ser: &[u8]) -> Result<Cigar> {
@@ -189,7 +196,16 @@ impl Signer {
         };
 
         let sig = sign::sign(&self.code(), &self.raw(), ser)?;
-        Siger::new(None, Some(index), ondex, Some(code), Some(&sig), None, None, None)
+        Siger::new(
+            Some(&self.verfer()),
+            Some(index),
+            ondex,
+            Some(code),
+            Some(&sig),
+            None,
+            None,
+            None,
+        )
     }
 
     pub fn verfer(&self) -> Verfer {
@@ -254,9 +270,9 @@ mod test {
 
         assert!(Signer::new_with_defaults(None, None).is_ok());
         assert!(Signer::new_with_raw(&signer.raw(), None, Some(&signer.code())).is_ok());
-        assert!(Signer::new_with_qb64b(&signer.qb64b().unwrap()).is_ok());
-        assert!(Signer::new_with_qb64(&signer.qb64().unwrap()).is_ok());
-        assert!(Signer::new_with_qb2(&signer.qb2().unwrap()).is_ok());
+        assert!(Signer::new_with_qb64b(&signer.qb64b().unwrap(), None).is_ok());
+        assert!(Signer::new_with_qb64(&signer.qb64().unwrap(), None).is_ok());
+        assert!(Signer::new_with_qb2(&signer.qb2().unwrap(), None).is_ok());
     }
 
     #[test]

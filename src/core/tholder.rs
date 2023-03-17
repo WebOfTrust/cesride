@@ -4,7 +4,7 @@ use crate::{
         matter::{tables as matter, Matter},
         number::{tables as number, Number},
     },
-    data::{data, Array, Data, Value},
+    data::{dat, Array, Value},
     error::{err, Error, Result},
 };
 
@@ -22,7 +22,7 @@ pub struct Tholder {
 
 impl Default for Tholder {
     fn default() -> Self {
-        Tholder { thold: data!(1), weighted: false, size: 1, number: None, bexter: None }
+        Tholder { thold: dat!(1), weighted: false, size: 1, number: None, bexter: None }
     }
 }
 
@@ -36,7 +36,7 @@ fn values_to_rationals(value: &Value) -> Result<Vec<Vec<Rational32>>> {
         let _clause = _clause.to_vec()?;
         for weight in _clause {
             let weight = weight.to_string()?;
-            let parts: Vec<&str> = weight.split(separator).into_iter().collect();
+            let parts: Vec<&str> = weight.split(separator).collect();
             if parts.len() != 2 {
                 // must be 0 or 1
                 if parts[0] == "0" {
@@ -185,7 +185,7 @@ impl Tholder {
         } else {
             let thold = self.thold().to_i64()?;
             let sith = format!("{thold:x}");
-            Ok(data!(&sith))
+            Ok(dat!(&sith))
         }
     }
 
@@ -194,13 +194,13 @@ impl Tholder {
     }
 
     pub fn satisfy(&self, indices: &[u32]) -> Result<bool> {
-        return if self.number().is_some() {
+        if self.number().is_some() {
             self.satisfy_numeric(indices)
         } else if self.bexter().is_some() {
             self.satisfy_weighted(indices)
         } else {
             Ok(false)
-        };
+        }
     }
 
     fn satisfy_numeric(&self, indices: &[u32]) -> Result<bool> {
@@ -275,17 +275,17 @@ impl Tholder {
         } else if bexter::Codex::has_code(code) {
             let bexter = Bexter::new(None, None, None, None, Some(&limen), None)?;
             let t = bexter.bext()?.replace('s', "/");
-            let clauses: Vec<&str> = t.split('a').into_iter().collect();
+            let clauses: Vec<&str> = t.split('a').collect();
             let mut oclauses: Array = Vec::new();
             for clause in clauses {
-                let weights: Vec<&str> = clause.split('c').into_iter().collect();
+                let weights: Vec<&str> = clause.split('c').collect();
                 let mut oweights: Array = Vec::new();
                 for weight in weights {
-                    oweights.push(data!(weight));
+                    oweights.push(dat!(weight));
                 }
-                oclauses.push(data!(oweights.as_slice()));
+                oclauses.push(dat!(oweights.as_slice()));
             }
-            let thold = data!(oclauses.as_slice());
+            let thold = dat!(oclauses.as_slice());
             self.process_weighted(&thold)?;
         } else {
             return err!(Error::UnexpectedCode(code.to_string()));
@@ -323,7 +323,7 @@ impl Tholder {
         }
 
         if !array.iter().all(|clause| clause.to_vec().is_ok()) {
-            sith = data!([sith]);
+            sith = dat!([sith]);
         }
 
         for clause in sith.to_vec()? {
@@ -353,7 +353,7 @@ impl Tholder {
 
         self.size = u32::try_from(thold)?;
         self.weighted = false;
-        self.thold = data!(self.size);
+        self.thold = dat!(self.size);
         self.number = Some(Number::new(Some(thold as u128), None, None, None, None, None, None)?);
         self.bexter = None;
 
@@ -371,15 +371,15 @@ impl Tholder {
             let mut inner: Vec<Value> = Vec::new();
             for weight in clause {
                 if *weight.denom() == 1 {
-                    inner.push(data!(&format!("{n}", n = weight.numer())));
+                    inner.push(dat!(&format!("{n}", n = weight.numer())));
                 } else {
-                    inner.push(data!(&weight.to_string()));
+                    inner.push(dat!(&weight.to_string()));
                 }
             }
-            outer.push(data!(inner.as_slice()));
+            outer.push(dat!(inner.as_slice()));
         }
 
-        self.thold = data!(outer.as_slice());
+        self.thold = dat!(outer.as_slice());
         self.weighted = true;
         self.size = size;
         self.number = None;
@@ -397,19 +397,19 @@ mod test {
 
     #[test]
     fn convenience() {
-        assert!(Tholder::new_with_thold(&data!(11)).is_ok());
+        assert!(Tholder::new_with_thold(&dat!(11)).is_ok());
         assert!(Tholder::new_with_limen(b"MAAL").is_ok());
-        assert!(Tholder::new_with_sith(&data!("b")).is_ok());
+        assert!(Tholder::new_with_sith(&dat!("b")).is_ok());
     }
 
     #[rstest]
     fn creation(
         #[values(b"MAAL")] limen: &[u8],
         #[values(
-            Tholder::new(None, None, Some(&data!("b"))).unwrap(),
-            Tholder::new(None, None, Some(&data!(11))).unwrap(),
+            Tholder::new(None, None, Some(&dat!("b"))).unwrap(),
+            Tholder::new(None, None, Some(&dat!(11))).unwrap(),
             Tholder::new(None, Some(limen), None).unwrap(),
-            Tholder::new(Some(&data!(11)), None, None).unwrap(),
+            Tholder::new(Some(&dat!(11)), None, None).unwrap(),
         )]
         tholder: Tholder,
     ) {
@@ -417,7 +417,7 @@ mod test {
         assert_eq!(tholder.size(), 11);
         assert_eq!(tholder.thold().to_i64().unwrap(), 11);
         assert_eq!(tholder.limen().unwrap(), limen);
-        assert_eq!(tholder.sith().unwrap(), data!("b"));
+        assert_eq!(tholder.sith().unwrap(), dat!("b"));
         assert_eq!(tholder.to_json().unwrap(), "\"b\"");
         assert_eq!(tholder.num().unwrap().unwrap(), 11);
         assert!(!tholder.satisfy(&[0, 1, 2]).unwrap());
@@ -428,83 +428,83 @@ mod test {
     fn python_interop() {
         assert!(Tholder::new(None, None, None).is_err());
 
-        assert!(Tholder::new(None, None, Some(&data!("[[\"1/2\",\"4/4\"]]"))).is_ok());
-        assert!(Tholder::new(None, None, Some(&data!("[[\"1/2\",\"-3/4\"]]"))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!("[[\"1/2\",\"4/4\"]]"))).is_ok());
+        assert!(Tholder::new(None, None, Some(&dat!("[[\"1/2\",\"-3/4\"]]"))).is_err());
         assert!(!Tholder::default().satisfy(&[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).unwrap());
-        assert!(Tholder::new(None, None, Some(&data!("[[\"1/2\",\"3/4\"]]"))).is_ok());
-        assert!(Tholder::new(None, Some(&[]), Some(&data!("[[\"1/2\",\"3/4\"]]"))).is_ok());
+        assert!(Tholder::new(None, None, Some(&dat!("[[\"1/2\",\"3/4\"]]"))).is_ok());
+        assert!(Tholder::new(None, Some(&[]), Some(&dat!("[[\"1/2\",\"3/4\"]]"))).is_ok());
         assert!(Tholder::new(None, Some(b"DKxy2sgzfplyr-tgwIxS19f2OchFHtLwPWD3v4oYimBx"), None)
             .is_err());
 
-        let tholder = Tholder::new(None, None, Some(&data!("f"))).unwrap();
+        let tholder = Tholder::new(None, None, Some(&dat!("f"))).unwrap();
         assert!(!tholder.weighted());
         assert_eq!(tholder.size(), 15);
         assert_eq!(tholder.thold().to_i64().unwrap(), 15);
         assert_eq!(tholder.limen().unwrap(), b"MAAP");
-        assert_eq!(tholder.sith().unwrap(), data!("f"));
+        assert_eq!(tholder.sith().unwrap(), dat!("f"));
         assert_eq!(tholder.to_json().unwrap(), "\"f\"");
         assert_eq!(tholder.num().unwrap().unwrap(), 15);
         assert!(!tholder.satisfy(&[0, 1, 2]).unwrap());
         assert!(tholder.satisfy(&[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]).unwrap());
 
-        let tholder = Tholder::new(None, None, Some(&data!(2))).unwrap();
+        let tholder = Tholder::new(None, None, Some(&dat!(2))).unwrap();
         assert!(!tholder.weighted());
         assert_eq!(tholder.size(), 2);
         assert_eq!(tholder.thold().to_i64().unwrap(), 2);
         assert_eq!(tholder.limen().unwrap(), b"MAAC");
-        assert_eq!(tholder.sith().unwrap(), data!("2"));
+        assert_eq!(tholder.sith().unwrap(), dat!("2"));
         assert_eq!(tholder.to_json().unwrap(), "\"2\"");
         assert_eq!(tholder.num().unwrap().unwrap(), 2);
         assert!(tholder.satisfy(&[0, 1, 2]).unwrap());
         assert!(tholder.satisfy(&[0, 1]).unwrap());
 
-        let tholder = Tholder::new(None, None, Some(&data!(1))).unwrap();
+        let tholder = Tholder::new(None, None, Some(&dat!(1))).unwrap();
         assert!(!tholder.weighted());
         assert_eq!(tholder.size(), 1);
         assert_eq!(tholder.thold().to_i64().unwrap(), 1);
         assert_eq!(tholder.limen().unwrap(), b"MAAB");
-        assert_eq!(tholder.sith().unwrap(), data!("1"));
+        assert_eq!(tholder.sith().unwrap(), dat!("1"));
         assert_eq!(tholder.to_json().unwrap(), "\"1\"");
         assert_eq!(tholder.num().unwrap().unwrap(), 1);
         assert!(tholder.satisfy(&[0]).unwrap());
 
-        assert!(Tholder::new(None, None, Some(&data!(-1))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!(-1))).is_err());
 
-        assert!(Tholder::new(None, None, Some(&data!([1]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!([2]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!(["2"]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!([0.5, 0.5]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!(["0.5", "0.5"]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!(1.0))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!("1.0"))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!(0.5))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!("0.5"))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!("1.0/2.0"))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!([]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!(["1/3", "1/2", []]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!(["1/3", "1/2"]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!([[], []]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!([["1/3", "1/2",], ["1"]]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!([["1/3", "1/2"], []]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!([["1/2", "1/2"], [[], "1"]]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!([["1/2", "1/2", "3/2"]]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!(["1/2", "1/2", "3/2"]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!(["1/2", "1/2", "2/1"]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!(["1/2", "1/2", "2"]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!([["1/2", "1/2", "2"]]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!([["1/2", "1/2"], "1"]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!([["1/2", "1/2"], 1]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!([["1/2", "1/2"], "1.0"]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!(["1/2", "1/2", []]))).is_err());
-        assert!(Tholder::new(None, None, Some(&data!(["1/2", 0.5]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!([1]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!([2]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!(["2"]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!([0.5, 0.5]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!(["0.5", "0.5"]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!(1.0))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!("1.0"))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!(0.5))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!("0.5"))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!("1.0/2.0"))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!([]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!(["1/3", "1/2", []]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!(["1/3", "1/2"]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!([[], []]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!([["1/3", "1/2",], ["1"]]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!([["1/3", "1/2"], []]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!([["1/2", "1/2"], [[], "1"]]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!([["1/2", "1/2", "3/2"]]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!(["1/2", "1/2", "3/2"]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!(["1/2", "1/2", "2/1"]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!(["1/2", "1/2", "2"]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!([["1/2", "1/2", "2"]]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!([["1/2", "1/2"], "1"]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!([["1/2", "1/2"], 1]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!([["1/2", "1/2"], "1.0"]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!(["1/2", "1/2", []]))).is_err());
+        assert!(Tholder::new(None, None, Some(&dat!(["1/2", 0.5]))).is_err());
 
         let tholder =
-            Tholder::new(None, None, Some(&data!(["1/2", "1/2", "1/4", "1/4", "1/4"]))).unwrap();
+            Tholder::new(None, None, Some(&dat!(["1/2", "1/2", "1/4", "1/4", "1/4"]))).unwrap();
         assert!(tholder.weighted());
         assert_eq!(tholder.size(), 5);
-        assert_eq!(tholder.thold(), data!([["1/2", "1/2", "1/4", "1/4", "1/4"]]));
+        assert_eq!(tholder.thold(), dat!([["1/2", "1/2", "1/4", "1/4", "1/4"]]));
         assert_eq!(tholder.limen().unwrap(), b"4AAFA1s2c1s2c1s4c1s4c1s4");
-        assert_eq!(tholder.sith().unwrap(), data!(["1/2", "1/2", "1/4", "1/4", "1/4"]));
+        assert_eq!(tholder.sith().unwrap(), dat!(["1/2", "1/2", "1/4", "1/4", "1/4"]));
         assert_eq!(tholder.to_json().unwrap(), "[\"1/2\",\"1/2\",\"1/4\",\"1/4\",\"1/4\"]"); // this isn't identical to KERIpy but still conforms to JSON
         assert_eq!(tholder.num().unwrap(), None);
         assert!(tholder.satisfy(&[0, 2, 4]).unwrap());
@@ -518,13 +518,13 @@ mod test {
         assert!(!tholder.satisfy(&[0, 0, 2]).unwrap());
 
         let tholder =
-            Tholder::new(None, None, Some(&data!(["1/2", "1/2", "1/4", "1/4", "1/4", "0"])))
+            Tholder::new(None, None, Some(&dat!(["1/2", "1/2", "1/4", "1/4", "1/4", "0"])))
                 .unwrap();
         assert!(tholder.weighted());
         assert_eq!(tholder.size(), 6);
-        assert_eq!(tholder.thold(), data!([["1/2", "1/2", "1/4", "1/4", "1/4", "0"]]));
+        assert_eq!(tholder.thold(), dat!([["1/2", "1/2", "1/4", "1/4", "1/4", "0"]]));
         assert_eq!(tholder.limen().unwrap(), b"6AAGAAA1s2c1s2c1s4c1s4c1s4c0");
-        assert_eq!(tholder.sith().unwrap(), data!(["1/2", "1/2", "1/4", "1/4", "1/4", "0"]));
+        assert_eq!(tholder.sith().unwrap(), dat!(["1/2", "1/2", "1/4", "1/4", "1/4", "0"]));
         assert_eq!(tholder.to_json().unwrap(), "[\"1/2\",\"1/2\",\"1/4\",\"1/4\",\"1/4\",\"0\"]");
         assert_eq!(tholder.num().unwrap(), None);
         assert!(tholder.satisfy(&[0, 2, 4]).unwrap());
@@ -537,12 +537,12 @@ mod test {
         assert!(!tholder.satisfy(&[2, 3, 4, 5]).unwrap());
 
         let tholder =
-            Tholder::new(None, None, Some(&data!([["1/2", "1/2", "1/4", "1/4", "1/4"]]))).unwrap();
+            Tholder::new(None, None, Some(&dat!([["1/2", "1/2", "1/4", "1/4", "1/4"]]))).unwrap();
         assert!(tholder.weighted());
         assert_eq!(tholder.size(), 5);
-        assert_eq!(tholder.thold(), data!([["1/2", "1/2", "1/4", "1/4", "1/4"]]));
+        assert_eq!(tholder.thold(), dat!([["1/2", "1/2", "1/4", "1/4", "1/4"]]));
         assert_eq!(tholder.limen().unwrap(), b"4AAFA1s2c1s2c1s4c1s4c1s4");
-        assert_eq!(tholder.sith().unwrap(), data!(["1/2", "1/2", "1/4", "1/4", "1/4"]));
+        assert_eq!(tholder.sith().unwrap(), dat!(["1/2", "1/2", "1/4", "1/4", "1/4"]));
         assert_eq!(tholder.to_json().unwrap(), "[\"1/2\",\"1/2\",\"1/4\",\"1/4\",\"1/4\"]"); // this isn't identical to KERIpy but still conforms to JSON
         assert_eq!(tholder.num().unwrap(), None);
         assert!(tholder.satisfy(&[0, 2, 4]).unwrap());
@@ -558,16 +558,16 @@ mod test {
         let tholder = Tholder::new(
             None,
             None,
-            Some(&data!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1/1", "1"]])),
+            Some(&dat!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1/1", "1"]])),
         )
         .unwrap();
         assert!(tholder.weighted());
         assert_eq!(tholder.size(), 7);
-        assert_eq!(tholder.thold(), data!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1", "1"]]));
+        assert_eq!(tholder.thold(), dat!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1", "1"]]));
         assert_eq!(tholder.limen().unwrap(), b"4AAGA1s2c1s2c1s4c1s4c1s4a1c1");
         assert_eq!(
             tholder.sith().unwrap(),
-            data!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1", "1"]])
+            dat!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1", "1"]])
         );
         assert_eq!(
             tholder.to_json().unwrap(),
@@ -584,11 +584,11 @@ mod test {
         let tholder = Tholder::new(None, Some(b"4AAGA1s2c1s2c1s4c1s4c1s4a1c1"), None).unwrap();
         assert!(tholder.weighted());
         assert_eq!(tholder.size(), 7);
-        assert_eq!(tholder.thold(), data!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1", "1"]]));
+        assert_eq!(tholder.thold(), dat!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1", "1"]]));
         assert_eq!(tholder.limen().unwrap(), b"4AAGA1s2c1s2c1s4c1s4c1s4a1c1");
         assert_eq!(
             tholder.sith().unwrap(),
-            data!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1", "1"]])
+            dat!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1", "1"]])
         );
         assert_eq!(
             tholder.to_json().unwrap(),
@@ -603,18 +603,18 @@ mod test {
         assert!(!tholder.satisfy(&[]).unwrap());
 
         let tholder = Tholder::new(
-            Some(&data!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1/1", "1/1"]])),
+            Some(&dat!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1/1", "1/1"]])),
             None,
             None,
         )
         .unwrap();
         assert!(tholder.weighted());
         assert_eq!(tholder.size(), 7);
-        assert_eq!(tholder.thold(), data!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1", "1"]]));
+        assert_eq!(tholder.thold(), dat!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1", "1"]]));
         assert_eq!(tholder.limen().unwrap(), b"4AAGA1s2c1s2c1s4c1s4c1s4a1c1");
         assert_eq!(
             tholder.sith().unwrap(),
-            data!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1", "1"]])
+            dat!([["1/2", "1/2", "1/4", "1/4", "1/4"], ["1", "1"]])
         );
         assert_eq!(
             tholder.to_json().unwrap(),

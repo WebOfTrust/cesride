@@ -9,7 +9,7 @@ use crate::{
         tholder::Tholder,
         verfer::Verfer,
     },
-    data::{data, Value},
+    data::{dat, Value},
     error::{err, Error, Result},
 };
 
@@ -193,7 +193,7 @@ impl Default for Serder {
         Serder {
             code: matter::Codex::Blake3_256.to_string(),
             raw: vec![],
-            ked: data!({}),
+            ked: dat!({}),
             ident: Identage::KERI.to_string(),
             kind: Serialage::JSON.to_string(),
             size: 0,
@@ -285,7 +285,7 @@ pub(crate) mod test {
             serder::Serder,
             tholder::Tholder,
         },
-        data::{Data, Value},
+        data::Value,
         error::{err, Error, Result},
     };
 
@@ -294,7 +294,7 @@ pub(crate) mod test {
         assert!(Serder::new(None, None, None, None, None).is_err());
 
         let _vs = "KERI10JSON000000_";
-        let e1 = data!({
+        let e1 = dat!({
             "v": _vs,
             "d": "",
             "i": "ABCDEFG",
@@ -322,7 +322,7 @@ pub(crate) mod test {
         let vs = versify(None, None, Some(Serialage::JSON), Some(e1s.len() as u32)).unwrap();
         assert_eq!(vs, "KERI10JSON00006f_");
         let label = Ids::v;
-        e1[label] = data!(&vs);
+        e1[label] = dat!(&vs);
         let pretty = serder.pretty(None).unwrap();
         // this next one indents by 2, unlike KERIpy
         assert_eq!(
@@ -353,7 +353,7 @@ pub(crate) mod test {
         let mut e1sb_extra = e1sb.to_vec();
         e1sb_extra.append(&mut b"extra attached at the end".to_vec());
 
-        let ked = data!({
+        let ked = dat!({
             "v": "KERI10JSON00006a_",
             "d": "HAg9_-rPd8oga-oyPghCEIlJZHKbYXcP86LQl0Yg2AvA",
             "i": "ABCDEFG",
@@ -368,7 +368,7 @@ pub(crate) mod test {
         assert_eq!(srdr.ked(), ked);
         assert_eq!(srdr.saider().code(), matter::Codex::SHA3_256);
 
-        let ked = data!({
+        let ked = dat!({
             "v": "KERI10JSON00006a_",
             "d": "EADZ055vgh5utgSY3OOL1lW0m1pJ1W0Ia6-SVuGa0OqE",
             "i": "ABCDEFG",
@@ -441,7 +441,7 @@ pub(crate) mod test {
 
     #[test]
     fn creation() {
-        let ked = data!({
+        let ked = dat!({
             "v": "KERI10JSON00011c_",
             "t": "rep",
             "d": "EBAjyPZ8Ed4XXl5cVZhqAy7SuaGivQp0WqQKVXvg7oqd",
@@ -460,7 +460,7 @@ pub(crate) mod test {
         assert_eq!(srdr.said().unwrap(), "EBAjyPZ8Ed4XXl5cVZhqAy7SuaGivQp0WqQKVXvg7oqd");
         assert_eq!(srdr.saidb().unwrap(), b"EBAjyPZ8Ed4XXl5cVZhqAy7SuaGivQp0WqQKVXvg7oqd");
 
-        let ked = data!({
+        let ked = dat!({
             "v": "KERI10JSON000000_",
             "t": "icp",
             "d": "",
@@ -477,8 +477,8 @@ pub(crate) mod test {
 
         let (_, mut ked) = Saider::saidify(&ked, None, None, None, None).unwrap();
         let srdr = Serder::new(None, None, None, Some(&ked), None).unwrap();
-        assert_eq!(srdr.tholder().unwrap().unwrap().sith().unwrap(), data!("1"));
-        assert_eq!(srdr.tholder().unwrap().unwrap().thold(), data!(1));
+        assert_eq!(srdr.tholder().unwrap().unwrap().sith().unwrap(), dat!("1"));
+        assert_eq!(srdr.tholder().unwrap().unwrap().thold(), dat!(1));
         assert_eq!(srdr.sn().unwrap(), 0);
         assert_eq!(srdr.sner().unwrap().num().unwrap(), 0);
 
@@ -487,15 +487,15 @@ pub(crate) mod test {
         assert!(srdr._fn().is_err());
         assert_eq!(srdr.digers().unwrap().len(), 0);
 
-        ked["s"] = data!("-1");
+        ked["s"] = dat!("-1");
         let srdr = Serder::new(None, None, None, Some(&ked), None).unwrap();
         assert!(srdr.sn().is_err());
 
-        ked["s"] = data!("15.34");
+        ked["s"] = dat!("15.34");
         let srdr = Serder::new(None, None, None, Some(&ked), None).unwrap();
         assert!(srdr.sn().is_err());
 
-        let ked = data!({
+        let ked = dat!({
             "v": "KERI10JSON000000_",
             "t": "icp",
             "d": "",
@@ -514,18 +514,18 @@ pub(crate) mod test {
 
         let (_, ked) = Saider::saidify(&ked, None, None, None, None).unwrap();
         let srdr = Serder::new(None, None, None, Some(&ked), None).unwrap();
-        assert_eq!(srdr.tholder().unwrap().unwrap().sith().unwrap(), data!("1"));
-        assert_eq!(srdr.tholder().unwrap().unwrap().thold(), data!(1));
+        assert_eq!(srdr.tholder().unwrap().unwrap().sith().unwrap(), dat!("1"));
+        assert_eq!(srdr.tholder().unwrap().unwrap().thold(), dat!(1));
         assert_eq!(srdr.sn().unwrap(), 0);
         assert_eq!(srdr.sner().unwrap().num().unwrap(), 0);
 
-        assert_eq!(srdr.ntholder().unwrap().unwrap().sith().unwrap(), data!("1"));
-        assert_eq!(srdr.ntholder().unwrap().unwrap().thold(), data!(1));
+        assert_eq!(srdr.ntholder().unwrap().unwrap().sith().unwrap(), dat!("1"));
+        assert_eq!(srdr.ntholder().unwrap().unwrap().thold(), dat!(1));
         assert!(srdr.fner().unwrap().is_some());
         assert_eq!(srdr._fn().unwrap(), 0);
         assert_eq!(srdr.digers().unwrap().len(), 1);
 
-        let ked = data!({
+        let ked = dat!({
             "v": "ACDC10JSON000000_",
             "t": "icp",
             "d": "",
@@ -588,7 +588,7 @@ pub(crate) mod test {
         } else {
             let mut s: i64 = (keys.len() as i64 + 1) / 2;
             s = if s > 1 { s } else { 1 };
-            data!(s)
+            dat!(s)
         };
 
         let tholder = Tholder::new_with_sith(&sith)?;
@@ -611,7 +611,7 @@ pub(crate) mod test {
         } else {
             let mut s: i64 = (ndigs.len() as i64 + 1) / 2;
             s = if s > 0 { s } else { 0 };
-            data!(s)
+            dat!(s)
         };
 
         let ntholder = Tholder::new_with_sith(&nsith)?;
@@ -657,7 +657,7 @@ pub(crate) mod test {
 
         let kt = if let Some(n) = tholder.num()? {
             if intive && n < u32::MAX {
-                data!(n)
+                dat!(n)
             } else {
                 tholder.sith()?
             }
@@ -667,7 +667,7 @@ pub(crate) mod test {
 
         let nt = if let Some(n) = ntholder.num()? {
             if intive && n < u32::MAX {
-                data!(n)
+                dat!(n)
             } else {
                 ntholder.sith()?
             }
@@ -676,17 +676,17 @@ pub(crate) mod test {
         };
 
         let toad = if intive && toader.num()? < u32::MAX as u128 {
-            data!(toader.num()? as i64)
+            dat!(toader.num()? as i64)
         } else {
-            data!(&toader.numh()?)
+            dat!(&toader.numh()?)
         };
 
-        let keys: Vec<Value> = keys.iter().map(|key| data!(*key)).collect();
-        let ndigs: Vec<Value> = ndigs.iter().map(|dig| data!(*dig)).collect();
-        let wits: Vec<Value> = wits.iter().map(|wit| data!(*wit)).collect();
-        let cnfg: Vec<Value> = cnfg.iter().map(|cfg| data!(*cfg)).collect();
+        let keys: Vec<Value> = keys.iter().map(|key| dat!(*key)).collect();
+        let ndigs: Vec<Value> = ndigs.iter().map(|dig| dat!(*dig)).collect();
+        let wits: Vec<Value> = wits.iter().map(|wit| dat!(*wit)).collect();
+        let cnfg: Vec<Value> = cnfg.iter().map(|cfg| dat!(*cfg)).collect();
 
-        let mut ked = data!({
+        let mut ked = dat!({
             "v": vs,
             "t": ilk,
             "d": "",
@@ -704,7 +704,7 @@ pub(crate) mod test {
 
         let code = if let Some(delpre) = delpre {
             let label = Ids::di;
-            ked[label] = data!(delpre);
+            ked[label] = dat!(delpre);
             Some(code.unwrap_or(matter::Codex::Blake3_256))
         } else {
             code
@@ -731,10 +731,10 @@ pub(crate) mod test {
         };
 
         let label = Ids::i;
-        ked[label] = data!(&prefixer.qb64()?);
+        ked[label] = dat!(&prefixer.qb64()?);
         let ked = if prefixer.digestive() {
             let label = Ids::d;
-            ked[label] = data!(&prefixer.qb64()?);
+            ked[label] = dat!(&prefixer.qb64()?);
             ked
         } else {
             let (_, ked) = Saider::saidify(&ked, None, None, None, None)?;

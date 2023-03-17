@@ -163,35 +163,53 @@ pub fn b64_to_u64(b64: &str) -> Result<u64> {
 }
 
 pub fn u32_to_b64(n: u32, length: usize) -> Result<String> {
-    let mut x = n;
-    let mut out = String::new();
+    if length == 0 {
+        return Ok("".to_string());
+    }
 
+    let mut x = n;
+    let mut out = String::with_capacity(length);
+
+    let mut overflow = length as f32 - (n as f32).log2() / 64f32.log2();
     while x > 0 {
-        out.insert(0, b64_index_to_char((x % 64).try_into().unwrap())?);
+        if overflow >= 0.0 {
+            out.insert(0, b64_index_to_char((x % 64).try_into().unwrap())?);
+        } else {
+            overflow += 1f32;
+        }
         x /= 64;
     }
 
-    for _ in out.len()..length {
+    while out.len() < length {
         out.insert(0, 'A');
     }
 
-    Ok(out[..length].to_string())
+    Ok(out)
 }
 
 pub fn u64_to_b64(n: u64, length: usize) -> Result<String> {
-    let mut x = n;
-    let mut out = String::new();
+    if length == 0 {
+        return Ok("".to_string());
+    }
 
+    let mut x = n;
+    let mut out = String::with_capacity(length);
+
+    let mut overflow = length as f32 - (n as f32).log2() / 64f32.log2();
     while x > 0 {
-        out.insert(0, b64_index_to_char((x % 64).try_into().unwrap())?);
+        if overflow >= 0.0 {
+            out.insert(0, b64_index_to_char((x % 64).try_into().unwrap())?);
+        } else {
+            overflow += 1f32;
+        }
         x /= 64;
     }
 
-    for _ in out.len()..length {
+    while out.len() < length {
         out.insert(0, 'A');
     }
 
-    Ok(out[..length].to_string())
+    Ok(out)
 }
 
 pub fn code_b2_to_b64(b2: &[u8], length: usize) -> Result<String> {
@@ -238,20 +256,22 @@ pub fn nab_sextets(binary: &[u8], count: usize) -> Result<Vec<u8>> {
         return err!(Error::TooSmall(n - binary.len()));
     }
 
-    let mut padded = binary.to_vec();
     let bps = 3 - (binary.len() % 3);
-    padded.resize(binary.len() + bps, 0);
+    let mut padded = vec![0; binary.len() + bps];
+    padded[..binary.len()].copy_from_slice(binary);
 
-    let mut out = Vec::new();
+    let mut out = vec![0u8; padded.len() * 4 / 3];
     let mut i: usize = 0;
+    let mut j: usize = 0;
     loop {
         let n = ((padded[i] as u32) << 16) + ((padded[i + 1] as u32) << 8) + padded[i + 2] as u32;
 
-        out.push(((n & 0xfc0000) >> 18) as u8);
-        out.push(((n & 0x03f000) >> 12) as u8);
-        out.push(((n & 0x000fc0) >> 6) as u8);
-        out.push((n & 0x00003f) as u8);
+        out[j] = ((n & 0xfc0000) >> 18) as u8;
+        out[j + 1] = ((n & 0x03f000) >> 12) as u8;
+        out[j + 2] = ((n & 0x000fc0) >> 6) as u8;
+        out[j + 3] = (n & 0x00003f) as u8;
 
+        j += 4;
         i += 3;
         if i >= padded.len() {
             break;
@@ -268,14 +288,32 @@ mod test {
 
     #[rstest]
     #[case(32, 0, "")]
+    #[case(1, 0, "")]
     #[case(0, 1, "A")]
     #[case(1, 1, "B")]
     #[case(0, 2, "AA")]
     #[case(1, 2, "AB")]
     #[case(4095, 2, "__")]
     #[case(16777215, 4, "____")]
+    #[case(16777215, 1, "_")]
     fn u32_to_b64(#[case] n: u32, #[case] length: usize, #[case] b64: &str) {
         assert_eq!(util::u32_to_b64(n, length).unwrap(), b64);
+    }
+
+    #[rstest]
+    #[case(32, 0, "")]
+    #[case(1, 0, "")]
+    #[case(0, 1, "A")]
+    #[case(1, 1, "B")]
+    #[case(0, 2, "AA")]
+    #[case(1, 2, "AB")]
+    #[case(4095, 2, "__")]
+    #[case(16777215, 4, "____")]
+    #[case(281474976710655, 8, "________")]
+    #[case(16777215, 1, "_")]
+    #[case(281474976710655, 1, "_")]
+    fn u64_to_b64(#[case] n: u64, #[case] length: usize, #[case] b64: &str) {
+        assert_eq!(util::u64_to_b64(n, length).unwrap(), b64);
     }
 
     #[rstest]

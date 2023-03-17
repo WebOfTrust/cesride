@@ -1,3 +1,5 @@
+use zeroize::{Zeroize, ZeroizeOnDrop};
+
 use crate::{
     core::{
         common::Tierage,
@@ -8,11 +10,14 @@ use crate::{
     error::{err, Error, Result},
 };
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, ZeroizeOnDrop)]
 pub struct Salter {
+    #[zeroize(skip)]
     code: String,
     raw: Vec<u8>,
+    #[zeroize(skip)]
     size: u32,
+    #[zeroize(skip)]
     tier: String,
 }
 
@@ -40,9 +45,11 @@ impl Salter {
 
         let mut salter: Self =
             if raw.is_none() && qb64b.is_none() && qb64.is_none() && qb2.is_none() {
-                let mut raw: [u8; SALTER_SEED_BYTES] = [0; SALTER_SEED_BYTES];
+                let mut raw = [0_u8; SALTER_SEED_BYTES];
                 csprng::fill_bytes(&mut raw);
-                Matter::new(Some(code), Some(&raw), None, None, None)?
+                let matter = Matter::new(Some(code), Some(&raw), None, None, None)?;
+                raw.zeroize();
+                matter
             } else {
                 Matter::new(Some(code), raw, qb64b, qb64, qb2)?
             };
@@ -107,9 +114,12 @@ impl Salter {
         let temp = temp.unwrap_or(false);
 
         let size = matter::raw_size(code)?;
-        let seed = self.stretch(Some(size as usize), Some(path), tier, Some(temp))?;
+        let mut seed = self.stretch(Some(size as usize), Some(path), tier, Some(temp))?;
 
-        Signer::new(Some(transferable), Some(code), Some(&seed), None, None, None)
+        let signer = Signer::new(Some(transferable), Some(code), Some(&seed), None, None, None)?;
+        seed.zeroize();
+
+        Ok(signer)
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -323,9 +333,9 @@ mod test {
 
             let serder = incept(
                 &ckeys,
-                Some(&data!(2)),
+                Some(&dat!(2)),
                 Some(&ndigs),
-                Some(&data!(3)),
+                Some(&dat!(3)),
                 Some(4),
                 Some(&wkeys),
                 None,
@@ -402,13 +412,9 @@ mod test {
                 }
             }
 
-            atc += &Counter::new(
-                Some(sigers.len() as u32),
-                None,
-                Some(counter::Codex::ControllerIdxSigs),
-                None,
-                None,
-                None,
+            atc += &Counter::new_with_code_and_count(
+                counter::Codex::ControllerIdxSigs,
+                sigers.len() as u32,
             )?
             .qb64()?;
             for siger in sigers {
@@ -417,13 +423,9 @@ mod test {
         }
 
         if let Some(wigers) = wigers {
-            atc += &Counter::new(
-                Some(wigers.len() as u32),
-                None,
-                Some(counter::Codex::WitnessIdxSigs),
-                None,
-                None,
-                None,
+            atc += &Counter::new_with_code_and_count(
+                counter::Codex::WitnessIdxSigs,
+                wigers.len() as u32,
             )?
             .qb64()?;
             for wiger in wigers {
@@ -452,7 +454,7 @@ mod test {
 
         let sner = Number::new_with_num(sn)?;
 
-        let ked = data!({
+        let ked = dat!({
             "v": &vs,
             "t": ilk,
             "d": said,

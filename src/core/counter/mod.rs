@@ -66,7 +66,7 @@ impl Counter {
 
     pub fn sem_ver_str_to_b64(version: &str) -> Result<String> {
         let strings = version.split('.').collect::<Vec<_>>();
-        let mut parts = Vec::new();
+        let mut parts = vec![0u8; 3];
 
         if strings.len() > 3 {
             return err!(Error::Conversion(format!(
@@ -74,8 +74,8 @@ impl Counter {
             )));
         }
 
-        for s in strings {
-            let n = match s.parse::<i8>() {
+        for i in 0..strings.len() {
+            let n = match strings[i].parse::<i8>() {
                 Ok(n) => {
                     if n < 0 {
                         return err!(Error::Conversion(format!(
@@ -86,7 +86,7 @@ impl Counter {
                     }
                 }
                 Err(_) => {
-                    if s.is_empty() {
+                    if strings[i].is_empty() {
                         0
                     } else {
                         return err!(Error::Conversion(format!(
@@ -95,10 +95,8 @@ impl Counter {
                     }
                 }
             };
-            parts.push(n);
+            parts[i] = n;
         }
-
-        parts.resize(3, 0);
 
         Counter::sem_ver_parts_to_b64(&parts)
     }

@@ -49,18 +49,18 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "1AAH" => Sizage { hs: 4, ss: 0, fs: 100, ls: 0 },
         "2AAA" => Sizage { hs: 4, ss: 0, fs: 8, ls: 1 },
         "3AAA" => Sizage { hs: 4, ss: 0, fs: 8, ls: 2 },
-        "4A" => Sizage { hs: 2, ss: 2, fs: 0, ls: 0 },
-        "5A" => Sizage { hs: 2, ss: 2, fs: 0, ls: 1 },
-        "6A" => Sizage { hs: 2, ss: 2, fs: 0, ls: 2 },
-        "7AAA" => Sizage { hs: 4, ss: 4, fs: 0, ls: 0 },
-        "8AAA" => Sizage { hs: 4, ss: 4, fs: 0, ls: 1 },
-        "9AAA" => Sizage { hs: 4, ss: 4, fs: 0, ls: 2 },
-        "4B" => Sizage { hs: 2, ss: 2, fs: 0, ls: 0 },
-        "5B" => Sizage { hs: 2, ss: 2, fs: 0, ls: 1 },
-        "6B" => Sizage { hs: 2, ss: 2, fs: 0, ls: 2 },
-        "7AAB" => Sizage { hs: 4, ss: 4, fs: 0, ls: 0 },
-        "8AAB" => Sizage { hs: 4, ss: 4, fs: 0, ls: 1 },
-        "9AAB" => Sizage { hs: 4, ss: 4, fs: 0, ls: 2 },
+        "4A" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 0 },
+        "5A" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 1 },
+        "6A" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 2 },
+        "7AAA" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 0 },
+        "8AAA" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 1 },
+        "9AAA" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 2 },
+        "4B" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 0 },
+        "5B" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 1 },
+        "6B" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 2 },
+        "7AAB" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 0 },
+        "8AAB" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 1 },
+        "9AAB" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 2 },
         _ => return err!(Error::UnknownSizage(s.to_string())),
     })
 }
@@ -89,7 +89,7 @@ pub(crate) fn bardage(b: u8) -> Result<u32> {
 
 pub(crate) fn raw_size(code: &str) -> Result<u32> {
     let szg = sizage(code)?;
-    if szg.fs == 0 {
+    if szg.fs == u32::MAX {
         return err!(Error::UnexpectedCode(format!("cannot determine raw size for code={code}")));
     }
 
@@ -188,18 +188,18 @@ mod test {
     #[case("1AAH", 4, 0, 100, 0)]
     #[case("2AAA", 4, 0, 8, 1)]
     #[case("3AAA", 4, 0, 8, 2)]
-    #[case("4A", 2, 2, 0, 0)]
-    #[case("5A", 2, 2, 0, 1)]
-    #[case("6A", 2, 2, 0, 2)]
-    #[case("7AAA", 4, 4, 0, 0)]
-    #[case("8AAA", 4, 4, 0, 1)]
-    #[case("9AAA", 4, 4, 0, 2)]
-    #[case("4B", 2, 2, 0, 0)]
-    #[case("5B", 2, 2, 0, 1)]
-    #[case("6B", 2, 2, 0, 2)]
-    #[case("7AAB", 4, 4, 0, 0)]
-    #[case("8AAB", 4, 4, 0, 1)]
-    #[case("9AAB", 4, 4, 0, 2)]
+    #[case("4A", 2, 2, u32::MAX, 0)]
+    #[case("5A", 2, 2, u32::MAX, 1)]
+    #[case("6A", 2, 2, u32::MAX, 2)]
+    #[case("7AAA", 4, 4, u32::MAX, 0)]
+    #[case("8AAA", 4, 4, u32::MAX, 1)]
+    #[case("9AAA", 4, 4, u32::MAX, 2)]
+    #[case("4B", 2, 2, u32::MAX, 0)]
+    #[case("5B", 2, 2, u32::MAX, 1)]
+    #[case("6B", 2, 2, u32::MAX, 2)]
+    #[case("7AAB", 4, 4, u32::MAX, 0)]
+    #[case("8AAB", 4, 4, u32::MAX, 1)]
+    #[case("9AAB", 4, 4, u32::MAX, 2)]
     fn sizage(
         #[case] code: &str,
         #[case] hs: u32,

@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 
 #[macro_use]
-mod data;
+pub mod data;
 mod core;
 mod crypto;
 mod error;
@@ -29,7 +29,6 @@ pub use crate::{
         tholder::Tholder,
         verfer::Verfer,
     },
-    data::Value,
     error::Error,
     error::Result,
 };

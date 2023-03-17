@@ -8,13 +8,7 @@ use std::ops::{Index, IndexMut};
 use indexmap::IndexMap;
 use serde_json::{json, Value as JsonValue};
 
-use crate::error::{err, BoxedError, Error as CESRError, Result};
-
-pub trait Data {
-    fn to_json(&self) -> Result<String>;
-    fn to_cesr(&self) -> Result<String>;
-    fn to_cesrb(&self) -> Result<Vec<u8>>;
-}
+use crate::error::{err, Error as CESRError, Result};
 
 pub type Array = Vec<Value>;
 pub type Object = IndexMap<String, Value>;
@@ -107,6 +101,35 @@ impl Value {
             _ => err!(CESRError::Conversion("cannot convert to map".to_string())),
         }
     }
+
+    pub fn to_json(&self) -> Result<String> {
+        Ok(match self {
+            Self::Null => "null".to_string(),
+            Self::Boolean(b) => json!(b).to_string(),
+            Self::Number(n) => {
+                if n.float {
+                    json!(n.f).to_string()
+                } else {
+                    json!(n.i).to_string()
+                }
+            }
+            Self::String(s) => json!(s).to_string(),
+            Self::Array(a) => {
+                let mut v = Vec::new();
+                for element in a {
+                    v.push(element.to_json()?);
+                }
+                format!("[{}]", v.join(","))
+            }
+            Self::Object(o) => {
+                let mut v = Vec::new();
+                for (key, value) in o {
+                    v.push(format!("{}:{}", json!(key), value.to_json()?));
+                }
+                format!("{{{}}}", v.join(","))
+            }
+        })
+    }
 }
 
 impl fmt::Display for Value {
@@ -164,45 +187,6 @@ impl IndexMut<&str> for Value {
             }
             _ => panic!("attempted to mutably index non-indexable Value object with string"),
         }
-    }
-}
-
-impl Data for Value {
-    fn to_json(&self) -> Result<String> {
-        Ok(match self {
-            Self::Null => "null".to_string(),
-            Self::Boolean(b) => json!(b).to_string(),
-            Self::Number(n) => {
-                if n.float {
-                    json!(n.f).to_string()
-                } else {
-                    json!(n.i).to_string()
-                }
-            }
-            Self::String(s) => json!(s).to_string(),
-            Self::Array(a) => {
-                let mut v = Vec::new();
-                for element in a {
-                    v.push(element.to_json()?);
-                }
-                format!("[{}]", v.join(","))
-            }
-            Self::Object(o) => {
-                let mut v = Vec::new();
-                for (key, value) in o {
-                    v.push(format!("{}:{}", json!(key), value.to_json()?));
-                }
-                format!("{{{}}}", v.join(","))
-            }
-        })
-    }
-
-    fn to_cesr(&self) -> Result<String> {
-        unimplemented!();
-    }
-
-    fn to_cesrb(&self) -> Result<Vec<u8>> {
-        unimplemented!();
     }
 }
 
@@ -326,7 +310,7 @@ impl From<&JsonValue> for Value {
 }
 
 impl TryFrom<&Value> for String {
-    type Error = BoxedError;
+    type Error = anyhow::Error;
 
     fn try_from(v: &Value) -> Result<Self> {
         match v {
@@ -337,7 +321,7 @@ impl TryFrom<&Value> for String {
 }
 
 impl TryFrom<&Value> for bool {
-    type Error = BoxedError;
+    type Error = anyhow::Error;
 
     fn try_from(v: &Value) -> Result<Self> {
         match v {
@@ -348,7 +332,7 @@ impl TryFrom<&Value> for bool {
 }
 
 impl TryFrom<&Value> for i64 {
-    type Error = BoxedError;
+    type Error = anyhow::Error;
 
     fn try_from(v: &Value) -> Result<Self> {
         match v {
@@ -365,7 +349,7 @@ impl TryFrom<&Value> for i64 {
 }
 
 impl TryFrom<&Value> for f64 {
-    type Error = BoxedError;
+    type Error = anyhow::Error;
 
     fn try_from(v: &Value) -> Result<Self> {
         match v {
@@ -382,7 +366,7 @@ impl TryFrom<&Value> for f64 {
 }
 
 impl TryFrom<&Value> for Vec<Value> {
-    type Error = BoxedError;
+    type Error = anyhow::Error;
 
     fn try_from(v: &Value) -> Result<Self> {
         match v {
@@ -393,7 +377,7 @@ impl TryFrom<&Value> for Vec<Value> {
 }
 
 impl TryFrom<&Value> for IndexMap<String, Value> {
-    type Error = BoxedError;
+    type Error = anyhow::Error;
 
     fn try_from(v: &Value) -> Result<Self> {
         match v {
@@ -403,14 +387,8 @@ impl TryFrom<&Value> for IndexMap<String, Value> {
     }
 }
 
-#[macro_export]
-macro_rules! data {
-    ($($data:tt)+) => {
-        data_internal!($($data)+)
-    };
-}
-
-macro_rules! data_internal {
+#[macro_export(local_inner_macros)]
+macro_rules! dat {
     // arrays
 
     // Done with trailing comma.
@@ -425,42 +403,42 @@ macro_rules! data_internal {
 
     // Next element is `null`.
     (@array [$($elems:expr,)*] null $($rest:tt)*) => {
-        data_internal!(@array [$($elems,)* data_internal!(null)] $($rest)*)
+        dat!(@array [$($elems,)* dat!(null)] $($rest)*)
     };
 
     // Next element is `true`.
     (@array [$($elems:expr,)*] true $($rest:tt)*) => {
-        data_internal!(@array [$($elems,)* data_internal!(true)] $($rest)*)
+        dat!(@array [$($elems,)* dat!(true)] $($rest)*)
     };
 
     // Next element is `false`.
     (@array [$($elems:expr,)*] false $($rest:tt)*) => {
-        data_internal!(@array [$($elems,)* data_internal!(false)] $($rest)*)
+        dat!(@array [$($elems,)* dat!(false)] $($rest)*)
     };
 
     // Next element is an array.
     (@array [$($elems:expr,)*] [$($array:tt)*] $($rest:tt)*) => {
-        data_internal!(@array [$($elems,)* data_internal!([$($array)*])] $($rest)*)
+        dat!(@array [$($elems,)* dat!([$($array)*])] $($rest)*)
     };
 
     // Next element is a map.
     (@array [$($elems:expr,)*] {$($map:tt)*} $($rest:tt)*) => {
-        data_internal!(@array [$($elems,)* data_internal!({$($map)*})] $($rest)*)
+        dat!(@array [$($elems,)* dat!({$($map)*})] $($rest)*)
     };
 
     // Next element is an expression followed by comma.
     (@array [$($elems:expr,)*] $next:expr, $($rest:tt)*) => {
-        data_internal!(@array [$($elems,)* data_internal!($next),] $($rest)*)
+        dat!(@array [$($elems,)* dat!($next),] $($rest)*)
     };
 
     // Last element is an expression with no trailing comma.
     (@array [$($elems:expr,)*] $last:expr) => {
-        data_internal!(@array [$($elems,)* data_internal!($last)])
+        dat!(@array [$($elems,)* dat!($last)])
     };
 
     // Comma after the most recent element.
     (@array [$($elems:expr),*] , $($rest:tt)*) => {
-        data_internal!(@array [$($elems,)*] $($rest)*)
+        dat!(@array [$($elems,)*] $($rest)*)
     };
 
     // Unexpected token after most recent element.
@@ -476,7 +454,7 @@ macro_rules! data_internal {
     // Insert the current entry followed by trailing comma.
     (@object $object:ident [$($key:tt)+] ($value:expr) , $($rest:tt)*) => {
         let _ = $object.insert(($($key)+).into(), $value);
-        data_internal!(@object $object () ($($rest)*) ($($rest)*));
+        dat!(@object $object () ($($rest)*) ($($rest)*));
     };
 
     // Current entry followed by unexpected token.
@@ -491,50 +469,50 @@ macro_rules! data_internal {
 
     // Next value is `null`.
     (@object $object:ident ($($key:tt)+) (: null $($rest:tt)*) $copy:tt) => {
-        data_internal!(@object $object [$($key)+] (data_internal!(null)) $($rest)*);
+        dat!(@object $object [$($key)+] (dat!(null)) $($rest)*);
     };
 
     // Next value is `true`.
     (@object $object:ident ($($key:tt)+) (: true $($rest:tt)*) $copy:tt) => {
-        data_internal!(@object $object [$($key)+] (data_internal!(true)) $($rest)*);
+        dat!(@object $object [$($key)+] (dat!(true)) $($rest)*);
     };
 
     // Next value is `false`.
     (@object $object:ident ($($key:tt)+) (: false $($rest:tt)*) $copy:tt) => {
-        data_internal!(@object $object [$($key)+] (data_internal!(false)) $($rest)*);
+        dat!(@object $object [$($key)+] (dat!(false)) $($rest)*);
     };
 
     // Next value is an array.
     (@object $object:ident ($($key:tt)+) (: [$($array:tt)*] $($rest:tt)*) $copy:tt) => {
-        data_internal!(@object $object [$($key)+] (data_internal!([$($array)*])) $($rest)*);
+        dat!(@object $object [$($key)+] (dat!([$($array)*])) $($rest)*);
     };
 
     // Next value is a map.
     (@object $object:ident ($($key:tt)+) (: {$($map:tt)*} $($rest:tt)*) $copy:tt) => {
-        data_internal!(@object $object [$($key)+] (data_internal!({$($map)*})) $($rest)*);
+        dat!(@object $object [$($key)+] (dat!({$($map)*})) $($rest)*);
     };
 
     // Next value is an expression followed by comma.
     (@object $object:ident ($($key:tt)+) (: $value:expr , $($rest:tt)*) $copy:tt) => {
-        data_internal!(@object $object [$($key)+] (data_internal!($value)) , $($rest)*);
+        dat!(@object $object [$($key)+] (dat!($value)) , $($rest)*);
     };
 
     // Last value is an expression with no trailing comma.
     (@object $object:ident ($($key:tt)+) (: $value:expr) $copy:tt) => {
-        data_internal!(@object $object [$($key)+] (data_internal!($value)));
+        dat!(@object $object [$($key)+] (dat!($value)));
     };
 
     // Missing value for last entry. Trigger a reasonable error message.
     (@object $object:ident ($($key:tt)+) (:) $copy:tt) => {
         // "unexpected end of macro invocation"
-        data_internal!();
+        dat!();
     };
 
     // Missing colon and value for last entry. Trigger a reasonable error
     // message.
     (@object $object:ident ($($key:tt)+) () $copy:tt) => {
         // "unexpected end of macro invocation"
-        data_internal!();
+        dat!();
     };
 
     // Misplaced colon. Trigger a reasonable error message.
@@ -552,7 +530,7 @@ macro_rules! data_internal {
     // Key is fully parenthesized. This avoids clippy double_parens false
     // positives because the parenthesization may be necessary here.
     (@object $object:ident () (($key:expr) : $($rest:tt)*) $copy:tt) => {
-        data_internal!(@object $object ($key) (: $($rest)*) (: $($rest)*));
+        dat!(@object $object ($key) (: $($rest)*) (: $($rest)*));
     };
 
     // Refuse to absorb colon token into key expression.
@@ -562,7 +540,7 @@ macro_rules! data_internal {
 
     // Munch a token into the current key.
     (@object $object:ident ($($key:tt)*) ($tt:tt $($rest:tt)*) $copy:tt) => {
-        data_internal!(@object $object ($($key)* $tt) ($($rest)*) ($($rest)*));
+        dat!(@object $object ($($key)* $tt) ($($rest)*) ($($rest)*));
     };
 
     // core logic
@@ -584,7 +562,7 @@ macro_rules! data_internal {
     };
 
     ([ $($tt:tt)+ ]) => {{
-        data_internal!(@array [] $($tt)+)
+        dat!(@array [] $($tt)+)
     }};
 
     ({}) => {
@@ -593,7 +571,7 @@ macro_rules! data_internal {
 
     ({ $($tt:tt)+ }) => {{
         let mut object = $crate::data::Object::new();
-        data_internal!(@object object () ($($tt)+) ($($tt)+));
+        dat!(@object object () ($($tt)+) ($($tt)+));
         $crate::data::Value::Object(object)
     }};
 
@@ -602,25 +580,31 @@ macro_rules! data_internal {
     }
 }
 
+#[macro_export]
+#[doc(hidden)]
 macro_rules! data_internal_vec {
     ($($content:tt)*) => {{
         $crate::data::Value::Array(vec![$($content)*])
     }};
 }
 
+#[macro_export]
+#[doc(hidden)]
 macro_rules! data_unexpected {
     () => {};
 }
 
+#[macro_export]
+#[doc(hidden)]
 macro_rules! data_expect_expr_comma {
     ($e:expr , $($tt:tt)*) => {};
 }
 
-pub use data;
+pub use dat;
 
 #[cfg(test)]
 mod test {
-    use crate::data::{data, Data, Value};
+    use crate::data::{dat, Value};
     use indexmap::IndexMap;
 
     #[test]
@@ -628,7 +612,7 @@ mod test {
         let x: i64 = -1234567890;
         let s = "string".to_string();
 
-        let mut d = data!({
+        let mut d = dat!({
             "thing": 2,
             "other thing": [&s, 1.666, x, true, {"nested array": [{}, []]}],
             "last thing": null
@@ -660,8 +644,8 @@ mod test {
         );
 
         // mutability
-        d["thing"] = data!({"something more complex": {"key": 987654321 }});
-        d[1][1] = data!(true);
+        d["thing"] = dat!({"something more complex": {"key": 987654321 }});
+        d[1][1] = dat!(true);
         assert_eq!(
             d.to_json().unwrap(),
             "{\"thing\":{\"something more complex\":{\"key\":987654321}},\"other thing\":[\"string\",true,-1234567890,true,{\"nested array\":[{},[]]}],\"last thing\":null}"
@@ -675,14 +659,14 @@ mod test {
 
     #[test]
     fn value() {
-        assert!(data!({}).to_json().is_ok());
-        // assert!(data!({}).to_cesr().is_err());
-        // assert!(data!({}).to_cesrb().is_err());
+        assert!(dat!({}).to_json().is_ok());
+        // assert!(dat!({}).to_cesr().is_err());
+        // assert!(dat!({}).to_cesrb().is_err());
 
         let array: &[Value] = &[];
         let mut hash_map = std::collections::HashMap::<String, Value>::new();
-        hash_map.insert("test".to_string(), data!(true));
-        let d = data!({
+        hash_map.insert("test".to_string(), dat!(true));
+        let d = dat!({
             "f32": 0 as f32,
             "f64": 0 as f64,
             "i8": 0 as i8,
@@ -712,12 +696,12 @@ mod test {
 
     #[test]
     fn try_from() {
-        let string = data!("string");
-        let boolean = data!(false);
-        let int64 = data!(3);
-        let float64 = data!(6.7);
-        let vector = data!([]);
-        let map = data!({});
+        let string = dat!("string");
+        let boolean = dat!(false);
+        let int64 = dat!(3);
+        let float64 = dat!(6.7);
+        let vector = dat!([]);
+        let map = dat!({});
 
         assert!(String::try_from(&string).is_ok());
         assert!(String::try_from(&boolean).is_err());
