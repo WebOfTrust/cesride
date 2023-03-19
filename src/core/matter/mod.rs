@@ -171,11 +171,8 @@ pub trait Matter: Default {
     }
 
     fn transferable(&self) -> bool {
-        const CODES: &[&str] = &[
-            tables::Codex::Ed25519N,
-            tables::Codex::ECDSA_256k1N,
-            tables::Codex::Ed448N
-        ];
+        const CODES: &[&str] =
+            &[tables::Codex::Ed25519N, tables::Codex::ECDSA_256k1N, tables::Codex::Ed448N];
 
         !CODES.contains(&self.code().as_str())
     }
