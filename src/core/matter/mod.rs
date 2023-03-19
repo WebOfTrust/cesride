@@ -154,6 +154,32 @@ pub trait Matter: Default {
         self.binfil()
     }
 
+    fn digestive(&self) -> bool {
+        const CODES: &[&str] = &[
+            tables::Codex::Blake3_256,
+            tables::Codex::Blake3_512,
+            tables::Codex::Blake2b_256,
+            tables::Codex::Blake2b_512,
+            tables::Codex::Blake2s_256,
+            tables::Codex::SHA3_256,
+            tables::Codex::SHA3_512,
+            tables::Codex::SHA2_256,
+            tables::Codex::SHA2_512,
+        ];
+
+        CODES.contains(&self.code().as_str())
+    }
+
+    fn transferable(&self) -> bool {
+        const CODES: &[&str] = &[
+            tables::Codex::Ed25519N,
+            tables::Codex::ECDSA_256k1N,
+            tables::Codex::Ed448N
+        ];
+
+        !CODES.contains(&self.code().as_str())
+    }
+
     fn infil(&self) -> Result<String> {
         let code = &self.code();
         let size = self.size();
