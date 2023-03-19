@@ -148,6 +148,19 @@ pub mod Codex {
     pub const Bytes_Big_L2: &str = "9AAB"; // Byte String Big Leader Size 2
 }
 
+#[allow(non_snake_case)]
+#[allow(non_upper_case_globals)]
+pub mod NonTransCodex {
+    pub const Ed25519N: &str = "B"; // Ed25519 verification key non-transferable, basic derivation.
+    pub const ECDSA_256k1N: &str = "1AAA"; // ECDSA secp256k1 verification key non-transferable, basic derivation.
+    pub const Ed448N: &str = "1AAC"; // Ed448 non-transferable prefix public signing verification key. Basic derivation.
+
+    pub fn has_code(code: &str) -> bool {
+        const CODES: &[&str] = &[Ed25519N, ECDSA_256k1N, Ed448N];
+        CODES.contains(&code)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::core::matter::tables::{self as matter, Codex};
