@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use crate::{error::JsResult, VerferWrapper};
 use cesride_core::{Indexer, Siger};
 use wasm_bindgen::prelude::*;
@@ -99,5 +101,13 @@ impl SigerWrapper {
 
     pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
         self.0.qb2().as_js().map_err(JsValue::from)
+    }
+}
+
+impl Deref for SigerWrapper {
+    type Target = Siger;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
