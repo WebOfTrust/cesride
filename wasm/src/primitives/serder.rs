@@ -20,7 +20,7 @@ impl SerderWrapper {
         kind: Option<String>,
         ked: Option<ValueWrapper>,
         sad: Option<SerderWrapper>,
-    ) -> Result<SerderWrapper, JsValue> {
+    ) -> Result<SerderWrapper> {
         let serder = Serder::new(
             code.as_deref(),
             raw.as_deref(),
@@ -36,13 +36,13 @@ impl SerderWrapper {
         ked: ValueWrapper,
         code: Option<String>,
         kind: Option<String>,
-    ) -> Result<SerderWrapper, JsValue> {
+    ) -> Result<SerderWrapper> {
         let serder =
             Serder::new_with_ked(&Value::from(ked), code.as_deref(), kind.as_deref()).as_js()?;
         Ok(SerderWrapper(serder))
     }
 
-    pub fn verfers(&self) -> Result<Array, JsValue> {
+    pub fn verfers(&self) -> Result<Array> {
         let verfers = self.0.verfers().as_js()?;
         let arr = Array::new_with_length(verfers.len() as u32);
         (0..verfers.len()).for_each(|i| {
@@ -52,7 +52,7 @@ impl SerderWrapper {
         Ok(arr)
     }
 
-    pub fn digers(&self) -> Result<Array, JsValue> {
+    pub fn digers(&self) -> Result<Array> {
         let digers = self.0.digers().as_js()?;
         let arr = Array::new_with_length(digers.len() as u32);
         (0..digers.len()).for_each(|i| {
@@ -62,7 +62,7 @@ impl SerderWrapper {
         Ok(arr)
     }
 
-    pub fn werfers(&self) -> Result<Array, JsValue> {
+    pub fn werfers(&self) -> Result<Array> {
         let werfers = self.0.werfers().as_js()?;
         let arr = Array::new_with_length(werfers.len() as u32);
         (0..werfers.len()).for_each(|i| {
@@ -72,32 +72,32 @@ impl SerderWrapper {
         Ok(arr)
     }
 
-    pub fn tholder(&self) -> Result<Option<TholderWrapper>, JsValue> {
+    pub fn tholder(&self) -> Result<Option<TholderWrapper>> {
         let tholder = self.0.tholder().as_js()?;
         Ok(tholder.map(TholderWrapper))
     }
 
-    pub fn ntholder(&self) -> Result<Option<TholderWrapper>, JsValue> {
+    pub fn ntholder(&self) -> Result<Option<TholderWrapper>> {
         let tholder = self.0.ntholder().as_js()?;
         Ok(tholder.map(TholderWrapper))
     }
 
-    pub fn sner(&self) -> Result<NumberWrapper, JsValue> {
+    pub fn sner(&self) -> Result<NumberWrapper> {
         let sner = self.0.sner().as_js()?;
         Ok(NumberWrapper(sner))
     }
 
-    pub fn sn(&self) -> Result<U128Wrapper, JsValue> {
+    pub fn sn(&self) -> Result<U128Wrapper> {
         let sn = self.0.sn().as_js()?;
         Ok(sn.into())
     }
 
-    pub fn fner(&self) -> Result<Option<NumberWrapper>, JsValue> {
+    pub fn fner(&self) -> Result<Option<NumberWrapper>> {
         let sner = self.0.fner().as_js()?;
         Ok(sner.map(NumberWrapper))
     }
 
-    pub fn _fn(&self) -> Result<U128Wrapper, JsValue> {
+    pub fn _fn(&self) -> Result<U128Wrapper> {
         let _fn = self.0._fn().as_js()?;
         Ok(_fn.into())
     }

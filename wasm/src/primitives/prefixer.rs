@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use crate::{error::*, ValueWrapper};
 use cesride_core::{data::Value, Matter, Prefixer};
 use js_sys::Array;
@@ -17,7 +19,7 @@ impl PrefixerWrapper {
         qb64b: Option<Vec<u8>>,
         qb64: Option<String>,
         qb2: Option<Vec<u8>>,
-    ) -> Result<PrefixerWrapper, JsValue> {
+    ) -> Result<PrefixerWrapper> {
         let allows = allows
             .map(|a| a.iter().map(|v| v.as_string().unwrap_or_default()).collect::<Vec<String>>());
         let allows = allows.as_deref().map(|a| a.iter().map(String::as_str).collect::<Vec<&str>>());
@@ -39,7 +41,7 @@ impl PrefixerWrapper {
         ked: ValueWrapper,
         allows: Option<Array>,
         code: Option<String>,
-    ) -> Result<PrefixerWrapper, JsValue> {
+    ) -> Result<PrefixerWrapper> {
         let allows = allows
             .map(|a| a.iter().map(|v| v.as_string().unwrap_or_default()).collect::<Vec<String>>());
         let allows = allows.as_deref().map(|a| a.iter().map(String::as_str).collect::<Vec<&str>>());
@@ -49,27 +51,27 @@ impl PrefixerWrapper {
         Ok(PrefixerWrapper(prefixer))
     }
 
-    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<PrefixerWrapper, JsValue> {
+    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<PrefixerWrapper> {
         let prefixer = Prefixer::new_with_raw(raw, code.as_deref()).as_js()?;
         Ok(PrefixerWrapper(prefixer))
     }
 
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<PrefixerWrapper, JsValue> {
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<PrefixerWrapper> {
         let prefixer = Prefixer::new_with_qb64b(qb64b).as_js()?;
         Ok(PrefixerWrapper(prefixer))
     }
 
-    pub fn new_with_qb64(qb64: &str) -> Result<PrefixerWrapper, JsValue> {
+    pub fn new_with_qb64(qb64: &str) -> Result<PrefixerWrapper> {
         let prefixer = Prefixer::new_with_qb64(qb64).as_js()?;
         Ok(PrefixerWrapper(prefixer))
     }
 
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<PrefixerWrapper, JsValue> {
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<PrefixerWrapper> {
         let prefixer = Prefixer::new_with_qb2(qb2).as_js()?;
         Ok(PrefixerWrapper(prefixer))
     }
 
-    pub fn verify(&self, ked: ValueWrapper, prefixed: Option<bool>) -> Result<bool, JsValue> {
+    pub fn verify(&self, ked: ValueWrapper, prefixed: Option<bool>) -> Result<bool> {
         self.0.verify(&Value::from(ked), prefixed).as_js().map_err(JsValue::from)
     }
 
@@ -85,15 +87,23 @@ impl PrefixerWrapper {
         self.0.raw()
     }
 
-    pub fn qb64(&self) -> Result<String, JsValue> {
+    pub fn qb64(&self) -> Result<String> {
         self.0.qb64().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb64b(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb64b(&self) -> Result<Vec<u8>> {
         self.0.qb64b().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb2(&self) -> Result<Vec<u8>> {
         self.0.qb2().as_js().map_err(JsValue::from)
+    }
+}
+
+impl Deref for PrefixerWrapper {
+    type Target = Prefixer;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

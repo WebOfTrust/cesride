@@ -1,4 +1,6 @@
-use crate::error::JsResult;
+use std::ops::Deref;
+
+use crate::error::*;
 use crate::util::U128Wrapper;
 use cesride_core::{Matter, Seqner};
 use wasm_bindgen::prelude::*;
@@ -17,7 +19,7 @@ impl SeqnerWrapper {
         qb64b: Option<Vec<u8>>,
         qb64: Option<String>,
         qb2: Option<Vec<u8>>,
-    ) -> Result<SeqnerWrapper, JsValue> {
+    ) -> Result<SeqnerWrapper> {
         let seqner = Seqner::new(
             sn.map(Into::into),
             snh.as_deref(),
@@ -31,42 +33,42 @@ impl SeqnerWrapper {
         Ok(SeqnerWrapper(seqner))
     }
 
-    pub fn new_with_sn(sn: U128Wrapper) -> Result<SeqnerWrapper, JsValue> {
+    pub fn new_with_sn(sn: U128Wrapper) -> Result<SeqnerWrapper> {
         let seqner = Seqner::new_with_sn(sn.into()).as_js()?;
         Ok(SeqnerWrapper(seqner))
     }
 
-    pub fn new_with_snh(snh: &str) -> Result<SeqnerWrapper, JsValue> {
+    pub fn new_with_snh(snh: &str) -> Result<SeqnerWrapper> {
         let seqner = Seqner::new_with_snh(snh).as_js()?;
         Ok(SeqnerWrapper(seqner))
     }
 
-    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<SeqnerWrapper, JsValue> {
+    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<SeqnerWrapper> {
         let seqner = Seqner::new_with_raw(raw, code.as_deref()).as_js()?;
         Ok(SeqnerWrapper(seqner))
     }
 
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<SeqnerWrapper, JsValue> {
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<SeqnerWrapper> {
         let seqner = Seqner::new_with_qb64b(qb64b).as_js()?;
         Ok(SeqnerWrapper(seqner))
     }
 
-    pub fn new_with_qb64(qb64: &str) -> Result<SeqnerWrapper, JsValue> {
+    pub fn new_with_qb64(qb64: &str) -> Result<SeqnerWrapper> {
         let seqner = Seqner::new_with_qb64(qb64).as_js()?;
         Ok(SeqnerWrapper(seqner))
     }
 
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<SeqnerWrapper, JsValue> {
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<SeqnerWrapper> {
         let seqner = Seqner::new_with_qb2(qb2).as_js()?;
         Ok(SeqnerWrapper(seqner))
     }
 
-    pub fn sn(&self) -> Result<U128Wrapper, JsValue> {
+    pub fn sn(&self) -> Result<U128Wrapper> {
         let sn = self.0.sn().as_js()?;
         Ok(sn.into())
     }
 
-    pub fn snh(&self) -> Result<String, JsValue> {
+    pub fn snh(&self) -> Result<String> {
         self.0.snh().as_js().map_err(JsValue::from)
     }
 
@@ -82,15 +84,23 @@ impl SeqnerWrapper {
         self.0.raw()
     }
 
-    pub fn qb64(&self) -> Result<String, JsValue> {
+    pub fn qb64(&self) -> Result<String> {
         self.0.qb64().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb64b(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb64b(&self) -> Result<Vec<u8>> {
         self.0.qb64b().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb2(&self) -> Result<Vec<u8>> {
         self.0.qb2().as_js().map_err(JsValue::from)
+    }
+}
+
+impl Deref for SeqnerWrapper {
+    type Target = Seqner;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

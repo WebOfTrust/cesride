@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use crate::error::*;
 use cesride_core::{Bexter, Matter};
 use wasm_bindgen::prelude::*;
@@ -15,7 +17,7 @@ impl BexterWrapper {
         qb64b: Option<Vec<u8>>,
         qb64: Option<String>,
         qb2: Option<Vec<u8>>,
-    ) -> Result<BexterWrapper, JsValue> {
+    ) -> Result<BexterWrapper> {
         let bexter = Bexter::new(
             bext.as_deref(),
             code.as_deref(),
@@ -28,32 +30,32 @@ impl BexterWrapper {
         Ok(BexterWrapper(bexter))
     }
 
-    pub fn new_with_bext(bext: &str) -> Result<BexterWrapper, JsValue> {
+    pub fn new_with_bext(bext: &str) -> Result<BexterWrapper> {
         let bexter = Bexter::new_with_bext(bext).as_js()?;
         Ok(BexterWrapper(bexter))
     }
 
-    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<BexterWrapper, JsValue> {
+    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<BexterWrapper> {
         let bexter = Bexter::new_with_raw(raw, code.as_deref()).as_js()?;
         Ok(BexterWrapper(bexter))
     }
 
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<BexterWrapper, JsValue> {
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<BexterWrapper> {
         let bexter = Bexter::new_with_qb64b(qb64b).as_js()?;
         Ok(BexterWrapper(bexter))
     }
 
-    pub fn new_with_qb64(qb64: &str) -> Result<BexterWrapper, JsValue> {
+    pub fn new_with_qb64(qb64: &str) -> Result<BexterWrapper> {
         let bexter = Bexter::new_with_qb64(qb64).as_js()?;
         Ok(BexterWrapper(bexter))
     }
 
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<BexterWrapper, JsValue> {
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<BexterWrapper> {
         let bexter = Bexter::new_with_qb2(qb2).as_js()?;
         Ok(BexterWrapper(bexter))
     }
 
-    pub fn bext(&self) -> Result<String, JsValue> {
+    pub fn bext(&self) -> Result<String> {
         self.0.bext().as_js().map_err(JsValue::from)
     }
 
@@ -69,15 +71,23 @@ impl BexterWrapper {
         self.0.raw()
     }
 
-    pub fn qb64(&self) -> Result<String, JsValue> {
+    pub fn qb64(&self) -> Result<String> {
         self.0.qb64().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb64b(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb64b(&self) -> Result<Vec<u8>> {
         self.0.qb64b().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb2(&self) -> Result<Vec<u8>> {
         self.0.qb2().as_js().map_err(JsValue::from)
+    }
+}
+
+impl Deref for BexterWrapper {
+    type Target = Bexter;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

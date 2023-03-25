@@ -16,7 +16,7 @@ impl VerferWrapper {
         qb64b: Option<Vec<u8>>,
         qb64: Option<String>,
         qb2: Option<Vec<u8>>,
-    ) -> Result<VerferWrapper, JsValue> {
+    ) -> Result<VerferWrapper> {
         let verfer = Verfer::new(
             code.as_deref(),
             raw.as_deref(),
@@ -28,27 +28,27 @@ impl VerferWrapper {
         Ok(VerferWrapper(verfer))
     }
 
-    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<VerferWrapper, JsValue> {
+    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<VerferWrapper> {
         let verfer = Verfer::new_with_raw(raw, code.as_deref()).as_js()?;
         Ok(VerferWrapper(verfer))
     }
 
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<VerferWrapper, JsValue> {
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<VerferWrapper> {
         let verfer = Verfer::new_with_qb64b(qb64b).as_js()?;
         Ok(VerferWrapper(verfer))
     }
 
-    pub fn new_with_qb64(qb64: &str) -> Result<VerferWrapper, JsValue> {
+    pub fn new_with_qb64(qb64: &str) -> Result<VerferWrapper> {
         let verfer = Verfer::new_with_qb64(qb64).as_js()?;
         Ok(VerferWrapper(verfer))
     }
 
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<VerferWrapper, JsValue> {
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<VerferWrapper> {
         let verfer = Verfer::new_with_qb2(qb2).as_js()?;
         Ok(VerferWrapper(verfer))
     }
 
-    pub fn verify(&self, sig: &[u8], ser: &[u8]) -> Result<bool, JsValue> {
+    pub fn verify(&self, sig: &[u8], ser: &[u8]) -> Result<bool> {
         self.0.verify(sig, ser).as_js().map_err(JsValue::from)
     }
 
@@ -64,15 +64,15 @@ impl VerferWrapper {
         self.0.raw()
     }
 
-    pub fn qb64(&self) -> Result<String, JsValue> {
+    pub fn qb64(&self) -> Result<String> {
         self.0.qb64().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb64b(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb64b(&self) -> Result<Vec<u8>> {
         self.0.qb64b().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb2(&self) -> Result<Vec<u8>> {
         self.0.qb2().as_js().map_err(JsValue::from)
     }
 }

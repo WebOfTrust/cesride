@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use crate::{error::*, ValueWrapper};
 use cesride_core::{data::Value, Matter, Saider};
 use js_sys::Array;
@@ -37,7 +39,7 @@ impl SaiderWrapper {
         qb64b: Option<Vec<u8>>,
         qb64: Option<String>,
         qb2: Option<Vec<u8>>,
-    ) -> Result<SaiderWrapper, JsValue> {
+    ) -> Result<SaiderWrapper> {
         let ignore = ignore
             .map(|a| a.iter().map(|v| v.as_string().unwrap_or_default()).collect::<Vec<String>>());
         let ignore = ignore.as_deref().map(|a| a.iter().map(String::as_str).collect::<Vec<&str>>());
@@ -63,7 +65,7 @@ impl SaiderWrapper {
         kind: Option<String>,
         label: Option<String>,
         ignore: Option<Array>,
-    ) -> Result<SaidifyRet, JsValue> {
+    ) -> Result<SaidifyRet> {
         let ignore = ignore
             .map(|a| a.iter().map(|v| v.as_string().unwrap_or_default()).collect::<Vec<String>>());
         let ignore = ignore.as_deref().map(|a| a.iter().map(String::as_str).collect::<Vec<&str>>());
@@ -90,7 +92,7 @@ impl SaiderWrapper {
         kind: Option<String>,
         label: Option<String>,
         ignore: Option<Array>,
-    ) -> Result<bool, JsValue> {
+    ) -> Result<bool> {
         let ignore = ignore
             .map(|a| a.iter().map(|v| v.as_string().unwrap_or_default()).collect::<Vec<String>>());
         let ignore = ignore.as_deref().map(|a| a.iter().map(String::as_str).collect::<Vec<&str>>());
@@ -115,7 +117,7 @@ impl SaiderWrapper {
         kind: Option<String>,
         ignore: Option<Array>,
         code: Option<String>,
-    ) -> Result<SaiderWrapper, JsValue> {
+    ) -> Result<SaiderWrapper> {
         let ignore = ignore
             .map(|a| a.iter().map(|v| v.as_string().unwrap_or_default()).collect::<Vec<String>>());
         let ignore = ignore.as_deref().map(|a| a.iter().map(String::as_str).collect::<Vec<&str>>());
@@ -131,22 +133,22 @@ impl SaiderWrapper {
         Ok(SaiderWrapper(saider))
     }
 
-    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<SaiderWrapper, JsValue> {
+    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<SaiderWrapper> {
         let saider = Saider::new_with_raw(raw, code.as_deref()).as_js()?;
         Ok(SaiderWrapper(saider))
     }
 
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<SaiderWrapper, JsValue> {
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<SaiderWrapper> {
         let saider = Saider::new_with_qb64b(qb64b).as_js()?;
         Ok(SaiderWrapper(saider))
     }
 
-    pub fn new_with_qb64(qb64: &str) -> Result<SaiderWrapper, JsValue> {
+    pub fn new_with_qb64(qb64: &str) -> Result<SaiderWrapper> {
         let saider = Saider::new_with_qb64(qb64).as_js()?;
         Ok(SaiderWrapper(saider))
     }
 
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<SaiderWrapper, JsValue> {
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<SaiderWrapper> {
         let saider = Saider::new_with_qb2(qb2).as_js()?;
         Ok(SaiderWrapper(saider))
     }
@@ -163,15 +165,23 @@ impl SaiderWrapper {
         self.0.raw()
     }
 
-    pub fn qb64(&self) -> Result<String, JsValue> {
+    pub fn qb64(&self) -> Result<String> {
         self.0.qb64().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb64b(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb64b(&self) -> Result<Vec<u8>> {
         self.0.qb64b().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb2(&self) -> Result<Vec<u8>> {
         self.0.qb2().as_js().map_err(JsValue::from)
+    }
+}
+
+impl Deref for SaiderWrapper {
+    type Target = Saider;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use crate::error::*;
 use cesride_core::{Dater, Matter};
 use wasm_bindgen::prelude::*;
@@ -15,7 +17,7 @@ impl DaterWrapper {
         qb64b: Option<Vec<u8>>,
         qb64: Option<String>,
         qb2: Option<Vec<u8>>,
-    ) -> Result<DaterWrapper, JsValue> {
+    ) -> Result<DaterWrapper> {
         let dater = Dater::new(
             dts.as_deref(),
             code.as_deref(),
@@ -28,36 +30,36 @@ impl DaterWrapper {
         Ok(DaterWrapper(dater))
     }
 
-    pub fn new_with_dts(dts: &str, code: Option<String>) -> Result<DaterWrapper, JsValue> {
+    pub fn new_with_dts(dts: &str, code: Option<String>) -> Result<DaterWrapper> {
         let dater = Dater::new_with_dts(dts, code.as_deref()).as_js()?;
         Ok(DaterWrapper(dater))
     }
 
-    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<DaterWrapper, JsValue> {
+    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<DaterWrapper> {
         let dater = Dater::new_with_raw(raw, code.as_deref()).as_js()?;
         Ok(DaterWrapper(dater))
     }
 
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<DaterWrapper, JsValue> {
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<DaterWrapper> {
         let dater = Dater::new_with_qb64b(qb64b).as_js()?;
         Ok(DaterWrapper(dater))
     }
 
-    pub fn new_with_qb64(qb64: &str) -> Result<DaterWrapper, JsValue> {
+    pub fn new_with_qb64(qb64: &str) -> Result<DaterWrapper> {
         let dater = Dater::new_with_qb64(qb64).as_js()?;
         Ok(DaterWrapper(dater))
     }
 
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<DaterWrapper, JsValue> {
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<DaterWrapper> {
         let dater = Dater::new_with_qb2(qb2).as_js()?;
         Ok(DaterWrapper(dater))
     }
 
-    pub fn dts(&self) -> Result<String, JsValue> {
+    pub fn dts(&self) -> Result<String> {
         self.0.dts().as_js().map_err(JsValue::from)
     }
 
-    pub fn dtsb(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn dtsb(&self) -> Result<Vec<u8>> {
         self.0.dtsb().as_js().map_err(JsValue::from)
     }
 
@@ -73,15 +75,23 @@ impl DaterWrapper {
         self.0.raw()
     }
 
-    pub fn qb64(&self) -> Result<String, JsValue> {
+    pub fn qb64(&self) -> Result<String> {
         self.0.qb64().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb64b(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb64b(&self) -> Result<Vec<u8>> {
         self.0.qb64b().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb2(&self) -> Result<Vec<u8>> {
         self.0.qb2().as_js().map_err(JsValue::from)
+    }
+}
+
+impl Deref for DaterWrapper {
+    type Target = Dater;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

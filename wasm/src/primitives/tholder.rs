@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use crate::ValueWrapper;
 use crate::{error::*, BexterWrapper, NumberWrapper};
 use cesride_core::data::Value;
@@ -16,7 +18,7 @@ impl TholderWrapper {
         thold: Option<ValueWrapper>,
         limen: Option<Vec<u8>>,
         sith: Option<ValueWrapper>,
-    ) -> Result<TholderWrapper, JsValue> {
+    ) -> Result<TholderWrapper> {
         let tholder = Tholder::new(
             thold.map(Value::from).as_ref(),
             limen.as_deref(),
@@ -26,17 +28,17 @@ impl TholderWrapper {
         Ok(TholderWrapper(tholder))
     }
 
-    pub fn new_with_thold(thold: ValueWrapper) -> Result<TholderWrapper, JsValue> {
+    pub fn new_with_thold(thold: ValueWrapper) -> Result<TholderWrapper> {
         let tholder = Tholder::new_with_thold(&Value::from(thold)).as_js()?;
         Ok(TholderWrapper(tholder))
     }
 
-    pub fn new_with_limen(limen: &[u8]) -> Result<TholderWrapper, JsValue> {
+    pub fn new_with_limen(limen: &[u8]) -> Result<TholderWrapper> {
         let tholder = Tholder::new_with_limen(limen).as_js()?;
         Ok(TholderWrapper(tholder))
     }
 
-    pub fn new_with_sith(sith: ValueWrapper) -> Result<TholderWrapper, JsValue> {
+    pub fn new_with_sith(sith: ValueWrapper) -> Result<TholderWrapper> {
         let tholder = Tholder::new_with_sith(&Value::from(sith)).as_js()?;
         Ok(TholderWrapper(tholder))
     }
@@ -54,7 +56,7 @@ impl TholderWrapper {
         self.0.size()
     }
 
-    pub fn num(&self) -> Result<Option<u32>, JsValue> {
+    pub fn num(&self) -> Result<Option<u32>> {
         self.0.num().as_js().map_err(JsValue::from)
     }
 
@@ -66,21 +68,29 @@ impl TholderWrapper {
         self.0.bexter().map(BexterWrapper)
     }
 
-    pub fn limen(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn limen(&self) -> Result<Vec<u8>> {
         self.0.limen().as_js().map_err(JsValue::from)
     }
 
-    pub fn sith(&self) -> Result<ValueWrapper, JsValue> {
+    pub fn sith(&self) -> Result<ValueWrapper> {
         let sith = self.0.sith().as_js()?;
         let value = sith.to_json().expect("unable unwrap value");
         Ok(ValueWrapper(value))
     }
 
-    pub fn to_json(&self) -> Result<String, JsValue> {
+    pub fn to_json(&self) -> Result<String> {
         self.0.to_json().as_js().map_err(JsValue::from)
     }
 
-    pub fn satisfy(&self, indices: &[u32]) -> Result<bool, JsValue> {
+    pub fn satisfy(&self, indices: &[u32]) -> Result<bool> {
         self.0.satisfy(indices).as_js().map_err(JsValue::from)
+    }
+}
+
+impl Deref for TholderWrapper {
+    type Target = Tholder;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use crate::{error::*, SignerWrapper, Signers};
 use cesride_core::{Matter, Salter};
 use wasm_bindgen::prelude::*;
@@ -15,7 +17,7 @@ impl SalterWrapper {
         qb64b: Option<Vec<u8>>,
         qb64: Option<String>,
         qb2: Option<Vec<u8>>,
-    ) -> Result<SalterWrapper, JsValue> {
+    ) -> Result<SalterWrapper> {
         let salter = Salter::new(
             tier.as_deref(),
             code.as_deref(),
@@ -28,7 +30,7 @@ impl SalterWrapper {
         Ok(SalterWrapper(salter))
     }
 
-    pub fn new_with_defaults(tier: Option<String>) -> Result<SalterWrapper, JsValue> {
+    pub fn new_with_defaults(tier: Option<String>) -> Result<SalterWrapper> {
         let salter = Salter::new_with_defaults(tier.as_deref()).as_js()?;
         Ok(SalterWrapper(salter))
     }
@@ -37,22 +39,22 @@ impl SalterWrapper {
         raw: &[u8],
         code: Option<String>,
         tier: Option<String>,
-    ) -> Result<SalterWrapper, JsValue> {
+    ) -> Result<SalterWrapper> {
         let salter = Salter::new_with_raw(raw, code.as_deref(), tier.as_deref()).as_js()?;
         Ok(SalterWrapper(salter))
     }
 
-    pub fn new_with_qb64b(qb64b: &[u8], tier: Option<String>) -> Result<SalterWrapper, JsValue> {
+    pub fn new_with_qb64b(qb64b: &[u8], tier: Option<String>) -> Result<SalterWrapper> {
         let salter = Salter::new_with_qb64b(qb64b, tier.as_deref()).as_js()?;
         Ok(SalterWrapper(salter))
     }
 
-    pub fn new_with_qb64(qb64: &str, tier: Option<String>) -> Result<SalterWrapper, JsValue> {
+    pub fn new_with_qb64(qb64: &str, tier: Option<String>) -> Result<SalterWrapper> {
         let salter = Salter::new_with_qb64(qb64, tier.as_deref()).as_js()?;
         Ok(SalterWrapper(salter))
     }
 
-    pub fn new_with_qb2(qb2: &[u8], tier: Option<String>) -> Result<SalterWrapper, JsValue> {
+    pub fn new_with_qb2(qb2: &[u8], tier: Option<String>) -> Result<SalterWrapper> {
         let salter = Salter::new_with_qb2(qb2, tier.as_deref()).as_js()?;
         Ok(SalterWrapper(salter))
     }
@@ -63,7 +65,7 @@ impl SalterWrapper {
         path: Option<String>,
         tier: Option<String>,
         temp: Option<bool>,
-    ) -> Result<Vec<u8>, JsValue> {
+    ) -> Result<Vec<u8>> {
         let seed = self.0.stretch(size, path.as_deref(), tier.as_deref(), temp).as_js()?;
         Ok(seed)
     }
@@ -79,7 +81,7 @@ impl SalterWrapper {
         path: Option<String>,
         tier: Option<String>,
         temp: Option<bool>,
-    ) -> Result<SignerWrapper, JsValue> {
+    ) -> Result<SignerWrapper> {
         let signer = self
             .0
             .signer(code.as_deref(), transferable, path.as_deref(), tier.as_deref(), temp)
@@ -97,7 +99,7 @@ impl SalterWrapper {
         transferable: Option<bool>,
         tier: Option<String>,
         temp: Option<bool>,
-    ) -> Result<Signers, JsValue> {
+    ) -> Result<Signers> {
         let signers = self
             .0
             .signers(
@@ -126,15 +128,23 @@ impl SalterWrapper {
         self.0.raw()
     }
 
-    pub fn qb64(&self) -> Result<String, JsValue> {
+    pub fn qb64(&self) -> Result<String> {
         self.0.qb64().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb64b(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb64b(&self) -> Result<Vec<u8>> {
         self.0.qb64b().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb2(&self) -> Result<Vec<u8>> {
         self.0.qb2().as_js().map_err(JsValue::from)
+    }
+}
+
+impl Deref for SalterWrapper {
+    type Target = Salter;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

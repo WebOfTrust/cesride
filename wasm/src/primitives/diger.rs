@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use crate::error::*;
 use cesride_core::{Diger, Matter};
 use wasm_bindgen::prelude::*;
@@ -16,7 +18,7 @@ impl DigerWrapper {
         qb64b: Option<Vec<u8>>,
         qb64: Option<String>,
         qb2: Option<Vec<u8>>,
-    ) -> Result<DigerWrapper, JsValue> {
+    ) -> Result<DigerWrapper> {
         let diger = Diger::new(
             ser.as_deref(),
             code.as_deref(),
@@ -29,40 +31,40 @@ impl DigerWrapper {
         Ok(DigerWrapper(diger))
     }
 
-    pub fn new_with_ser(ser: &[u8], code: Option<String>) -> Result<DigerWrapper, JsValue> {
+    pub fn new_with_ser(ser: &[u8], code: Option<String>) -> Result<DigerWrapper> {
         let diger = Diger::new_with_ser(ser, code.as_deref()).as_js()?;
         Ok(DigerWrapper(diger))
     }
 
-    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<DigerWrapper, JsValue> {
+    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<DigerWrapper> {
         let diger = Diger::new_with_raw(raw, code.as_deref()).as_js()?;
         Ok(DigerWrapper(diger))
     }
 
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<DigerWrapper, JsValue> {
+    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<DigerWrapper> {
         let diger = Diger::new_with_qb64b(qb64b).as_js()?;
         Ok(DigerWrapper(diger))
     }
 
-    pub fn new_with_qb64(qb64: &str) -> Result<DigerWrapper, JsValue> {
+    pub fn new_with_qb64(qb64: &str) -> Result<DigerWrapper> {
         let diger = Diger::new_with_qb64(qb64).as_js()?;
         Ok(DigerWrapper(diger))
     }
 
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<DigerWrapper, JsValue> {
+    pub fn new_with_qb2(qb2: &[u8]) -> Result<DigerWrapper> {
         let diger = Diger::new_with_qb2(qb2).as_js()?;
         Ok(DigerWrapper(diger))
     }
 
-    pub fn verify(&self, ser: &[u8]) -> Result<bool, JsValue> {
+    pub fn verify(&self, ser: &[u8]) -> Result<bool> {
         self.0.verify(ser).as_js().map_err(JsValue::from)
     }
 
-    pub fn compare_dig(&self, ser: &[u8], dig: &[u8]) -> Result<bool, JsValue> {
+    pub fn compare_dig(&self, ser: &[u8], dig: &[u8]) -> Result<bool> {
         self.0.compare(ser, Some(dig), None).as_js().map_err(JsValue::from)
     }
 
-    pub fn compare_diger(&self, ser: &[u8], diger: &DigerWrapper) -> Result<bool, JsValue> {
+    pub fn compare_diger(&self, ser: &[u8], diger: &DigerWrapper) -> Result<bool> {
         self.0.compare(ser, None, Some(&diger.0)).as_js().map_err(JsValue::from)
     }
 
@@ -78,15 +80,23 @@ impl DigerWrapper {
         self.0.raw()
     }
 
-    pub fn qb64(&self) -> Result<String, JsValue> {
+    pub fn qb64(&self) -> Result<String> {
         self.0.qb64().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb64b(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb64b(&self) -> Result<Vec<u8>> {
         self.0.qb64b().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb2(&self) -> Result<Vec<u8>> {
         self.0.qb2().as_js().map_err(JsValue::from)
+    }
+}
+
+impl Deref for DigerWrapper {
+    type Target = Diger;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }

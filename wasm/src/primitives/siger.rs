@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use crate::{error::JsResult, VerferWrapper};
+use crate::{error::*, VerferWrapper};
 use cesride_core::{Indexer, Siger};
 use wasm_bindgen::prelude::*;
 
@@ -20,7 +20,7 @@ impl SigerWrapper {
         qb64b: Option<Vec<u8>>,
         qb64: Option<String>,
         qb2: Option<Vec<u8>>,
-    ) -> Result<SigerWrapper, JsValue> {
+    ) -> Result<SigerWrapper> {
         let siger = Siger::new(
             verfer.as_deref(),
             index,
@@ -41,7 +41,7 @@ impl SigerWrapper {
         index: Option<u32>,
         ondex: Option<u32>,
         code: Option<String>,
-    ) -> Result<SigerWrapper, JsValue> {
+    ) -> Result<SigerWrapper> {
         let siger =
             Siger::new_with_raw(raw, verfer.as_deref(), index, ondex, code.as_deref()).as_js()?;
         Ok(SigerWrapper(siger))
@@ -50,7 +50,7 @@ impl SigerWrapper {
     pub fn new_with_qb64b(
         qb64b: &[u8],
         verfer: Option<VerferWrapper>,
-    ) -> Result<SigerWrapper, JsValue> {
+    ) -> Result<SigerWrapper> {
         let siger = Siger::new_with_qb64b(qb64b, verfer.as_deref()).as_js()?;
         Ok(SigerWrapper(siger))
     }
@@ -58,7 +58,7 @@ impl SigerWrapper {
     pub fn new_with_qb64(
         qb64: &str,
         verfer: Option<VerferWrapper>,
-    ) -> Result<SigerWrapper, JsValue> {
+    ) -> Result<SigerWrapper> {
         let siger = Siger::new_with_qb64(qb64, verfer.as_deref()).as_js()?;
         Ok(SigerWrapper(siger))
     }
@@ -66,7 +66,7 @@ impl SigerWrapper {
     pub fn new_with_qb2(
         qb2: &[u8],
         verfer: Option<VerferWrapper>,
-    ) -> Result<SigerWrapper, JsValue> {
+    ) -> Result<SigerWrapper> {
         let siger = Siger::new_with_qb2(qb2, verfer.as_deref()).as_js()?;
         Ok(SigerWrapper(siger))
     }
@@ -91,15 +91,15 @@ impl SigerWrapper {
         self.0.ondex()
     }
 
-    pub fn qb64(&self) -> Result<String, JsValue> {
+    pub fn qb64(&self) -> Result<String> {
         self.0.qb64().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb64b(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb64b(&self) -> Result<Vec<u8>> {
         self.0.qb64b().as_js().map_err(JsValue::from)
     }
 
-    pub fn qb2(&self) -> Result<Vec<u8>, JsValue> {
+    pub fn qb2(&self) -> Result<Vec<u8>> {
         self.0.qb2().as_js().map_err(JsValue::from)
     }
 }
