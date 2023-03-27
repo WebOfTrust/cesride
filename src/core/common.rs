@@ -5,50 +5,50 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct SizeifyResult {
-    pub(crate) raw: Vec<u8>,
-    pub(crate) ident: String,
-    pub(crate) kind: String,
-    pub(crate) ked: Value,
-    pub(crate) version: Version,
+pub struct SizeifyResult {
+    pub raw: Vec<u8>,
+    pub ident: String,
+    pub kind: String,
+    pub ked: Value,
+    pub version: Version,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct DeversifyResult {
-    pub(crate) ident: String,
-    pub(crate) kind: String,
-    pub(crate) version: Version,
-    pub(crate) size: u32,
+pub struct DeversifyResult {
+    pub ident: String,
+    pub kind: String,
+    pub version: Version,
+    pub size: u32,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct SniffResult {
-    pub(crate) ident: String,
-    pub(crate) kind: String,
-    pub(crate) version: Version,
-    pub(crate) size: u32,
+pub struct SniffResult {
+    pub ident: String,
+    pub kind: String,
+    pub version: Version,
+    pub size: u32,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Version {
-    pub(crate) major: u8,
-    pub(crate) minor: u8,
+    pub major: u8,
+    pub minor: u8,
 }
 
 #[allow(non_snake_case)]
-pub(crate) mod Serialage {
+pub mod Serialage {
     pub const JSON: &str = "JSON";
 }
 
 #[allow(non_snake_case)]
-pub(crate) mod Identage {
+pub mod Identage {
     pub const ACDC: &str = "ACDC";
     pub const KERI: &str = "KERI";
 }
 
 #[allow(non_snake_case)]
 #[allow(non_upper_case_globals)]
-pub(crate) mod Ilkage {
+pub mod Ilkage {
     pub const icp: &str = "icp";
     pub const rot: &str = "rot";
     pub const ixn: &str = "ixn";
@@ -80,7 +80,7 @@ pub mod Tierage {
 
 #[allow(non_snake_case)]
 #[allow(non_upper_case_globals)]
-pub(crate) mod Ids {
+pub mod Ids {
     pub const dollar: &str = "$id";
     pub const at: &str = "@id";
     pub const id: &str = "id";
@@ -131,7 +131,7 @@ const MAXIMUM_START_SIZE: usize = 12;
 pub(crate) const VERSION_FULL_SIZE: usize = 17;
 pub(crate) const MINIMUM_SNIFF_SIZE: usize = MAXIMUM_START_SIZE + VERSION_FULL_SIZE;
 
-pub(crate) fn deversify(vs: &str) -> Result<DeversifyResult> {
+pub fn deversify(vs: &str) -> Result<DeversifyResult> {
     lazy_static! {
         static ref REVER: Regex = Regex::new(REVER_STRING).unwrap();
     };
@@ -157,7 +157,7 @@ pub(crate) fn deversify(vs: &str) -> Result<DeversifyResult> {
     err!(Error::Validation(format!("invalid version string {vs}")))
 }
 
-pub(crate) fn sizeify(ked: &Value, kind: Option<&str>) -> Result<SizeifyResult> {
+pub fn sizeify(ked: &Value, kind: Option<&str>) -> Result<SizeifyResult> {
     lazy_static! {
         static ref REVER: Regex = Regex::new(REVER_STRING).unwrap();
     };
@@ -214,7 +214,7 @@ pub(crate) fn sizeify(ked: &Value, kind: Option<&str>) -> Result<SizeifyResult> 
     Ok(SizeifyResult { raw, ident: result.ident, kind, ked, version: result.version })
 }
 
-pub(crate) fn versify(
+pub fn versify(
     ident: Option<&str>,
     version: Option<&Version>,
     kind: Option<&str>,
@@ -271,7 +271,7 @@ pub(crate) fn dumps(ked: &Value, kind: Option<&str>) -> Result<Vec<u8>> {
     }
 }
 
-pub(crate) fn sniff(raw: &[u8]) -> Result<SniffResult> {
+pub fn sniff(raw: &[u8]) -> Result<SniffResult> {
     lazy_static! {
         static ref REVER: Regex = Regex::new(REVER_STRING).unwrap();
     };
