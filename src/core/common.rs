@@ -327,17 +327,17 @@ mod test {
     fn sniff_unhappy_paths() {
         assert!(common::sniff(&[]).is_err()); // minimum 29 octets
         assert!(common::sniff(
-            &dat!({"v":"version string must be valid!"}).to_json().unwrap().as_bytes()
+            dat!({"v":"version string must be valid!"}).to_json().unwrap().as_bytes()
         )
         .is_err());
         assert!(common::sniff(
-            &dat!({"i":"needs to start within 12 characters!","v":"KERI10JSON000000_"})
+            dat!({"i":"needs to start within 12 characters!","v":"KERI10JSON000000_"})
                 .to_json()
                 .unwrap()
                 .as_bytes()
         )
         .is_err());
-        assert!(common::sniff(&dat!({"v":"KERI10ABCD000000_","confusing but necessary filler":"hmm...maybe a 12 octet magic prefix?"}).to_json().unwrap().as_bytes()).is_err());
+        assert!(common::sniff(dat!({"v":"KERI10ABCD000000_","confusing but necessary filler":"hmm...maybe a 12 octet magic prefix?"}).to_json().unwrap().as_bytes()).is_err());
         // needs to have a valid serialization kind
     }
 

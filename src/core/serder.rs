@@ -560,6 +560,7 @@ pub(crate) mod test {
 
     // this function uses convenience methods unlike most test code. it is likely that it will
     // be extracted and used elsewhere - and convenience methods make sense outside the tests.
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn incept(
         keys: &[&str],          // current keys qb64
         sith: Option<&Value>,   // current signing threshold

@@ -81,7 +81,7 @@ mod test {
     use crate::error::{Error, Result};
 
     fn explode() -> Result<()> {
-        return err!(Error::Prepad());
+        err!(Error::Prepad())
     }
 
     #[test]

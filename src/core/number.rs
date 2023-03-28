@@ -169,6 +169,7 @@ impl Matter for Number {
         self.size
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn set_code(&mut self, code: &str) {
         self.code = code.to_string();
     }
@@ -183,6 +184,7 @@ impl Matter for Number {
 }
 
 #[cfg(test)]
+#[allow(clippy::too_many_arguments)]
 mod test {
     use crate::core::{
         matter::Matter,

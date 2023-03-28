@@ -667,15 +667,15 @@ mod test {
         let mut hash_map = std::collections::HashMap::<String, Value>::new();
         hash_map.insert("test".to_string(), dat!(true));
         let d = dat!({
-            "f32": 0 as f32,
-            "f64": 0 as f64,
-            "i8": 0 as i8,
-            "i16": 0 as i16,
-            "i32": 0 as i32,
-            "i64": 0 as i64,
-            "u8": 0 as u8,
-            "u16": 0 as u16,
-            "u32": 0 as u32,
+            "f32": 0_f32,
+            "f64": 0_f64,
+            "i8": 0_i8,
+            "i16": 0_i16,
+            "i32": 0_i32,
+            "i64": 0_i64,
+            "u8": 0_u8,
+            "u16": 0_u16,
+            "u32": 0_u32,
             "hash map": &hash_map,
             "array": array,
         });

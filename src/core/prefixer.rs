@@ -1008,7 +1008,7 @@ mod test {
             "s": sn,
             "t": ilk,
             "kt": sith,
-            "k": keys.clone(),
+            "k": keys,
             "n": n_digs,
             "wt": toad,
             "w": wits.clone(),
@@ -1134,11 +1134,11 @@ mod test {
             "s": sn,
             "t": ilk2,
             "kt": sith,
-            "k": keys.clone(),
-            "n": n_digs.clone(),
+            "k": keys,
+            "n": n_digs,
             "wt": toad,
-            "w": wits.clone(),
-            "c": cnfg.clone(),
+            "w": wits,
+            "c": cnfg,
             "da": seal
         });
 
