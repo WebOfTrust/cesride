@@ -154,6 +154,29 @@ pub trait Matter: Default {
         self.binfil()
     }
 
+    fn digestive(&self) -> bool {
+        const CODES: &[&str] = &[
+            tables::Codex::Blake3_256,
+            tables::Codex::Blake3_512,
+            tables::Codex::Blake2b_256,
+            tables::Codex::Blake2b_512,
+            tables::Codex::Blake2s_256,
+            tables::Codex::SHA3_256,
+            tables::Codex::SHA3_512,
+            tables::Codex::SHA2_256,
+            tables::Codex::SHA2_512,
+        ];
+
+        CODES.contains(&self.code().as_str())
+    }
+
+    fn transferable(&self) -> bool {
+        const CODES: &[&str] =
+            &[tables::Codex::Ed25519N, tables::Codex::ECDSA_256k1N, tables::Codex::Ed448N];
+
+        !CODES.contains(&self.code().as_str())
+    }
+
     fn infil(&self) -> Result<String> {
         let code = &self.code();
         let size = self.size();
@@ -776,5 +799,29 @@ mod test {
     fn full_size(#[case] qb64: &str, #[case] size: u32) {
         let matter = TestMatter::new(None, None, None, Some(qb64), None).unwrap();
         assert_eq!(matter.full_size().unwrap(), size);
+    }
+
+    #[rstest]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::Blake3_256, b"00000000000000000000000000000000").unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::Blake3_512, b"0000000000000000000000000000000000000000000000000000000000000000").unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::Blake2b_256, b"00000000000000000000000000000000").unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::Blake2b_512, b"0000000000000000000000000000000000000000000000000000000000000000").unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::Blake2s_256, b"00000000000000000000000000000000").unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::SHA3_256, b"00000000000000000000000000000000").unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::SHA3_512, b"0000000000000000000000000000000000000000000000000000000000000000").unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::SHA2_256, b"00000000000000000000000000000000").unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::SHA2_512, b"0000000000000000000000000000000000000000000000000000000000000000").unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::Ed25519, b"00000000000000000000000000000000").unwrap(), false)]
+    fn digestive(#[case] matter: TestMatter, #[case] result: bool) {
+        assert_eq!(matter.digestive(), result);
+    }
+
+    #[rstest]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::Ed25519, b"00000000000000000000000000000000").unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::ECDSA_256k1, b"000000000000000000000000000000000").unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::Ed25519N, b"00000000000000000000000000000000").unwrap(), false)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::ECDSA_256k1N, b"000000000000000000000000000000000").unwrap(), false)]
+    fn transferable(#[case] matter: TestMatter, #[case] result: bool) {
+        assert_eq!(matter.transferable(), result);
     }
 }
