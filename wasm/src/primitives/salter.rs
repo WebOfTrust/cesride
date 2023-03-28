@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use crate::{error::*, SignerWrapper, Signers};
+use crate::{error::*, SignerWrapper, Signers, Wrap};
 use cesride_core::{Matter, Salter};
 use wasm_bindgen::prelude::*;
 
@@ -146,5 +146,13 @@ impl Deref for SalterWrapper {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl Wrap<Salter> for SalterWrapper {
+    type Wrapper = SalterWrapper;
+
+    fn wrap(verfer: &Salter) -> Self::Wrapper {
+        SalterWrapper(verfer.clone())
     }
 }

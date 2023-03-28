@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
-use crate::error::*;
 use crate::util::U128Wrapper;
+use crate::{error::*, Wrap};
 use cesride_core::{Matter, Seqner};
 use wasm_bindgen::prelude::*;
 
@@ -102,5 +102,13 @@ impl Deref for SeqnerWrapper {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl Wrap<Seqner> for SeqnerWrapper {
+    type Wrapper = SeqnerWrapper;
+
+    fn wrap(verfer: &Seqner) -> Self::Wrapper {
+        SeqnerWrapper(verfer.clone())
     }
 }

@@ -40,3 +40,9 @@ impl From<ValueWrapper> for Value {
         Value::from(&v)
     }
 }
+
+pub trait Wrap<T> {
+    type Wrapper;
+
+    fn wrap(verfer: &T) -> Self::Wrapper;
+}

@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
-use crate::error::*;
 use crate::util::U128Wrapper;
+use crate::{error::*, Wrap};
 use cesride_core::{Matter, Number};
 use wasm_bindgen::prelude::*;
 
@@ -102,5 +102,13 @@ impl Deref for NumberWrapper {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl Wrap<Number> for NumberWrapper {
+    type Wrapper = NumberWrapper;
+
+    fn wrap(verfer: &Number) -> Self::Wrapper {
+        NumberWrapper(verfer.clone())
     }
 }
