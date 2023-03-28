@@ -40,10 +40,7 @@ impl SignerWrapper {
         Ok(SignerWrapper(signer))
     }
 
-    pub fn new_with_qb64b(
-        qb64b: &[u8],
-        transferable: Option<bool>,
-    ) -> Result<SignerWrapper> {
+    pub fn new_with_qb64b(qb64b: &[u8], transferable: Option<bool>) -> Result<SignerWrapper> {
         let signer = Signer::new_with_qb64b(qb64b, transferable).as_js()?;
         Ok(SignerWrapper(signer))
     }

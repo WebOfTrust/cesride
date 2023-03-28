@@ -47,26 +47,17 @@ impl SigerWrapper {
         Ok(SigerWrapper(siger))
     }
 
-    pub fn new_with_qb64b(
-        qb64b: &[u8],
-        verfer: Option<VerferWrapper>,
-    ) -> Result<SigerWrapper> {
+    pub fn new_with_qb64b(qb64b: &[u8], verfer: Option<VerferWrapper>) -> Result<SigerWrapper> {
         let siger = Siger::new_with_qb64b(qb64b, verfer.as_deref()).as_js()?;
         Ok(SigerWrapper(siger))
     }
 
-    pub fn new_with_qb64(
-        qb64: &str,
-        verfer: Option<VerferWrapper>,
-    ) -> Result<SigerWrapper> {
+    pub fn new_with_qb64(qb64: &str, verfer: Option<VerferWrapper>) -> Result<SigerWrapper> {
         let siger = Siger::new_with_qb64(qb64, verfer.as_deref()).as_js()?;
         Ok(SigerWrapper(siger))
     }
 
-    pub fn new_with_qb2(
-        qb2: &[u8],
-        verfer: Option<VerferWrapper>,
-    ) -> Result<SigerWrapper> {
+    pub fn new_with_qb2(qb2: &[u8], verfer: Option<VerferWrapper>) -> Result<SigerWrapper> {
         let siger = Siger::new_with_qb2(qb2, verfer.as_deref()).as_js()?;
         Ok(SigerWrapper(siger))
     }

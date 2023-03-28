@@ -39,26 +39,17 @@ impl CigarWrapper {
         Ok(CigarWrapper(cigar))
     }
 
-    pub fn new_with_qb64b(
-        qb64b: &[u8],
-        verfer: Option<VerferWrapper>,
-    ) -> Result<CigarWrapper> {
+    pub fn new_with_qb64b(qb64b: &[u8], verfer: Option<VerferWrapper>) -> Result<CigarWrapper> {
         let cigar = Cigar::new_with_qb64b(qb64b, verfer.as_deref()).as_js()?;
         Ok(CigarWrapper(cigar))
     }
 
-    pub fn new_with_qb64(
-        qb64: &str,
-        verfer: Option<VerferWrapper>,
-    ) -> Result<CigarWrapper> {
+    pub fn new_with_qb64(qb64: &str, verfer: Option<VerferWrapper>) -> Result<CigarWrapper> {
         let cigar = Cigar::new_with_qb64(qb64, verfer.as_deref()).as_js()?;
         Ok(CigarWrapper(cigar))
     }
 
-    pub fn new_with_qb2(
-        qb2: &[u8],
-        verfer: Option<VerferWrapper>,
-    ) -> Result<CigarWrapper> {
+    pub fn new_with_qb2(qb2: &[u8], verfer: Option<VerferWrapper>) -> Result<CigarWrapper> {
         let cigar = Cigar::new_with_qb2(qb2, verfer.as_deref()).as_js()?;
         Ok(CigarWrapper(cigar))
     }
