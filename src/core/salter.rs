@@ -292,7 +292,7 @@ mod test {
         }
 
         pub fn s(&self) -> Result<String> {
-            Ok(Seqner::new_with_snh(&self.s)?.qb64()?)
+            Seqner::new_with_snh(&self.s)?.qb64()
         }
 
         pub fn d(&self) -> String {
@@ -301,7 +301,7 @@ mod test {
     }
 
     impl Vault {
-        fn default<'a>() -> Result<Self> {
+        fn default() -> Result<Self> {
             // Tierage::min is not exposed externally, this is for testing. One needs to use 'temp'
             // during stretching to accomplish this in a production scenario
             let csalter = Salter::new_with_defaults(Some(Tierage::min))?;
@@ -348,8 +348,8 @@ mod test {
             )?;
 
             let mut sigers: Vec<Siger> = vec![];
-            for i in 0..current.len() - 1 {
-                let siger: Siger = current[i].sign_indexed(&serder.raw(), false, i as u32, None)?;
+            for (i, val) in current.iter().take(current.len() - 1).enumerate() {
+                let siger: Siger = val.sign_indexed(&serder.raw(), false, i as u32, None)?;
                 sigers.push(siger);
             }
 
@@ -359,8 +359,8 @@ mod test {
 
             let receipt_serder = receipt(&ked["i"].to_string()?, 0, &serder.said()?, None, None)?;
             let mut wigers: Vec<Siger> = vec![];
-            for i in 0..witness.len() {
-                let siger: Siger = witness[i].sign_indexed(&serder.raw(), false, i as u32, None)?;
+            for (i, val) in witness.iter().enumerate() {
+                let siger: Siger = val.sign_indexed(&serder.raw(), false, i as u32, None)?;
                 wigers.push(siger);
             }
 

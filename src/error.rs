@@ -1,5 +1,4 @@
-pub type BoxedError = Box<dyn std::error::Error>;
-pub type Result<T> = core::result::Result<T, BoxedError>;
+pub type Result<T> = anyhow::Result<T>;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -71,7 +70,7 @@ pub enum Error {
 
 macro_rules! err {
     ($e:expr) => {
-        Err(Box::new($e))
+        Err($e.into())
     };
 }
 
@@ -82,7 +81,7 @@ mod test {
     use crate::error::{Error, Result};
 
     fn explode() -> Result<()> {
-        return err!(Error::Prepad());
+        err!(Error::Prepad())
     }
 
     #[test]

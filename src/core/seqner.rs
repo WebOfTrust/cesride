@@ -148,7 +148,7 @@ mod test {
             &Seqner::new(None, Some("00"), Some(matter::Codex::Salt_128), None, None, None, None).unwrap(),
             &Seqner::new(None, None, None, None, Some(qb64.as_bytes()), None, None).unwrap(),
             &Seqner::new(None, None, None, None, None, Some(qb64), None).unwrap(),
-            &Seqner::new(None, None, None, None, None, None, Some(&mut qb2.to_vec())).unwrap(),
+            &Seqner::new(None, None, None, None, None, None, Some(qb2.as_ref())).unwrap(),
         )]
         seqner: &Seqner,
     ) {
@@ -267,7 +267,7 @@ mod test {
         )]
         qb64: &str,
     ) {
-        assert!(Seqner::new(None, None, None, None, Some(&qb64.as_bytes()), None, None).is_err());
+        assert!(Seqner::new(None, None, None, None, Some(qb64.as_bytes()), None, None).is_err());
         assert!(Seqner::new(None, None, None, None, None, Some(qb64), None).is_err());
     }
 

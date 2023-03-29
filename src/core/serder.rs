@@ -167,16 +167,16 @@ impl Serder {
         }
     }
 
-    fn pre(&self) -> Result<String> {
+    pub fn pre(&self) -> Result<String> {
         let label = Ids::i;
         self.ked[label].to_string()
     }
 
-    fn preb(&self) -> Result<Vec<u8>> {
+    pub fn preb(&self) -> Result<Vec<u8>> {
         Ok(self.pre()?.as_bytes().to_vec())
     }
 
-    fn est(&self) -> Result<bool> {
+    pub fn est(&self) -> Result<bool> {
         const ILKS: &[&str] = &[Ilkage::icp, Ilkage::rot, Ilkage::dip, Ilkage::drt];
 
         let label = Ids::t;
@@ -560,6 +560,7 @@ pub(crate) mod test {
 
     // this function uses convenience methods unlike most test code. it is likely that it will
     // be extracted and used elsewhere - and convenience methods make sense outside the tests.
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn incept(
         keys: &[&str],          // current keys qb64
         sith: Option<&Value>,   // current signing threshold

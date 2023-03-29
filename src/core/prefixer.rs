@@ -354,22 +354,6 @@ impl Prefixer {
             _ => err!(Error::UnexpectedCode(self.code())),
         }
     }
-
-    pub fn digestive(&self) -> bool {
-        const CODES: &[&str] = &[
-            matter::Codex::Blake3_256,
-            matter::Codex::Blake3_512,
-            matter::Codex::Blake2b_256,
-            matter::Codex::Blake2b_512,
-            matter::Codex::Blake2s_256,
-            matter::Codex::SHA3_256,
-            matter::Codex::SHA3_512,
-            matter::Codex::SHA2_256,
-            matter::Codex::SHA2_512,
-        ];
-
-        CODES.contains(&self.code().as_str())
-    }
 }
 
 impl Matter for Prefixer {
@@ -1024,7 +1008,7 @@ mod test {
             "s": sn,
             "t": ilk,
             "kt": sith,
-            "k": keys.clone(),
+            "k": keys,
             "n": n_digs,
             "wt": toad,
             "w": wits.clone(),
@@ -1150,11 +1134,11 @@ mod test {
             "s": sn,
             "t": ilk2,
             "kt": sith,
-            "k": keys.clone(),
-            "n": n_digs.clone(),
+            "k": keys,
+            "n": n_digs,
             "wt": toad,
-            "w": wits.clone(),
-            "c": cnfg.clone(),
+            "w": wits,
+            "c": cnfg,
             "da": seal
         });
 

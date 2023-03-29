@@ -343,10 +343,8 @@ mod test {
     fn b64_char_to_index() {
         let s = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
-        let mut i = 0;
-        for c in s.chars() {
-            assert_eq!(util::b64_char_to_index(c).unwrap(), i);
-            i += 1;
+        for (i, c) in s.chars().enumerate() {
+            assert_eq!(util::b64_char_to_index(c).unwrap(), i as u8);
         }
     }
 
@@ -359,15 +357,15 @@ mod test {
     }
 
     #[rstest]
-    #[case(&vec![0], 1, "A")]
-    #[case(&vec![0, 0, 0, 0, 0, 0], 8, "AAAAAAAA")]
-    #[case(&vec![8, 68, 145], 4, "CESR")]
-    #[case(&vec![40, 68, 72, 0, 32, 194], 8, "KERIACDC")]
-    #[case(&vec![252], 1, "_")]
-    #[case(&vec![255, 255, 255, 255, 255, 255], 8, "________")]
-    #[case(&vec![244, 0, 1], 4, "9AAB")]
-    #[case(&vec![244, 0, 1], 0, "")]
-    fn code_b2_to_b64(#[case] b2: &Vec<u8>, #[case] length: usize, #[case] b64: &str) {
+    #[case(&[0], 1, "A")]
+    #[case(&[0, 0, 0, 0, 0, 0], 8, "AAAAAAAA")]
+    #[case(&[8, 68, 145], 4, "CESR")]
+    #[case(&[40, 68, 72, 0, 32, 194], 8, "KERIACDC")]
+    #[case(&[252], 1, "_")]
+    #[case(&[255, 255, 255, 255, 255, 255], 8, "________")]
+    #[case(&[244, 0, 1], 4, "9AAB")]
+    #[case(&[244, 0, 1], 0, "")]
+    fn code_b2_to_b64(#[case] b2: &[u8], #[case] length: usize, #[case] b64: &str) {
         assert_eq!(util::code_b2_to_b64(b2, length).unwrap(), b64);
     }
 

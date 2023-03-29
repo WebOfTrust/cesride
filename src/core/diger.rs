@@ -254,7 +254,7 @@ mod test {
 
         let diger = Diger::new(None, Some(matter::Codex::Blake3_512), Some(&raw), None, None, None)
             .unwrap();
-        assert!(diger.verify(&vec![0, 1, 2]).unwrap());
+        assert!(diger.verify(&[0, 1, 2]).unwrap());
     }
 
     #[test]
@@ -281,7 +281,7 @@ mod test {
         assert!(diger.compare(&ser, Some(&matter.qb64b().unwrap()), None).unwrap());
 
         // different ser, different algorithm - should return false
-        let raw = hash::digest(code, &vec![0, 1, 2, 3]).unwrap();
+        let raw = hash::digest(code, &[0, 1, 2, 3]).unwrap();
         let matter: Diger = Matter::new(Some(code), Some(&raw), None, None, None).unwrap();
         assert!(!diger.compare(&ser, Some(&matter.qb64b().unwrap()), None).unwrap());
     }
@@ -312,7 +312,7 @@ mod test {
         assert!(diger.compare(&ser, None, Some(&d2)).unwrap());
 
         // different ser, different algorithm - should return false
-        let raw2 = hash::digest(code2, &vec![0, 1, 2, 3]).unwrap();
+        let raw2 = hash::digest(code2, &[0, 1, 2, 3]).unwrap();
         let d2 = Diger::new(None, Some(code2), Some(&raw2), None, None, None).unwrap();
         assert!(!diger.compare(&ser, None, Some(&d2)).unwrap());
     }

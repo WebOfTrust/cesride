@@ -1,4 +1,4 @@
-use crate::error::{Error, Result};
+use crate::error::{err, Error, Result};
 /// Codex is codex hard (stable) part of all indexer derivation codes.
 ///
 /// Codes indicate which list of keys, current and/or prior next, index is for:
@@ -131,7 +131,7 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "0z" => Sizage { hs: 2, ss: 2, os: 0, fs: u32::MAX, ls: 0 },
         "1z" => Sizage { hs: 2, ss: 2, os: 1, fs: 76, ls: 1 },
         "4z" => Sizage { hs: 2, ss: 6, os: 3, fs: 80, ls: 1 },
-        _ => return Err(Box::new(Error::UnknownSizage(s.to_string()))),
+        _ => return err!(Error::UnknownSizage(s.to_string())),
     })
 }
 
@@ -139,9 +139,9 @@ pub(crate) fn hardage(c: char) -> Result<u32> {
     match c {
         'A'..='Z' | 'a'..='z' => Ok(1),
         '0'..='4' => Ok(2),
-        '-' => Err(Box::new(Error::UnexpectedCode("count code start".to_owned()))),
-        '_' => Err(Box::new(Error::UnexpectedCode("op code start".to_owned()))),
-        _ => Err(Box::new(Error::UnknownHardage(c.to_string()))),
+        '-' => err!(Error::UnexpectedCode("count code start".to_owned())),
+        '_' => err!(Error::UnexpectedCode("op code start".to_owned())),
+        _ => err!(Error::UnknownHardage(c.to_string())),
     }
 }
 
@@ -149,9 +149,9 @@ pub(crate) fn bardage(b: u8) -> Result<u32> {
     match b {
         b'\x00'..=b'\x33' => Ok(1),
         b'\x34'..=b'\x38' => Ok(2),
-        b'\x3e' => Err(Box::new(Error::UnexpectedCode("count code start".to_owned()))),
-        b'\x3f' => Err(Box::new(Error::UnexpectedCode("op code start".to_owned()))),
-        _ => Err(Box::new(Error::UnknownBardage(b.to_string()))),
+        b'\x3e' => err!(Error::UnexpectedCode("count code start".to_owned())),
+        b'\x3f' => err!(Error::UnexpectedCode("op code start".to_owned())),
+        _ => err!(Error::UnknownBardage(b.to_string())),
     }
 }
 
