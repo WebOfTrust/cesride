@@ -476,7 +476,7 @@ mod test {
             Some(&sad9),
             None,
             None,
-            Some(&vec!["read"]),
+            Some(&["read"]),
             Some(code),
             None,
             None,
@@ -488,26 +488,26 @@ mod test {
         assert_eq!(saider.qb64().unwrap(), said9);
 
         let (saider1, mut sad10) =
-            Saider::saidify(&sad9, Some(code), None, Some(Ids::d), Some(&vec!["read"])).unwrap();
+            Saider::saidify(&sad9, Some(code), None, Some(Ids::d), Some(&["read"])).unwrap();
         assert_eq!(saider.qb64().unwrap(), saider1.qb64().unwrap());
         assert_eq!(sad10[Ids::d].to_string().unwrap(), said9);
         assert!(!sad10["read"].to_bool().unwrap());
 
         assert!(saider1
-            .verify(&sad10, Some(true), None, None, Some(Ids::d), Some(&vec!["read"]))
+            .verify(&sad10, Some(true), None, None, Some(Ids::d), Some(&["read"]))
             .unwrap());
 
         // Change the 'read' field that is ignored and make sure it still verifies
         sad10["read"] = dat!(true);
         assert!(saider1
-            .verify(&sad10, Some(true), None, None, Some(Ids::d), Some(&vec!["read"]))
+            .verify(&sad10, Some(true), None, None, Some(Ids::d), Some(&["read"]))
             .unwrap());
 
         let saider2 = Saider::new(
             Some(&sad10),
             None,
             None,
-            Some(&vec!["read"]),
+            Some(&["read"]),
             Some(code),
             None,
             None,
@@ -516,7 +516,7 @@ mod test {
         )
         .unwrap();
         assert_eq!(saider1.qb64().unwrap(), saider2.qb64().unwrap());
-        assert_eq!(sad10["read"].to_bool().unwrap(), true);
+        assert!(sad10["read"].to_bool().unwrap());
     }
 
     #[test]

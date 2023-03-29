@@ -714,7 +714,7 @@ mod test {
         // raw size too large
         assert!(TestMatter::new(
             Some(matter::Codex::Bytes_Big_L2),
-            Some(&mut [0; (16777215 * 3 + 1)].to_vec()),
+            Some([0; (16777215 * 3 + 1)].as_ref()),
             None,
             None,
             None
@@ -722,7 +722,7 @@ mod test {
         .is_err());
         assert!(TestMatter::new(
             Some(matter::Codex::Bytes_L2),
-            Some(&mut [0; (16777215 * 3 + 1)].to_vec()),
+            Some([0; (16777215 * 3 + 1)].as_ref()),
             None,
             None,
             None
@@ -772,20 +772,18 @@ mod test {
             None,
             None,
             None,
-            Some(&mut vec![
+            Some(&[
                 19, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255
             ])
         )
         .is_err());
 
         // non-zeroed lead byte(s)
         assert!(TestMatter::new(None, None, None, Some("5AAB____"), None,).is_err());
-        assert!(TestMatter::new(None, None, None, None, Some(&mut vec![228, 0, 1, 255, 255, 255]))
-            .is_err());
+        assert!(TestMatter::new(None, None, None, None, Some(&[228, 0, 1, 255, 255, 255])).is_err());
         assert!(TestMatter::new(None, None, None, Some("6AAB____"), None,).is_err());
-        assert!(TestMatter::new(None, None, None, None, Some(&mut vec![232, 0, 1, 255, 255, 255]))
-            .is_err());
+        assert!(TestMatter::new(None, None, None, None, Some(&[232, 0, 1, 255, 255, 255])).is_err());
 
         // unexpected qb2 codes
         assert!(TestMatter::new(None, None, None, None, Some(&[0xf8]),).is_err()); // count code
