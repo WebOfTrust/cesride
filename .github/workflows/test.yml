@@ -23,8 +23,16 @@ jobs:
           toolchain: stable
           override: true
 
+      # format is the only step that doesn't require updating the crates.io cache, so we do it first
+      # to minimize ci cost when bailing early
       - name: Format
         run: cargo fmt --all -- --check
+
+      - name: Outdated
+        run: cargo outdated -R --ignore rand --exit-code 1
+
+      - name: Audit
+        run: cargo audit
 
       - name: Check
         run: cargo check
@@ -37,9 +45,6 @@ jobs:
 
       - name: Test
         run: cargo test --release
-
-      - name: Audit
-        run: cargo audit
 
       - name: Tarpaulin
         uses: actions-rs/tarpaulin@v0.1
