@@ -17,9 +17,10 @@ blake3 = "~1"
 chrono = { version = "~0.4", default-features = false, features = ["clock"] }
 ed25519-dalek = "~1"
 indexmap = "~1"
-k256 = "~0.12"
+k256 = "~0.13"
 lazy_static = "~1"
 num-rational = "~0.4"
+p256 = "~0.13"
 rand = "0.7.0" # this needs pinning for one of the seeding pieces of a signing suite
 rand_core = "~0.6"
 regex = "~1"

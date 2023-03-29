@@ -26,12 +26,16 @@ pub mod Codex {
     pub const Ed25519_Crt: &str = "B"; // Ed25519 sig appears in current list only.
     pub const ECDSA_256k1: &str = "C"; // ECDSA secp256k1 sig appears same in both lists if any.
     pub const ECDSA_256k1_Crt: &str = "D"; // ECDSA secp256k1 sig appears in current list.
+    pub const ECDSA_256r1: &str = "E"; // ECDSA secp256r1 sig appears same in both lists if any.
+    pub const ECDSA_256r1_Crt: &str = "F"; // ECDSA secp256r1 sig appears in current list.
     pub const Ed448: &str = "0A"; // Ed448 signature appears in both lists.
     pub const Ed448_Crt: &str = "0B"; // Ed448 signature appears in current list only.
     pub const Ed25519_Big: &str = "2A"; // Ed25519 sig appears in both lists.
     pub const Ed25519_Big_Crt: &str = "2B"; // Ed25519 sig appears in current list only.
     pub const ECDSA_256k1_Big: &str = "2C"; // ECDSA secp256k1 sig appears in both lists.
     pub const ECDSA_256k1_Big_Crt: &str = "2D"; // ECDSA secp256k1 sig appears in current list only.
+    pub const ECDSA_256r1_Big: &str = "2E"; // ECDSA secp256r1 sig appears in both lists.
+    pub const ECDSA_256r1_Big_Crt: &str = "2F"; // ECDSA secp256r1 sig appears in current list only.
     pub const Ed448_Big: &str = "3A"; // Ed448 signature appears in both lists.
     pub const Ed448_Big_Crt: &str = "3B"; // Ed448 signature appears in current list only.
     pub const TBD0: &str = "0z"; // Test of Var len label L=N*4 <= 4095 char quadlets includes code
@@ -47,12 +51,16 @@ pub mod SigCodex {
     pub const Ed25519_Crt: &str = "B"; // Ed25519 sig appears in current list only.
     pub const ECDSA_256k1: &str = "C"; // ECDSA secp256k1 sig appears same in both lists if any.
     pub const ECDSA_256k1_Crt: &str = "D"; // ECDSA secp256k1 sig appears in current list.
+    pub const ECDSA_256r1: &str = "E"; // ECDSA secp256r1 sig appears same in both lists if any.
+    pub const ECDSA_256r1_Crt: &str = "F"; // ECDSA secp256r1 sig appears in current list.
     pub const Ed448: &str = "0A"; // Ed448 signature appears in both lists.
     pub const Ed448_Crt: &str = "0B"; // Ed448 signature appears in current list only.
     pub const Ed25519_Big: &str = "2A"; // Ed25519 sig appears in both lists.
     pub const Ed25519_Big_Crt: &str = "2B"; // Ed25519 sig appears in current list only.
     pub const ECDSA_256k1_Big: &str = "2C"; // ECDSA secp256k1 sig appears in both lists.
     pub const ECDSA_256k1_Big_Crt: &str = "2D"; // ECDSA secp256k1 sig appears in current list only.
+    pub const ECDSA_256r1_Big: &str = "2E"; // ECDSA secp256r1 sig appears in both lists.
+    pub const ECDSA_256r1_Big_Crt: &str = "2F"; // ECDSA secp256r1 sig appears in current list only.
     pub const Ed448_Big: &str = "3A"; // Ed448 signature appears in both lists.
     pub const Ed448_Big_Crt: &str = "3B"; // Ed448 signature appears in current list only.
 }
@@ -63,18 +71,22 @@ pub mod SigCodex {
 pub mod CurrentSigCodex {
     pub const Ed25519_Crt: &str = "B"; // Ed25519 sig appears in current list only.
     pub const ECDSA_256k1_Crt: &str = "D"; // ECDSA secp256k1 sig appears in current list only.
+    pub const ECDSA_256r1_Crt: &str = "F"; // ECDSA secp256r1 sig appears in current list.
     pub const Ed448_Crt: &str = "0B"; // Ed448 signature appears in current list only.
     pub const Ed25519_Big_Crt: &str = "2B"; // Ed25519 sig appears in current list only.
     pub const ECDSA_256k1_Big_Crt: &str = "2D"; // ECDSA secp256k1 sig appears in current list only.
+    pub const ECDSA_256r1_Big_Crt: &str = "2F"; // ECDSA secp256r1 sig appears in current list only.
     pub const Ed448_Big_Crt: &str = "3B"; // Ed448 signature appears in current list only.
 
     pub(crate) fn has_code(code: &str) -> bool {
         const CODES: &[&str] = &[
             Ed25519_Crt,
             ECDSA_256k1_Crt,
+            ECDSA_256r1_Crt,
             Ed448_Crt,
             Ed25519_Big_Crt,
             ECDSA_256k1_Big_Crt,
+            ECDSA_256r1_Big_Crt,
             Ed448_Big_Crt,
         ];
 
@@ -87,14 +99,24 @@ pub mod CurrentSigCodex {
 pub mod BothSigCodex {
     pub const Ed25519: &str = "A"; // Ed25519 sig appears same in both lists if any.
     pub const ECDSA_256k1: &str = "C"; // ECDSA secp256k1 sig appears same in both lists if any.
+    pub const ECDSA_256r1: &str = "E"; // ECDSA secp256r1 sig appears same in both lists if any.
     pub const Ed448: &str = "0A"; // Ed448 signature appears in both lists.
-    pub const Ed25519_Big: &str = "2A"; // Ed25519 sig appears in both listsy.
+    pub const Ed25519_Big: &str = "2A"; // Ed25519 sig appears in both lists.
     pub const ECDSA_256k1_Big: &str = "2C"; // ECDSA secp256k1 sig appears in both lists.
+    pub const ECDSA_256r1_Big: &str = "2E"; // ECDSA secp256r1 sig appears in both lists.
     pub const Ed448_Big: &str = "3A"; // Ed448 signature appears in both lists.
 
     pub(crate) fn has_code(code: &str) -> bool {
-        const CODES: &[&str] =
-            &[Ed25519, ECDSA_256k1, Ed448, Ed25519_Big, ECDSA_256k1_Big, Ed448_Big];
+        const CODES: &[&str] = &[
+            Ed25519,
+            ECDSA_256k1,
+            ECDSA_256r1,
+            Ed448,
+            Ed25519_Big,
+            ECDSA_256k1_Big,
+            ECDSA_256r1_Big,
+            Ed448_Big,
+        ];
 
         CODES.contains(&code)
     }
@@ -120,12 +142,16 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "B" => Sizage { hs: 1, ss: 1, os: 0, fs: 88, ls: 0 },
         "C" => Sizage { hs: 1, ss: 1, os: 0, fs: 88, ls: 0 },
         "D" => Sizage { hs: 1, ss: 1, os: 0, fs: 88, ls: 0 },
+        "E" => Sizage { hs: 1, ss: 1, os: 0, fs: 88, ls: 0 },
+        "F" => Sizage { hs: 1, ss: 1, os: 0, fs: 88, ls: 0 },
         "0A" => Sizage { hs: 2, ss: 2, os: 1, fs: 156, ls: 0 },
         "0B" => Sizage { hs: 2, ss: 2, os: 1, fs: 156, ls: 0 },
         "2A" => Sizage { hs: 2, ss: 4, os: 2, fs: 92, ls: 0 },
         "2B" => Sizage { hs: 2, ss: 4, os: 2, fs: 92, ls: 0 },
         "2C" => Sizage { hs: 2, ss: 4, os: 2, fs: 92, ls: 0 },
         "2D" => Sizage { hs: 2, ss: 4, os: 2, fs: 92, ls: 0 },
+        "2E" => Sizage { hs: 2, ss: 4, os: 2, fs: 92, ls: 0 },
+        "2F" => Sizage { hs: 2, ss: 4, os: 2, fs: 92, ls: 0 },
         "3A" => Sizage { hs: 2, ss: 6, os: 3, fs: 160, ls: 0 },
         "3B" => Sizage { hs: 2, ss: 6, os: 3, fs: 160, ls: 0 },
         "0z" => Sizage { hs: 2, ss: 2, os: 0, fs: u32::MAX, ls: 0 },
@@ -167,12 +193,16 @@ mod test {
     #[case(Codex::Ed25519_Crt, "B")]
     #[case(Codex::ECDSA_256k1, "C")]
     #[case(Codex::ECDSA_256k1_Crt, "D")]
+    #[case(Codex::ECDSA_256r1, "E")]
+    #[case(Codex::ECDSA_256r1_Crt, "F")]
     #[case(Codex::Ed448, "0A")]
     #[case(Codex::Ed448_Crt, "0B")]
     #[case(Codex::Ed25519_Big, "2A")]
     #[case(Codex::Ed25519_Big_Crt, "2B")]
     #[case(Codex::ECDSA_256k1_Big, "2C")]
     #[case(Codex::ECDSA_256k1_Big_Crt, "2D")]
+    #[case(Codex::ECDSA_256r1_Big, "2E")]
+    #[case(Codex::ECDSA_256r1_Big_Crt, "2F")]
     #[case(Codex::Ed448_Big, "3A")]
     #[case(Codex::Ed448_Big_Crt, "3B")]
     #[case(Codex::TBD0, "0z")]
@@ -187,12 +217,16 @@ mod test {
     #[case(SigCodex::Ed25519_Crt, "B")]
     #[case(SigCodex::ECDSA_256k1, "C")]
     #[case(SigCodex::ECDSA_256k1_Crt, "D")]
+    #[case(SigCodex::ECDSA_256r1, "E")]
+    #[case(SigCodex::ECDSA_256r1_Crt, "F")]
     #[case(SigCodex::Ed448, "0A")]
     #[case(SigCodex::Ed448_Crt, "0B")]
     #[case(SigCodex::Ed25519_Big, "2A")]
     #[case(SigCodex::Ed25519_Big_Crt, "2B")]
     #[case(SigCodex::ECDSA_256k1_Big, "2C")]
     #[case(SigCodex::ECDSA_256k1_Big_Crt, "2D")]
+    #[case(SigCodex::ECDSA_256r1_Big, "2E")]
+    #[case(SigCodex::ECDSA_256r1_Big_Crt, "2F")]
     #[case(SigCodex::Ed448_Big, "3A")]
     #[case(SigCodex::Ed448_Big_Crt, "3B")]
     fn sig_codex(#[case] code: &str, #[case] value: &str) {
@@ -202,9 +236,11 @@ mod test {
     #[rstest]
     #[case(CurrentSigCodex::Ed25519_Crt, "B")]
     #[case(CurrentSigCodex::ECDSA_256k1_Crt, "D")]
+    #[case(CurrentSigCodex::ECDSA_256r1_Crt, "F")]
     #[case(CurrentSigCodex::Ed448_Crt, "0B")]
     #[case(CurrentSigCodex::Ed25519_Big_Crt, "2B")]
     #[case(CurrentSigCodex::ECDSA_256k1_Big_Crt, "2D")]
+    #[case(CurrentSigCodex::ECDSA_256r1_Big_Crt, "2F")]
     #[case(CurrentSigCodex::Ed448_Big_Crt, "3B")]
     fn current_sig_codex(#[case] code: &str, #[case] value: &str) {
         assert_eq!(code, value);
@@ -213,9 +249,11 @@ mod test {
     #[rstest]
     #[case(BothSigCodex::Ed25519, "A")]
     #[case(BothSigCodex::ECDSA_256k1, "C")]
+    #[case(BothSigCodex::ECDSA_256r1, "E")]
     #[case(BothSigCodex::Ed448, "0A")]
     #[case(BothSigCodex::Ed25519_Big, "2A")]
     #[case(BothSigCodex::ECDSA_256k1_Big, "2C")]
+    #[case(BothSigCodex::ECDSA_256r1_Big, "2E")]
     #[case(BothSigCodex::Ed448_Big, "3A")]
     fn both_sig_codex(#[case] code: &str, #[case] value: &str) {
         assert_eq!(code, value);
@@ -226,12 +264,16 @@ mod test {
     #[case("B", 1, 1, 0, 88, 0)]
     #[case("C", 1, 1, 0, 88, 0)]
     #[case("D", 1, 1, 0, 88, 0)]
+    #[case("E", 1, 1, 0, 88, 0)]
+    #[case("F", 1, 1, 0, 88, 0)]
     #[case("0A", 2, 2, 1, 156, 0)]
     #[case("0B", 2, 2, 1, 156, 0)]
     #[case("2A", 2, 4, 2, 92, 0)]
     #[case("2B", 2, 4, 2, 92, 0)]
     #[case("2C", 2, 4, 2, 92, 0)]
     #[case("2D", 2, 4, 2, 92, 0)]
+    #[case("2E", 2, 4, 2, 92, 0)]
+    #[case("2F", 2, 4, 2, 92, 0)]
     #[case("3A", 2, 6, 3, 160, 0)]
     #[case("3B", 2, 6, 3, 160, 0)]
     #[case("0z", 2, 2, 0, u32::MAX, 0)]
