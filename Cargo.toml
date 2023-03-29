@@ -16,6 +16,7 @@ blake2 = "~0.10"
 blake3 = "~1"
 chrono = { version = "~0.4", default-features = false, features = ["clock"] }
 ed25519-dalek = "~1"
+ed448-rust = { git = "https://github.com/jasoncolburne/ed448-rust.git" }
 indexmap = "~1"
 k256 = "~0.12"
 lazy_static = "~1"
