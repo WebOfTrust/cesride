@@ -31,6 +31,7 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "N" => Sizage { hs: 1, ss: 0, fs: 12, ls: 0 },
         "O" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
         "P" => Sizage { hs: 1, ss: 0, fs: 124, ls: 0 },
+        "Q" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
         "0A" => Sizage { hs: 2, ss: 0, fs: 24, ls: 0 },
         "0B" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
         "0C" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
@@ -39,6 +40,7 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "0F" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
         "0G" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
         "0H" => Sizage { hs: 2, ss: 0, fs: 8, ls: 0 },
+        "0I" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
         "1AAA" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
         "1AAB" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
         "1AAC" => Sizage { hs: 4, ss: 0, fs: 80, ls: 0 },
@@ -47,6 +49,8 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "1AAF" => Sizage { hs: 4, ss: 0, fs: 8, ls: 0 },
         "1AAG" => Sizage { hs: 4, ss: 0, fs: 36, ls: 0 },
         "1AAH" => Sizage { hs: 4, ss: 0, fs: 100, ls: 0 },
+        "1AAI" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
+        "1AAJ" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
         "2AAA" => Sizage { hs: 4, ss: 0, fs: 8, ls: 1 },
         "3AAA" => Sizage { hs: 4, ss: 0, fs: 8, ls: 2 },
         "4A" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 0 },
@@ -116,6 +120,7 @@ pub mod Codex {
     pub const Big: &str = "N"; // Big 8 byte b2 number
     pub const X25519_Private: &str = "O"; // X25519 private decryption key converted from Ed25519
     pub const X25519_Cipher_Seed: &str = "P"; // X25519 124 char b64 Cipher of 44 char qb64 Seed
+    pub const ECDSA_256r1_Seed: &str = "Q"; // ECDSA secp256r1 256 bit random Seed for private key
     pub const Salt_128: &str = "0A"; // 128 bit random salt or 128 bit number (see Huge)
     pub const Ed25519_Sig: &str = "0B"; // Ed25519 signature.
     pub const ECDSA_256k1_Sig: &str = "0C"; // ECDSA secp256k1 signature.
@@ -124,14 +129,17 @@ pub mod Codex {
     pub const SHA3_512: &str = "0F"; // SHA3 512 bit digest self-addressing derivation.
     pub const SHA2_512: &str = "0G"; // SHA2 512 bit digest self-addressing derivation.
     pub const Long: &str = "0H"; // Long 4 byte b2 number
+    pub const ECDSA_256r1_Sig: &str = "0I"; // ECDSA secp256r1 signature.
     pub const ECDSA_256k1N: &str = "1AAA"; // ECDSA secp256k1 verification key non-transferable, basic derivation.
-    pub const ECDSA_256k1: &str = "1AAB"; // Ed25519 public verification or encryption key, basic derivation
+    pub const ECDSA_256k1: &str = "1AAB"; // ECDSA secp256k1 verification or encryption key, basic derivation
     pub const Ed448N: &str = "1AAC"; // Ed448 non-transferable prefix public signing verification key. Basic derivation.
     pub const Ed448: &str = "1AAD"; // Ed448 public signing verification key. Basic derivation.
     pub const Ed448_Sig: &str = "1AAE"; // Ed448 signature. Self-signing derivation.
     pub const Tern: &str = "1AAF"; // 3 byte b2 number or 4 char B64 str.
     pub const DateTime: &str = "1AAG"; // Base64 custom encoded 32 char ISO-8601 DateTime
     pub const X25519_Cipher_Salt: &str = "1AAH"; // X25519 100 char b64 Cipher of 24 char qb64 Salt
+    pub const ECDSA_256r1N: &str = "1AAI"; // ECDSA secp256r1 verification key non-transferable, basic derivation.
+    pub const ECDSA_256r1: &str = "1AAJ"; // ECDSA secp256r1 verification or encryption key, basic derivation
     pub const TBD1: &str = "2AAA"; // Testing purposes only fixed with lead size 1
     pub const TBD2: &str = "3AAA"; // Testing purposes only of fixed with lead size 2
     pub const StrB64_L0: &str = "4A"; // String Base64 Only Lead Size 0 (4095 * 3 | 4)
@@ -170,6 +178,7 @@ mod test {
     #[case("N", 1, 0, 12, 0)]
     #[case("O", 1, 0, 44, 0)]
     #[case("P", 1, 0, 124, 0)]
+    #[case("Q", 1, 0, 44, 0)]
     #[case("0A", 2, 0, 24, 0)]
     #[case("0B", 2, 0, 88, 0)]
     #[case("0C", 2, 0, 88, 0)]
@@ -178,6 +187,7 @@ mod test {
     #[case("0F", 2, 0, 88, 0)]
     #[case("0G", 2, 0, 88, 0)]
     #[case("0H", 2, 0, 8, 0)]
+    #[case("0I", 2, 0, 88, 0)]
     #[case("1AAA", 4, 0, 48, 0)]
     #[case("1AAB", 4, 0, 48, 0)]
     #[case("1AAC", 4, 0, 80, 0)]
@@ -186,6 +196,8 @@ mod test {
     #[case("1AAF", 4, 0, 8, 0)]
     #[case("1AAG", 4, 0, 36, 0)]
     #[case("1AAH", 4, 0, 100, 0)]
+    #[case("1AAI", 4, 0, 48, 0)]
+    #[case("1AAJ", 4, 0, 48, 0)]
     #[case("2AAA", 4, 0, 8, 1)]
     #[case("3AAA", 4, 0, 8, 2)]
     #[case("4A", 2, 2, u32::MAX, 0)]
@@ -298,6 +310,7 @@ mod test {
     #[case(Codex::Big, "N")]
     #[case(Codex::X25519_Private, "O")]
     #[case(Codex::X25519_Cipher_Seed, "P")]
+    #[case(Codex::ECDSA_256r1_Seed, "Q")]
     #[case(Codex::Salt_128, "0A")]
     #[case(Codex::Ed25519_Sig, "0B")]
     #[case(Codex::ECDSA_256k1_Sig, "0C")]
@@ -306,6 +319,7 @@ mod test {
     #[case(Codex::SHA3_512, "0F")]
     #[case(Codex::SHA2_512, "0G")]
     #[case(Codex::Long, "0H")]
+    #[case(Codex::ECDSA_256r1_Sig, "0I")]
     #[case(Codex::ECDSA_256k1N, "1AAA")]
     #[case(Codex::ECDSA_256k1, "1AAB")]
     #[case(Codex::Ed448N, "1AAC")]
@@ -314,6 +328,8 @@ mod test {
     #[case(Codex::Tern, "1AAF")]
     #[case(Codex::DateTime, "1AAG")]
     #[case(Codex::X25519_Cipher_Salt, "1AAH")]
+    #[case(Codex::ECDSA_256r1N, "1AAI")]
+    #[case(Codex::ECDSA_256r1, "1AAJ")]
     #[case(Codex::TBD1, "2AAA")]
     #[case(Codex::TBD2, "3AAA")]
     #[case(Codex::StrB64_L0, "4A")]
