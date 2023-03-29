@@ -202,7 +202,7 @@ mod test {
         let keypair = ed25519_dalek::Keypair::generate(&mut csprng);
 
         let sig = keypair.sign(&ser).to_bytes();
-        let mut bad_sig = sig.clone();
+        let mut bad_sig = sig;
         bad_sig[0] ^= 0xff;
 
         let raw = keypair.public.as_bytes();
@@ -214,7 +214,7 @@ mod test {
         assert!(m.verify(&[], &ser).is_err());
 
         // exercise control flows for non-transferrable variant
-        m.set_code(&matter::Codex::Ed25519N);
+        m.set_code(matter::Codex::Ed25519N);
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());
@@ -232,7 +232,7 @@ mod test {
         let private_key = SigningKey::random(&mut csprng);
 
         let sig = <SigningKey as Signer<Signature>>::sign(&private_key, &ser).to_bytes();
-        let mut bad_sig = sig.clone();
+        let mut bad_sig = sig;
         bad_sig[0] ^= 0xff;
 
         let public_key = VerifyingKey::from(private_key);
@@ -245,7 +245,7 @@ mod test {
         assert!(!m.verify(&sig, &bad_ser).unwrap());
         assert!(m.verify(&[], &ser).is_err());
 
-        m.set_code(&matter::Codex::ECDSA_256k1N);
+        m.set_code(matter::Codex::ECDSA_256k1N);
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());

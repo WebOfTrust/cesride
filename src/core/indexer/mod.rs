@@ -770,7 +770,7 @@ mod test {
         let qsc = format!("{code}{}", util::u32_to_b64(0, 1).unwrap());
         assert_eq!(qsc, "AA");
 
-        let qsig64 = qsc + &sig64[(ps as usize)..];
+        let qsig64 = qsc + &sig64[ps..];
         assert_eq!(qsig64, "AACZ0jw5JCQwn2v7GKCMQHISMi5rsscfcA4nbY9AqqWMyG6FyCH2cZFwqezPkq8p3sr8f37Xb3wXgh3UPG8igSYJ");
         assert_eq!(qsig64.len(), 88);
 

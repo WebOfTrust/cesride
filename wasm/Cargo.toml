@@ -1,0 +1,24 @@
+[package]
+name = "cesride-wasm"
+version = "0.1.0"
+authors = ['Dmitry Kuzmenko <dmitry.kuzmenko@dsr-corporation.com>']
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+tmp_dev = []
+
+[dev-dependencies.getrandom]
+version = '0.2'
+features = ['js']
+
+[dependencies.cesride_core]
+path = '..'
+package = "cesride"
+
+[dependencies]
+wasm-bindgen = "0.2.84"
+js-sys = '0.3'
+serde_json = "1.0"

@@ -416,7 +416,7 @@ mod test {
     fn b64_overflow_and_underflow(#[values("-AAB")] qsc: &str) {
         // add some chars
         let longqsc64 = &format!("{qsc}ABCD");
-        let counter = Counter::new(None, None, None, None, Some(&longqsc64), None).unwrap();
+        let counter = Counter::new(None, None, None, None, Some(longqsc64), None).unwrap();
         assert_eq!(
             counter.qb64().unwrap().len() as u32,
             counter::sizage(&counter.code()).unwrap().fs
