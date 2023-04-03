@@ -64,7 +64,7 @@ and terminology was carried along with the code. The basics:
 - `Diger` - a primitive that represents a **digest**. It has the ability to verify that an input hashes to its raw value.
 - `Verfer` - a primitive that represents a **public key**. It has the ability to verify signatures on data.
 - `Signer` - a primitive that represents a **private key**. It has the ability to create `Sigers` and `Cigars` (signatures).
-- `Siger` - an **_indexed_ signature**. This is used when there are multiple current keys associated with an identifier.
+- `Siger` - an **_indexed_ signature**. This is used within KERI when there are multiple current keys associated with an identifier.
 - `Cigar` - an **_unindexed_ signature**.
 - `Salter` - a primitive that represents a **seed**. It has the ability to generate new `Signers`.
  
