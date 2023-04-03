@@ -164,11 +164,6 @@ println!("Blake3 256 digest: #{d}", d=diger.qb64()?);
 
 For more implementation details at this time, see [KERIpy](https://github.com/WebOfTrust/keripy).
 
-## Security
-
-- [ ] Audited for zeroing before frees/drops ([#40](https://github.com/WebOfTrust/cesride/issues/40))
-- [ ] Audited for constant time evaluation ([#116](https://github.com/WebOfTrust/cesride/issues/116))
-
 ### Entropy
 
 We use two `OsRng` implementations to obtain our random data. Our private keys are
