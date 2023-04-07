@@ -10,6 +10,24 @@ use base64::{engine::general_purpose::URL_SAFE as b64_engine, Engine};
 use lazy_static::lazy_static;
 use regex::Regex;
 
+pub trait Bext: Matter {
+    fn bext(&self) -> Result<String> {
+        let szg = matter::sizage(&self.code())?;
+
+        let mut full_raw: Vec<u8> = vec![0; szg.ls as usize];
+        full_raw.append(&mut self.raw());
+        let bext = b64_engine.encode(&full_raw);
+
+        let ws = if szg.ls == 0 {
+            usize::from(!bext.is_empty() && bext[0..1] == *"A")
+        } else {
+            (szg.ls as usize + 1) % 4
+        };
+
+        Ok(bext[ws..].to_string())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Bexter {
     code: String,
@@ -53,7 +71,7 @@ fn validate_code(code: &str) -> Result<()> {
     Ok(())
 }
 
-fn rawify(bext: &str) -> Result<Vec<u8>> {
+pub(crate) fn rawify(bext: &str) -> Result<Vec<u8>> {
     let ts = bext.len() % 4;
     let ws = (4 - ts) % 4;
     let ls = (3 - ts) % 3;
@@ -119,23 +137,9 @@ impl Bexter {
     pub fn new_with_qb2(qb2: &[u8]) -> Result<Self> {
         Self::new(None, None, None, None, None, Some(qb2))
     }
-
-    pub fn bext(&self) -> Result<String> {
-        let szg = matter::sizage(&self.code())?;
-
-        let mut full_raw: Vec<u8> = vec![0; szg.ls as usize];
-        full_raw.append(&mut self.raw());
-        let bext = b64_engine.encode(&full_raw);
-
-        let ws = if szg.ls == 0 {
-            usize::from(!bext.is_empty() && bext[0..1] == *"A")
-        } else {
-            (szg.ls as usize + 1) % 4
-        };
-
-        Ok(bext[ws..].to_string())
-    }
 }
+
+impl Bext for Bexter {}
 
 impl Matter for Bexter {
     fn code(&self) -> String {
@@ -165,7 +169,7 @@ impl Matter for Bexter {
 
 #[cfg(test)]
 mod test {
-    use crate::core::bexter::Bexter;
+    use crate::core::bexter::{Bext, Bexter};
     use crate::core::matter::{tables as matter, Matter};
 
     use rstest::rstest;
