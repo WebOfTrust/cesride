@@ -10,7 +10,7 @@ crate-type = ["cdylib", "rlib"]
 [features]
 tmp_dev = []
 
-[dev-dependencies.getrandom]
+[dependencies.getrandom]
 version = '0.2'
 features = ['js']
 
