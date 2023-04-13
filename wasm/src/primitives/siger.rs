@@ -106,7 +106,7 @@ impl Deref for SigerWrapper {
 impl Wrap<Siger> for SigerWrapper {
     type Wrapper = SigerWrapper;
 
-    fn wrap(verfer: &Siger) -> Self::Wrapper {
-        SigerWrapper(verfer.clone())
+    fn wrap(siger: &Siger) -> Self::Wrapper {
+        SigerWrapper(siger.clone())
     }
 }

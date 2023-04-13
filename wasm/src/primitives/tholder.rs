@@ -98,7 +98,7 @@ impl Deref for TholderWrapper {
 impl Wrap<Tholder> for TholderWrapper {
     type Wrapper = TholderWrapper;
 
-    fn wrap(verfer: &Tholder) -> Self::Wrapper {
-        TholderWrapper(verfer.clone())
+    fn wrap(tholder: &Tholder) -> Self::Wrapper {
+        TholderWrapper(tholder.clone())
     }
 }

@@ -104,7 +104,7 @@ impl Deref for DigerWrapper {
 impl Wrap<Diger> for DigerWrapper {
     type Wrapper = DigerWrapper;
 
-    fn wrap(verfer: &Diger) -> Self::Wrapper {
-        DigerWrapper(verfer.clone())
+    fn wrap(diger: &Diger) -> Self::Wrapper {
+        DigerWrapper(diger.clone())
     }
 }

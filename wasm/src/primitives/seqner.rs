@@ -108,7 +108,7 @@ impl Deref for SeqnerWrapper {
 impl Wrap<Seqner> for SeqnerWrapper {
     type Wrapper = SeqnerWrapper;
 
-    fn wrap(verfer: &Seqner) -> Self::Wrapper {
-        SeqnerWrapper(verfer.clone())
+    fn wrap(seqner: &Seqner) -> Self::Wrapper {
+        SeqnerWrapper(seqner.clone())
     }
 }

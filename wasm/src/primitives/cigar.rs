@@ -94,7 +94,7 @@ impl Deref for CigarWrapper {
 impl Wrap<Cigar> for CigarWrapper {
     type Wrapper = CigarWrapper;
 
-    fn wrap(verfer: &Cigar) -> Self::Wrapper {
-        CigarWrapper(verfer.clone())
+    fn wrap(cigar: &Cigar) -> Self::Wrapper {
+        CigarWrapper(cigar.clone())
     }
 }

@@ -152,7 +152,7 @@ impl Deref for SalterWrapper {
 impl Wrap<Salter> for SalterWrapper {
     type Wrapper = SalterWrapper;
 
-    fn wrap(verfer: &Salter) -> Self::Wrapper {
-        SalterWrapper(verfer.clone())
+    fn wrap(salter: &Salter) -> Self::Wrapper {
+        SalterWrapper(salter.clone())
     }
 }

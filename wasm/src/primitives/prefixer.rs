@@ -111,7 +111,7 @@ impl Deref for PrefixerWrapper {
 impl Wrap<Prefixer> for PrefixerWrapper {
     type Wrapper = PrefixerWrapper;
 
-    fn wrap(verfer: &Prefixer) -> Self::Wrapper {
-        PrefixerWrapper(verfer.clone())
+    fn wrap(prefixer: &Prefixer) -> Self::Wrapper {
+        PrefixerWrapper(prefixer.clone())
     }
 }

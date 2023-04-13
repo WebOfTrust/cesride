@@ -95,7 +95,7 @@ impl Deref for BexterWrapper {
 impl Wrap<Bexter> for BexterWrapper {
     type Wrapper = BexterWrapper;
 
-    fn wrap(verfer: &Bexter) -> Self::Wrapper {
-        BexterWrapper(verfer.clone())
+    fn wrap(bexter: &Bexter) -> Self::Wrapper {
+        BexterWrapper(bexter.clone())
     }
 }

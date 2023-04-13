@@ -189,7 +189,7 @@ impl Deref for SaiderWrapper {
 impl Wrap<Saider> for SaiderWrapper {
     type Wrapper = SaiderWrapper;
 
-    fn wrap(verfer: &Saider) -> Self::Wrapper {
-        SaiderWrapper(verfer.clone())
+    fn wrap(saider: &Saider) -> Self::Wrapper {
+        SaiderWrapper(saider.clone())
     }
 }

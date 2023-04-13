@@ -108,7 +108,7 @@ impl Deref for NumberWrapper {
 impl Wrap<Number> for NumberWrapper {
     type Wrapper = NumberWrapper;
 
-    fn wrap(verfer: &Number) -> Self::Wrapper {
-        NumberWrapper(verfer.clone())
+    fn wrap(number: &Number) -> Self::Wrapper {
+        NumberWrapper(number.clone())
     }
 }

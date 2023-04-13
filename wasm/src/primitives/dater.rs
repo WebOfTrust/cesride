@@ -99,7 +99,7 @@ impl Deref for DaterWrapper {
 impl Wrap<Dater> for DaterWrapper {
     type Wrapper = DaterWrapper;
 
-    fn wrap(verfer: &Dater) -> Self::Wrapper {
-        DaterWrapper(verfer.clone())
+    fn wrap(dater: &Dater) -> Self::Wrapper {
+        DaterWrapper(dater.clone())
     }
 }

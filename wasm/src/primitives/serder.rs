@@ -147,7 +147,7 @@ impl Deref for SerderWrapper {
 impl Wrap<Serder> for SerderWrapper {
     type Wrapper = SerderWrapper;
 
-    fn wrap(verfer: &Serder) -> Self::Wrapper {
-        SerderWrapper(verfer.clone())
+    fn wrap(serder: &Serder) -> Self::Wrapper {
+        SerderWrapper(serder.clone())
     }
 }
