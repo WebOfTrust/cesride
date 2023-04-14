@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use crate::error::*;
+use crate::{error::*, Wrap};
 use cesride_core::{Dater, Matter};
 use wasm_bindgen::prelude::*;
 
@@ -93,5 +93,13 @@ impl Deref for DaterWrapper {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl Wrap<Dater> for DaterWrapper {
+    type Wrapper = DaterWrapper;
+
+    fn wrap(dater: &Dater) -> Self::Wrapper {
+        DaterWrapper(dater.clone())
     }
 }

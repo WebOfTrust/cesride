@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use crate::{error::*, ValueWrapper};
+use crate::{error::*, ValueWrapper, Wrap};
 use cesride_core::{data::Value, Matter, Saider};
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
@@ -183,5 +183,13 @@ impl Deref for SaiderWrapper {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl Wrap<Saider> for SaiderWrapper {
+    type Wrapper = SaiderWrapper;
+
+    fn wrap(saider: &Saider) -> Self::Wrapper {
+        SaiderWrapper(saider.clone())
     }
 }

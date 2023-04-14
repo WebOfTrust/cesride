@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use crate::error::*;
+use crate::{error::*, Wrap};
 use cesride_core::{Bexter, Matter};
 use wasm_bindgen::prelude::*;
 
@@ -89,5 +89,13 @@ impl Deref for BexterWrapper {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl Wrap<Bexter> for BexterWrapper {
+    type Wrapper = BexterWrapper;
+
+    fn wrap(bexter: &Bexter) -> Self::Wrapper {
+        BexterWrapper(bexter.clone())
     }
 }
