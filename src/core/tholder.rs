@@ -1,6 +1,6 @@
 use crate::{
     core::{
-        bexter::{tables as bexter, Bexter},
+        bexter::{tables as bexter, Bext, Bexter},
         matter::{tables as matter, Matter},
         number::{tables as number, Number},
     },
