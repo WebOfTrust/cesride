@@ -2,7 +2,7 @@ use std::ops::Deref;
 
 use crate::{
     error::*, DigerWrapper, NumberWrapper, SaiderWrapper, TholderWrapper, U128Wrapper,
-    ValueWrapper, VerferWrapper, VersionWrapper,
+    ValueWrapper, VerferWrapper, VersionWrapper, Wrap,
 };
 use cesride_core::{data::Value, Sadder, Serder};
 use js_sys::Array;
@@ -141,5 +141,13 @@ impl Deref for SerderWrapper {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl Wrap<Serder> for SerderWrapper {
+    type Wrapper = SerderWrapper;
+
+    fn wrap(serder: &Serder) -> Self::Wrapper {
+        SerderWrapper(serder.clone())
     }
 }

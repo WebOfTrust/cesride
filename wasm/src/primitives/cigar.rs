@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use crate::{error::*, VerferWrapper};
+use crate::{error::*, VerferWrapper, Wrap};
 use cesride_core::{Cigar, Matter};
 use wasm_bindgen::prelude::*;
 
@@ -88,5 +88,13 @@ impl Deref for CigarWrapper {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl Wrap<Cigar> for CigarWrapper {
+    type Wrapper = CigarWrapper;
+
+    fn wrap(cigar: &Cigar) -> Self::Wrapper {
+        CigarWrapper(cigar.clone())
     }
 }

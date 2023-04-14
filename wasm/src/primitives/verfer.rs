@@ -1,4 +1,4 @@
-use crate::error::*;
+use crate::{error::*, Wrap};
 use cesride_core::{Matter, Verfer};
 use std::ops::Deref;
 use wasm_bindgen::prelude::*;
@@ -82,5 +82,13 @@ impl Deref for VerferWrapper {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl Wrap<Verfer> for VerferWrapper {
+    type Wrapper = VerferWrapper;
+
+    fn wrap(verfer: &Verfer) -> Self::Wrapper {
+        VerferWrapper(verfer.clone())
     }
 }

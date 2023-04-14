@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use crate::error::*;
+use crate::{error::*, Wrap};
 use cesride_core::{Diger, Matter};
 use wasm_bindgen::prelude::*;
 
@@ -98,5 +98,13 @@ impl Deref for DigerWrapper {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl Wrap<Diger> for DigerWrapper {
+    type Wrapper = DigerWrapper;
+
+    fn wrap(diger: &Diger) -> Self::Wrapper {
+        DigerWrapper(diger.clone())
     }
 }

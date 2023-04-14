@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use crate::{error::*, ValueWrapper};
+use crate::{error::*, ValueWrapper, Wrap};
 use cesride_core::{data::Value, Matter, Prefixer};
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
@@ -105,5 +105,13 @@ impl Deref for PrefixerWrapper {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl Wrap<Prefixer> for PrefixerWrapper {
+    type Wrapper = PrefixerWrapper;
+
+    fn wrap(prefixer: &Prefixer) -> Self::Wrapper {
+        PrefixerWrapper(prefixer.clone())
     }
 }

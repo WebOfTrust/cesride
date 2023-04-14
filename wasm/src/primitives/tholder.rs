@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
-use crate::ValueWrapper;
 use crate::{error::*, BexterWrapper, NumberWrapper};
+use crate::{ValueWrapper, Wrap};
 use cesride_core::data::Value;
 use cesride_core::Tholder;
 use wasm_bindgen::prelude::*;
@@ -92,5 +92,13 @@ impl Deref for TholderWrapper {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl Wrap<Tholder> for TholderWrapper {
+    type Wrapper = TholderWrapper;
+
+    fn wrap(tholder: &Tholder) -> Self::Wrapper {
+        TholderWrapper(tholder.clone())
     }
 }
