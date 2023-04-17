@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use crate::{error::*, Wrap};
-use cesride_core::{Bexter, Matter};
+use cesride_core::{Bexter, Bext, Matter};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(js_name = Bexter)]
