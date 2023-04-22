@@ -1,5 +1,5 @@
 setup:
-	cargo install cargo-tarpaulin cargo-outdated cargo-audit
+	cargo install cargo-tarpaulin cargo-outdated cargo-audit wasm-pack
 
 clean:
 	cargo clean
@@ -20,3 +20,4 @@ preflight:
 	cargo build --release
 	cargo test --release
 	cargo tarpaulin
+	cd wasm && wasm-pack build && wasm-pack build --target=nodejs
