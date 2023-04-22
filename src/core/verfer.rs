@@ -208,7 +208,8 @@ mod test {
 
         let raw = keypair.verifying_key().to_bytes();
 
-        let mut m = Verfer::new(Some(matter::Codex::Ed25519), Some(&raw), None, None, None).unwrap();
+        let mut m =
+            Verfer::new(Some(matter::Codex::Ed25519), Some(&raw), None, None, None).unwrap();
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());
