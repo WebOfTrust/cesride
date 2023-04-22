@@ -109,7 +109,7 @@ mod ed25519 {
         let public_key = VerifyingKey::from_bytes(public_key.try_into()?)?;
         let signature = Signature::from_bytes(sig.try_into()?);
 
-        match public_key.verify_strict(ser, &signature) {
+        match public_key.verify(ser, &signature) {
             Ok(_) => Ok(true),
             Err(_) => Ok(false),
         }
