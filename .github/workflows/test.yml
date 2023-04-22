@@ -51,6 +51,11 @@ jobs:
         with:
           version: '0.22.0'
 
+      - name: WASM Sanity Build
+        run: |
+          cd wasm
+          wasm-pack build
+
       - name: Upload to codecov.io
         uses: codecov/codecov-action@v3
         with:
