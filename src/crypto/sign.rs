@@ -74,7 +74,7 @@ pub(crate) fn verify(code: &str, public_key: &[u8], sig: &[u8], ser: &[u8]) -> R
 }
 
 mod ed25519 {
-    use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
+    use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
     use rand_core::OsRng;
 
     use crate::error::Result;
