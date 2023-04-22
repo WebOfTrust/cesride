@@ -74,36 +74,42 @@ pub(crate) fn verify(code: &str, public_key: &[u8], sig: &[u8], ser: &[u8]) -> R
 }
 
 mod ed25519 {
-    use ed25519_dalek::{
-        ed25519::signature::Signer, Keypair, PublicKey, SecretKey, Signature, Verifier,
-    };
-    use rand::rngs::OsRng;
+    use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
+    use rand_core::OsRng;
 
     use crate::error::Result;
 
     pub(crate) fn generate() -> Result<Vec<u8>> {
         let mut csprng = OsRng {};
-        let private_key: SecretKey = SecretKey::generate(&mut csprng);
-        Ok(private_key.as_bytes().to_vec())
+        let mut private_key = SigningKey::generate(&mut csprng);
+        let verifying_key = private_key.verifying_key();
+        let mut weak = verifying_key.is_weak();
+
+        while weak {
+            private_key = SigningKey::generate(&mut csprng);
+            let verifying_key = private_key.verifying_key();
+            weak = verifying_key.is_weak();
+        }
+
+        Ok(private_key.to_bytes().to_vec())
     }
 
     pub(crate) fn public_key(private_key: &[u8]) -> Result<Vec<u8>> {
-        let private_key = SecretKey::from_bytes(private_key)?;
-        let public_key: PublicKey = (&private_key).into();
+        let private_key = SigningKey::from_bytes(&private_key[..32].try_into()?);
+        let public_key: VerifyingKey = (&private_key).into();
         Ok(public_key.as_bytes().to_vec())
     }
 
     pub(crate) fn sign(private_key: &[u8], ser: &[u8]) -> Result<Vec<u8>> {
-        let private_key = SecretKey::from_bytes(private_key)?;
-        let public_key: PublicKey = (&private_key).into();
-        Ok(Keypair { secret: private_key, public: public_key }.sign(ser).to_bytes().to_vec())
+        let private_key = SigningKey::from_bytes(private_key.try_into()?);
+        Ok(private_key.sign(ser).to_bytes().to_vec())
     }
 
     pub(crate) fn verify(public_key: &[u8], sig: &[u8], ser: &[u8]) -> Result<bool> {
-        let public_key = PublicKey::from_bytes(public_key)?;
-        let signature = Signature::from_bytes(sig)?;
+        let public_key = VerifyingKey::from_bytes(public_key.try_into()?)?;
+        let signature = Signature::from_bytes(sig.try_into()?);
 
-        match public_key.verify(ser, &signature) {
+        match public_key.verify_strict(ser, &signature) {
             Ok(_) => Ok(true),
             Err(_) => Ok(false),
         }
