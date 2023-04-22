@@ -6,9 +6,10 @@ fix:
 	cargo fmt
 
 preflight:
-	cargo audit
 	cargo fmt --check
 	cargo outdated -R --exit-code 1
+	cargo audit
+	cargo check
 	cargo clippy -- -D warnings
 	cargo build --release
 	cargo test --release
