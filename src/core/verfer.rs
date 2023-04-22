@@ -100,7 +100,6 @@ impl Matter for Verfer {
 mod test {
     use crate::core::matter::{tables as matter, Matter};
     use crate::core::verfer::Verfer;
-    use ed25519_dalek::ed25519::signature::Keypair;
     use hex_literal::hex;
 
     #[test]
