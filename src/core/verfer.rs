@@ -264,7 +264,7 @@ mod test {
         let private_key = SigningKey::random(&mut csprng);
 
         let sig = <SigningKey as Signer<Signature>>::sign(&private_key, &ser).to_bytes();
-        let mut bad_sig = sig.clone();
+        let mut bad_sig = sig;
         bad_sig[0] ^= 0xff;
 
         let public_key = VerifyingKey::from(private_key);
@@ -277,7 +277,7 @@ mod test {
         assert!(!m.verify(&sig, &bad_ser).unwrap());
         assert!(m.verify(&[], &ser).is_err());
 
-        m.set_code(&matter::Codex::ECDSA_256r1N);
+        m.set_code(matter::Codex::ECDSA_256r1N);
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());
