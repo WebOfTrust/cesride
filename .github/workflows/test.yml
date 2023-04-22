@@ -54,6 +54,7 @@ jobs:
       - name: WASM Sanity Build
         run: |
           cd wasm
+          cargo install wasm-pack
           wasm-pack build
 
       - name: Upload to codecov.io
