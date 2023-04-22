@@ -328,7 +328,6 @@ mod test {
         assert_eq!(signer.verfer().qb64().unwrap(), verfer_qb64);
     }
 
-    #[allow(clippy::too_many_arguments)]
     #[rstest]
     // openssl genpkey -algorithm ed25519 -text
     #[case(
