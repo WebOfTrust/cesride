@@ -328,6 +328,7 @@ mod test {
         assert_eq!(signer.verfer().qb64().unwrap(), verfer_qb64);
     }
 
+    #[allow(clippy::too_many_arguments)]
     #[rstest]
     // openssl genpkey -algorithm ed25519 -text
     #[case(
@@ -365,7 +366,6 @@ mod test {
         "1AAJAxaZvKBRj6Zss11rCpL2hJYoe7Zk6OhXaRW46poCBir_",
         "0ICM-rRAAdKrSrzFlouiZXbNUZ07QMM1IXOaG-gv4TAo4QeQCKZC1z82jJYy_wFkAxgIhbikl3a-nOTXxecF2lEj",
     )]
-    #[allow(clippy::too_many_arguments)]
     fn hardcoded_openssl_vectors(
         #[case] signer_code: &str,
         #[case] verfer_code: &str,
