@@ -1,19 +1,8 @@
 # WASM FFI for CESRIDE
 
-You can build the FFI with
-```
-$ wasm-pack build
-```
-
-### How to build
+### How to build with wasm-pack
 Install wasm-pack from https://rustwasm.github.io/wasm-pack/installer/ and then
-```
-make # Will output modules best-suited to be bundled with webpack
-WASM_TARGET=nodejs make # Will output modules that can be directly consumed by NodeJS
-WASM_TARGET=web make # Will output modules that can be directly consumed in browser without bundler usage
-```
 
-### How to build with wasm-pack build
 ```
 wasm-pack build # Will output modules best-suited to be bundled with webpack
 wasm-pack build --target=nodejs # Will output modules that can be directly consumed by NodeJS
@@ -27,7 +16,7 @@ yarn install
 yarn start
 ```
 
-### Run demo шт Browser
+### Run demo in Browser
 ```
 cd demo/web
 yarn install
