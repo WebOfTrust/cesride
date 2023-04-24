@@ -29,7 +29,7 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Outdated
-        run: cargo outdated -R --ignore rand --exit-code 1
+        run: cargo outdated -R --exit-code 1
 
       - name: Audit
         run: cargo audit
@@ -50,6 +50,12 @@ jobs:
         uses: actions-rs/tarpaulin@v0.1
         with:
           version: '0.22.0'
+
+      - name: WASM Sanity Build
+        run: |
+          cd wasm
+          cargo install wasm-pack
+          wasm-pack build
 
       - name: Upload to codecov.io
         uses: codecov/codecov-action@v3

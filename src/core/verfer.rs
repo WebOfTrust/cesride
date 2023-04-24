@@ -198,16 +198,17 @@ mod test {
         let bad_ser = hex!("e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f"
                                      "5b49b82f805a538c68915c1ae8035c900fd1d4b13902920fd05e1450822f36df");
 
-        let mut csprng = rand::rngs::OsRng::default();
-        let keypair = ed25519_dalek::Keypair::generate(&mut csprng);
+        let mut csprng = rand_core::OsRng::default();
+        let keypair = ed25519_dalek::SigningKey::generate(&mut csprng);
 
         let sig = keypair.sign(&ser).to_bytes();
         let mut bad_sig = sig;
         bad_sig[0] ^= 0xff;
 
-        let raw = keypair.public.as_bytes();
+        let raw = keypair.verifying_key().to_bytes();
 
-        let mut m = Verfer::new(Some(matter::Codex::Ed25519), Some(raw), None, None, None).unwrap();
+        let mut m =
+            Verfer::new(Some(matter::Codex::Ed25519), Some(&raw), None, None, None).unwrap();
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());
@@ -263,7 +264,7 @@ mod test {
         let private_key = SigningKey::random(&mut csprng);
 
         let sig = <SigningKey as Signer<Signature>>::sign(&private_key, &ser).to_bytes();
-        let mut bad_sig = sig.clone();
+        let mut bad_sig = sig;
         bad_sig[0] ^= 0xff;
 
         let public_key = VerifyingKey::from(private_key);
@@ -276,7 +277,7 @@ mod test {
         assert!(!m.verify(&sig, &bad_ser).unwrap());
         assert!(m.verify(&[], &ser).is_err());
 
-        m.set_code(&matter::Codex::ECDSA_256r1N);
+        m.set_code(matter::Codex::ECDSA_256r1N);
         assert!(m.verify(&sig, &ser).unwrap());
         assert!(!m.verify(&bad_sig, &ser).unwrap());
         assert!(!m.verify(&sig, &bad_ser).unwrap());
