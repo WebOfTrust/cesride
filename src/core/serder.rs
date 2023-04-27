@@ -52,6 +52,10 @@ impl Serder {
         Self::new(code, None, kind, Some(ked), None)
     }
 
+    pub fn new_with_raw(raw: &[u8]) -> Result<Self> {
+        Self::new(None, Some(raw), None, None, None)
+    }
+
     pub fn verfers(&self) -> Result<Vec<Verfer>> {
         let mut result: Vec<Verfer> = Vec::new();
         let map = self.ked.to_map()?;
@@ -288,6 +292,24 @@ pub(crate) mod test {
         data::Value,
         error::{err, Error, Result},
     };
+
+    #[test]
+    fn convenience() {
+        let _vs = "KERI10JSON000000_";
+        let e1 = dat!({
+            "v": _vs,
+            "d": "",
+            "i": "ABCDEFG",
+            "s": "0001",
+            "t": "rot"
+        });
+        let (_, e1) = Saider::saidify(&e1, None, None, None, None).unwrap();
+
+        let serder = Serder::new_with_ked(&e1, None, None).unwrap();
+        let serder2 = Serder::new_with_raw(&serder.raw()).unwrap();
+
+        assert_eq!(serder.pre().unwrap(), serder2.pre().unwrap());
+    }
 
     #[test]
     fn python_interop() {
