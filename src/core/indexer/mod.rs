@@ -630,13 +630,13 @@ pub trait Indexer: Default {
         Ok(())
     }
 
-    fn full_size(&self) -> Result<u32> {
+    fn full_size(&self) -> Result<usize> {
         let sizage = tables::sizage(&self.code())?;
         if sizage.fs != u32::MAX {
-            Ok(sizage.fs)
+            Ok(sizage.fs as usize)
         } else {
             let cs = sizage.hs + sizage.ss;
-            Ok(self.index() * 4 + cs)
+            Ok((self.index() * 4 + cs) as usize)
         }
     }
 }
@@ -1026,7 +1026,7 @@ mod test {
     #[case(indexer::Codex::Ed448, 156)]
     #[case(indexer::Codex::Ed25519_Big, 92)]
     #[case(indexer::Codex::Ed448_Big, 160)]
-    fn raw_size(#[case] code: &str, #[case] full_size: u32) {
+    fn raw_size(#[case] code: &str, #[case] full_size: usize) {
         let raw = (0..full_size as usize - code.len()).map(|_| "A").collect::<String>();
         let qb64 = [code, &raw].join("");
         let indexer = TestIndexer::new(None, None, None, None, None, Some(&qb64), None).unwrap();
