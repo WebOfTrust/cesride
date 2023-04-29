@@ -4,7 +4,7 @@ use crate::{
     core::sadder::Sadder,
     core::saider::Saider,
     data::{dat, Value},
-    error::{err, Error, Result}
+    error::{err, Error, Result},
 };
 
 #[derive(Clone, Debug, PartialEq)]
