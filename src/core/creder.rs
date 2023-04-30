@@ -279,6 +279,7 @@ mod test {
         let vs =
             versify(Some(Identage::ACDC), None, None, Some(acdc_message.len() as u32)).unwrap();
         acdc_value["v"] = dat!(&vs);
+        let (_, acdc_value) = Saider::saidify(&acdc_value, None, None, None, None).unwrap();
 
         let acdc_json = acdc_value.to_json().unwrap();
         let acdc_message = acdc_json.as_bytes();
