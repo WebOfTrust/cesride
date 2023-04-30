@@ -224,6 +224,37 @@ mod test {
         let acdc_message = acdc_json.as_bytes();
 
         assert!(Creder::new_with_raw(keri_message).is_err());
-        assert!(Creder::new(None, Some(acdc_message), None, None, None).is_ok());
+        let result = Creder::new(None, Some(acdc_message), None, None, None);
+        assert!(result.is_ok());
+        let creder = result.unwrap();
+        assert!(Creder::new_with_ked(&creder.crd(), None, None).is_ok());
+        assert_eq!(
+            creder.chains().unwrap().to_json().unwrap(),
+            dat!({
+                "d": "ECuynR9pRY6A6dWRlc2DTSF7AWY2a-w-6qhx7vd-pWT-",
+                "acceptedBlock": {
+                  "d": "EOvQJIx58cCC-xB5LIWeApUH80Jxo8WxGNsLb-1HKLcy",
+                  "n": "EE_Wrv2OHqIOptEni3mE3Ckc4C6jO1RvgtxdpDZBiuB0",
+                  "s": "EDiWb-53cI8FBPOpF69LrLCSElNjG-BAChHp2-OsLmbC"
+                }
+            })
+            .to_json()
+            .unwrap()
+        );
+        assert_eq!(creder.issuer().unwrap(), "ENayINhHQnx6525EpcTmkvo6ZixiJyiskwkVNbMPohYa");
+        assert_eq!(
+            creder.subject().to_json().unwrap(),
+            dat!({
+                "d": "EOsCUbK6Ve7qb-h15ljNyvVhLz2rq6iaCcA86AAoeZyX",
+                "dt": "2023-04-30T00:34:11.853572+00:00"
+            })
+            .to_json()
+            .unwrap()
+        );
+        assert_eq!(creder.schema().unwrap(), "EE5uDJTq5cc6AEdqbyMpvARUjsK_chNdInf3xyRoCBcT");
+        assert_eq!(
+            creder.status().unwrap().unwrap(),
+            "EINZnO3Z30Q7y2oV1sDCQphieRH244-XJFRAbzuFbU7n"
+        );
     }
 }
