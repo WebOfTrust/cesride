@@ -170,7 +170,10 @@ impl Sadder for Creder {
 
 #[cfg(test)]
 mod test {
-    use crate::common::{Serialage, CURRENT_VERSION};
+    use crate::{
+        common::{versify, Identage, Serialage, CURRENT_VERSION},
+        Saider,
+    };
 
     use super::{Creder, Sadder};
 
@@ -259,9 +262,9 @@ mod test {
             "EINZnO3Z30Q7y2oV1sDCQphieRH244-XJFRAbzuFbU7n"
         );
 
-        let acdc_value = dat!({
-            "v": "ACDC10JSON00022b_",
-            "d": "ENIcZJXSgLgz5whOszoME4DPe7B93Qltk6n6C6E9YxF2",
+        let mut acdc_value = dat!({
+            "v": "ACDC10JSON000000_",
+            "d": "",
             "i": "ENayINhHQnx6525EpcTmkvo6ZixiJyiskwkVNbMPohYa",
             "s": "EE5uDJTq5cc6AEdqbyMpvARUjsK_chNdInf3xyRoCBcT",
             "a": {
@@ -269,6 +272,13 @@ mod test {
               "dt": "2023-04-30T00:34:11.853572+00:00"
             },
         });
+
+        let acdc_json = acdc_value.to_json().unwrap();
+        let acdc_message = acdc_json.as_bytes();
+
+        let vs =
+            versify(Some(Identage::ACDC), None, None, Some(acdc_message.len() as u32)).unwrap();
+        acdc_value["v"] = dat!(&vs);
 
         let acdc_json = acdc_value.to_json().unwrap();
         let acdc_message = acdc_json.as_bytes();
