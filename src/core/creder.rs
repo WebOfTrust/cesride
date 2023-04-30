@@ -170,7 +170,9 @@ impl Sadder for Creder {
 
 #[cfg(test)]
 mod test {
-    use super::Creder;
+    use crate::common::{Serialage, CURRENT_VERSION};
+
+    use super::{Creder, Sadder};
 
     #[test]
     fn sanity() {
@@ -256,5 +258,28 @@ mod test {
             creder.status().unwrap().unwrap(),
             "EINZnO3Z30Q7y2oV1sDCQphieRH244-XJFRAbzuFbU7n"
         );
+
+        let acdc_value = dat!({
+            "v": "ACDC10JSON00022b_",
+            "d": "ENIcZJXSgLgz5whOszoME4DPe7B93Qltk6n6C6E9YxF2",
+            "i": "ENayINhHQnx6525EpcTmkvo6ZixiJyiskwkVNbMPohYa",
+            "s": "EE5uDJTq5cc6AEdqbyMpvARUjsK_chNdInf3xyRoCBcT",
+            "a": {
+              "d": "EOsCUbK6Ve7qb-h15ljNyvVhLz2rq6iaCcA86AAoeZyX",
+              "dt": "2023-04-30T00:34:11.853572+00:00"
+            },
+        });
+
+        let acdc_json = acdc_value.to_json().unwrap();
+        let acdc_message = acdc_json.as_bytes();
+
+        let creder = Creder::new_with_raw(acdc_message).unwrap();
+
+        assert_eq!(creder.status().unwrap(), None);
+        assert_eq!(creder.chains().unwrap(), dat!({}));
+        assert_eq!(creder.raw(), acdc_message);
+        assert_eq!(creder.kind(), Serialage::JSON);
+        assert_eq!(creder.size(), acdc_message.len() as u32);
+        assert_eq!(creder.version(), *CURRENT_VERSION);
     }
 }
