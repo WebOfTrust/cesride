@@ -12,6 +12,7 @@ clippy:
 	cargo clippy --all-targets -- -D warnings
 
 preflight:
+	cargo generate-lockfile
 	cargo fmt --check
 	cargo outdated -R --exit-code 1
 	cargo audit
