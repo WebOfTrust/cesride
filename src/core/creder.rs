@@ -174,8 +174,50 @@ mod test {
 
     #[test]
     fn sanity() {
-        let keri_value = dat!({"v":"KERI10JSON0001e7_","t":"icp","d":"EA_1ZGv4tEhJW2AYH0wLh2lLlllmH3dwpH3RGs2GtgXr","i":"EA_1ZGv4tEhJW2AYH0wLh2lLlllmH3dwpH3RGs2GtgXr","s":"0","kt":"2","k":["DID6gcblxh8yiILkx_tratCNdDiYHWInyrZOF0dHgn-s","DJgKrw-dQFtDUZ6ahEzc-HJqe5NOXF_F4xMXy41bvApe","DMEijEab-eqt7AEhLyrMcHH8I36HPYOn1rjnvwycPURK"],"nt":"2","n":["EP7pWgkdErxn23QcvAH5ovQQrjZgtgc2qv-X79JKctUV","ENJus7HZN9Dsm7jHkn8vTC5Wk2VRhjtGQ9NaOa57OydR","EMLWypoar99qGWhnlaX_07W8bbqchTILXH96SGbSV42I"],"bt":"0","b":[],"c":[],"a":[]});
-        let acdc_value = dat!({"v":"ACDC10JSON00022b_","d":"ENIcZJXSgLgz5whOszoME4DPe7B93Qltk6n6C6E9YxF2","i":"ENayINhHQnx6525EpcTmkvo6ZixiJyiskwkVNbMPohYa","ri":"EINZnO3Z30Q7y2oV1sDCQphieRH244-XJFRAbzuFbU7n","s":"EE5uDJTq5cc6AEdqbyMpvARUjsK_chNdInf3xyRoCBcT","a":{"d":"EOsCUbK6Ve7qb-h15ljNyvVhLz2rq6iaCcA86AAoeZyX","dt":"2023-04-30T00:34:11.853572+00:00"},"e":{"d":"ECuynR9pRY6A6dWRlc2DTSF7AWY2a-w-6qhx7vd-pWT-","acceptedBlock":{"d":"EOvQJIx58cCC-xB5LIWeApUH80Jxo8WxGNsLb-1HKLcy","n":"EE_Wrv2OHqIOptEni3mE3Ckc4C6jO1RvgtxdpDZBiuB0","s":"EDiWb-53cI8FBPOpF69LrLCSElNjG-BAChHp2-OsLmbC"}}});
+        let keri_value = dat!({
+            "v": "KERI10JSON0001e7_",
+            "t": "icp",
+            "d": "EA_1ZGv4tEhJW2AYH0wLh2lLlllmH3dwpH3RGs2GtgXr",
+            "i": "EA_1ZGv4tEhJW2AYH0wLh2lLlllmH3dwpH3RGs2GtgXr",
+            "s": "0",
+            "kt": "2",
+            "k": [
+              "DID6gcblxh8yiILkx_tratCNdDiYHWInyrZOF0dHgn-s",
+              "DJgKrw-dQFtDUZ6ahEzc-HJqe5NOXF_F4xMXy41bvApe",
+              "DMEijEab-eqt7AEhLyrMcHH8I36HPYOn1rjnvwycPURK"
+            ],
+            "nt": "2",
+            "n": [
+              "EP7pWgkdErxn23QcvAH5ovQQrjZgtgc2qv-X79JKctUV",
+              "ENJus7HZN9Dsm7jHkn8vTC5Wk2VRhjtGQ9NaOa57OydR",
+              "EMLWypoar99qGWhnlaX_07W8bbqchTILXH96SGbSV42I"
+            ],
+            "bt": "0",
+            "b": [],
+            "c": [],
+            "a": []
+        });
+
+        let acdc_value = dat!({
+            "v": "ACDC10JSON00022b_",
+            "d": "ENIcZJXSgLgz5whOszoME4DPe7B93Qltk6n6C6E9YxF2",
+            "i": "ENayINhHQnx6525EpcTmkvo6ZixiJyiskwkVNbMPohYa",
+            "ri": "EINZnO3Z30Q7y2oV1sDCQphieRH244-XJFRAbzuFbU7n",
+            "s": "EE5uDJTq5cc6AEdqbyMpvARUjsK_chNdInf3xyRoCBcT",
+            "a": {
+              "d": "EOsCUbK6Ve7qb-h15ljNyvVhLz2rq6iaCcA86AAoeZyX",
+              "dt": "2023-04-30T00:34:11.853572+00:00"
+            },
+            "e": {
+              "d": "ECuynR9pRY6A6dWRlc2DTSF7AWY2a-w-6qhx7vd-pWT-",
+              "acceptedBlock": {
+                "d": "EOvQJIx58cCC-xB5LIWeApUH80Jxo8WxGNsLb-1HKLcy",
+                "n": "EE_Wrv2OHqIOptEni3mE3Ckc4C6jO1RvgtxdpDZBiuB0",
+                "s": "EDiWb-53cI8FBPOpF69LrLCSElNjG-BAChHp2-OsLmbC"
+              }
+            }
+        });
+
         let keri_json = keri_value.to_json().unwrap();
         let keri_message = keri_json.as_bytes();
         let acdc_json = acdc_value.to_json().unwrap();
