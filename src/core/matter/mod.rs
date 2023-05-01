@@ -504,12 +504,12 @@ pub trait Matter: Default {
         Ok(())
     }
 
-    fn full_size(&self) -> Result<u32> {
+    fn full_size(&self) -> Result<usize> {
         let sizage = tables::sizage(&self.code())?;
         if sizage.fs != u32::MAX {
-            Ok(sizage.fs)
+            Ok(sizage.fs as usize)
         } else {
-            Ok(sizage.hs + sizage.ss + self.size() * 4)
+            Ok((sizage.hs + sizage.ss + self.size() * 4) as usize)
         }
     }
 }
@@ -794,7 +794,7 @@ mod test {
     #[rstest]
     #[case("NAAAAAAAAAAA", 12)]
     #[case("4AAC-A-1-B-3", 12)]
-    fn full_size(#[case] qb64: &str, #[case] size: u32) {
+    fn full_size(#[case] qb64: &str, #[case] size: usize) {
         let matter = TestMatter::new(None, None, None, Some(qb64), None).unwrap();
         assert_eq!(matter.full_size().unwrap(), size);
     }

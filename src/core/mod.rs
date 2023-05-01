@@ -2,6 +2,7 @@ pub mod bexter;
 pub mod cigar;
 pub mod common;
 pub mod counter;
+pub mod creder;
 pub mod dater;
 pub mod diger;
 pub mod indexer;
