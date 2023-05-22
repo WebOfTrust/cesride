@@ -172,7 +172,7 @@ pub trait Matter: Default {
 
     fn transferable(&self) -> bool {
         const CODES: &[&str] =
-            &[tables::Codex::Ed25519N, tables::Codex::ECDSA_256k1N, tables::Codex::Ed448N];
+            &[tables::Codex::Ed25519N, tables::Codex::ECDSA_256k1N, tables::Codex::Ed448N, tables::Codex::ECDSA_256r1N];
 
         !CODES.contains(&self.code().as_str())
     }
@@ -817,8 +817,10 @@ mod test {
     #[rstest]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::Ed25519, b"00000000000000000000000000000000").unwrap(), true)]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::ECDSA_256k1, b"000000000000000000000000000000000").unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::ECDSA_256r1, b"000000000000000000000000000000000").unwrap(), true)]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::Ed25519N, b"00000000000000000000000000000000").unwrap(), false)]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::ECDSA_256k1N, b"000000000000000000000000000000000").unwrap(), false)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::ECDSA_256r1N, b"000000000000000000000000000000000").unwrap(), false)]
     fn transferable(#[case] matter: TestMatter, #[case] result: bool) {
         assert_eq!(matter.transferable(), result);
     }
