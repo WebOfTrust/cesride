@@ -28,8 +28,8 @@ pub mod Codex {
     pub const ECDSA_256k1_Crt: &str = "D"; // ECDSA secp256k1 sig appears in current list.
     pub const ECDSA_256r1: &str = "E"; // ECDSA secp256r1 sig appears same in both lists if any.
     pub const ECDSA_256r1_Crt: &str = "F"; // ECDSA secp256r1 sig appears in current list.
-    pub const CRYSTALS_Dilithium_Big: &str = "G"; // CRYSTALS Dilithium sig appears in both lists.
-    pub const CRYSTALS_Dilithium_Big_Crt: &str = "H"; // CRYSTALS Dilithium sig appears in current list only.
+    pub const CRYSTALS_Dilithium3_Big: &str = "G"; // CRYSTALS Dilithium sig appears in both lists.
+    pub const CRYSTALS_Dilithium3_Big_Crt: &str = "H"; // CRYSTALS Dilithium sig appears in current list only.
     pub const Ed448: &str = "0A"; // Ed448 signature appears in both lists.
     pub const Ed448_Crt: &str = "0B"; // Ed448 signature appears in current list only.
     pub const Ed25519_Big: &str = "2A"; // Ed25519 sig appears in both lists.
@@ -43,8 +43,8 @@ pub mod Codex {
     pub const TBD0: &str = "0z"; // Test of Var len label L=N*4 <= 4095 char quadlets includes code
     pub const TBD1: &str = "1z"; // Test of index sig lead 1
     pub const TBD4: &str = "4z"; // Test of index sig lead 1 big
-    pub const CRYSTALS_Dilithium: &str = "1AAA"; // CRYSTALS Dilithium sig appears same in both lists if any.
-    pub const CRYSTALS_Dilithium_Crt: &str = "1AAB"; // CRYSTALS Dilithium sig appears in current list.
+    pub const CRYSTALS_Dilithium3: &str = "1AAA"; // CRYSTALS Dilithium sig appears same in both lists if any.
+    pub const CRYSTALS_Dilithium3_Crt: &str = "1AAB"; // CRYSTALS Dilithium sig appears in current list.
 }
 
 /// SigCodex is all indexed signature derivation codes
@@ -57,8 +57,8 @@ pub mod SigCodex {
     pub const ECDSA_256k1_Crt: &str = "D"; // ECDSA secp256k1 sig appears in current list.
     pub const ECDSA_256r1: &str = "E"; // ECDSA secp256r1 sig appears same in both lists if any.
     pub const ECDSA_256r1_Crt: &str = "F"; // ECDSA secp256r1 sig appears in current list.
-    pub const CRYSTALS_Dilithium_Big: &str = "G"; // CRYSTALS Dilithium sig appears in both lists.
-    pub const CRYSTALS_Dilithium_Big_Crt: &str = "H"; // CRYSTALS Dilithium sig appears in current list only.
+    pub const CRYSTALS_Dilithium3_Big: &str = "G"; // CRYSTALS Dilithium sig appears in both lists.
+    pub const CRYSTALS_Dilithium3_Big_Crt: &str = "H"; // CRYSTALS Dilithium sig appears in current list only.
     pub const Ed448: &str = "0A"; // Ed448 signature appears in both lists.
     pub const Ed448_Crt: &str = "0B"; // Ed448 signature appears in current list only.
     pub const Ed25519_Big: &str = "2A"; // Ed25519 sig appears in both lists.
@@ -69,8 +69,8 @@ pub mod SigCodex {
     pub const ECDSA_256r1_Big_Crt: &str = "2F"; // ECDSA secp256r1 sig appears in current list only.
     pub const Ed448_Big: &str = "3A"; // Ed448 signature appears in both lists.
     pub const Ed448_Big_Crt: &str = "3B"; // Ed448 signature appears in current list only.
-    pub const CRYSTALS_Dilithium: &str = "1AAA"; // CRYSTALS Dilithium sig appears same in both lists if any.
-    pub const CRYSTALS_Dilithium_Crt: &str = "1AAB"; // CRYSTALS Dilithium sig appears in current list.
+    pub const CRYSTALS_Dilithium3: &str = "1AAA"; // CRYSTALS Dilithium sig appears same in both lists if any.
+    pub const CRYSTALS_Dilithium3_Crt: &str = "1AAB"; // CRYSTALS Dilithium sig appears in current list.
 }
 
 /// CurrentSigCodex is codex indexed signature codes for current list.
@@ -80,26 +80,26 @@ pub mod CurrentSigCodex {
     pub const Ed25519_Crt: &str = "B"; // Ed25519 sig appears in current list only.
     pub const ECDSA_256k1_Crt: &str = "D"; // ECDSA secp256k1 sig appears in current list only.
     pub const ECDSA_256r1_Crt: &str = "F"; // ECDSA secp256r1 sig appears in current list.
-    pub const CRYSTALS_Dilithium_Big_Crt: &str = "H"; // CRYSTALS Dilithium sig appears in current list only.
+    pub const CRYSTALS_Dilithium3_Big_Crt: &str = "H"; // CRYSTALS Dilithium sig appears in current list only.
     pub const Ed448_Crt: &str = "0B"; // Ed448 signature appears in current list only.
     pub const Ed25519_Big_Crt: &str = "2B"; // Ed25519 sig appears in current list only.
     pub const ECDSA_256k1_Big_Crt: &str = "2D"; // ECDSA secp256k1 sig appears in current list only.
     pub const ECDSA_256r1_Big_Crt: &str = "2F"; // ECDSA secp256r1 sig appears in current list only.
     pub const Ed448_Big_Crt: &str = "3B"; // Ed448 signature appears in current list only.
-    pub const CRYSTALS_Dilithium_Crt: &str = "1AAB"; // CRYSTALS Dilithium sig appears in current list.
+    pub const CRYSTALS_Dilithium3_Crt: &str = "1AAB"; // CRYSTALS Dilithium sig appears in current list.
 
     pub(crate) fn has_code(code: &str) -> bool {
         const CODES: &[&str] = &[
             Ed25519_Crt,
             ECDSA_256k1_Crt,
             ECDSA_256r1_Crt,
-            CRYSTALS_Dilithium_Crt,
+            CRYSTALS_Dilithium3_Crt,
             Ed448_Crt,
             Ed25519_Big_Crt,
             ECDSA_256k1_Big_Crt,
             ECDSA_256r1_Big_Crt,
             Ed448_Big_Crt,
-            CRYSTALS_Dilithium_Big_Crt,
+            CRYSTALS_Dilithium3_Big_Crt,
         ];
 
         CODES.contains(&code)
@@ -112,25 +112,25 @@ pub mod BothSigCodex {
     pub const Ed25519: &str = "A"; // Ed25519 sig appears same in both lists if any.
     pub const ECDSA_256k1: &str = "C"; // ECDSA secp256k1 sig appears same in both lists if any.
     pub const ECDSA_256r1: &str = "E"; // ECDSA secp256r1 sig appears same in both lists if any.
-    pub const CRYSTALS_Dilithium_Big: &str = "G"; // CRYSTALS Dilithium sig appears in both lists.
+    pub const CRYSTALS_Dilithium3_Big: &str = "G"; // CRYSTALS Dilithium sig appears in both lists.
     pub const Ed448: &str = "0A"; // Ed448 signature appears in both lists.
     pub const Ed25519_Big: &str = "2A"; // Ed25519 sig appears in both lists.
     pub const ECDSA_256k1_Big: &str = "2C"; // ECDSA secp256k1 sig appears in both lists.
     pub const ECDSA_256r1_Big: &str = "2E"; // ECDSA secp256r1 sig appears in both lists.
     pub const Ed448_Big: &str = "3A"; // Ed448 signature appears in both lists.
-    pub const CRYSTALS_Dilithium: &str = "1AAA"; // CRYSTALS Dilithium sig appears same in both lists if any.
+    pub const CRYSTALS_Dilithium3: &str = "1AAA"; // CRYSTALS Dilithium sig appears same in both lists if any.
 
     pub(crate) fn has_code(code: &str) -> bool {
         const CODES: &[&str] = &[
             Ed25519,
             ECDSA_256k1,
             ECDSA_256r1,
-            CRYSTALS_Dilithium,
+            CRYSTALS_Dilithium3,
             Ed448,
             Ed25519_Big,
             ECDSA_256k1_Big,
             ECDSA_256r1_Big,
-            CRYSTALS_Dilithium_Big,
+            CRYSTALS_Dilithium3_Big,
             Ed448_Big,
         ];
 

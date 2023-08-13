@@ -61,7 +61,7 @@ fn validate_code(code: &str) -> Result<()> {
         matter::Codex::Ed25519_Seed,
         matter::Codex::ECDSA_256k1_Seed,
         matter::Codex::ECDSA_256r1_Seed,
-        matter::Codex::CRYSTALS_Dilithium_Seed,
+        matter::Codex::CRYSTALS_Dilithium3_Seed,
         // matter::Codex::Ed448_Seed,
     ];
 
@@ -78,14 +78,14 @@ fn derive_verfer(code: &str, private_key: &[u8], transferable: bool) -> Result<V
             matter::Codex::Ed25519_Seed => matter::Codex::Ed25519,
             matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1,
             matter::Codex::ECDSA_256r1_Seed => matter::Codex::ECDSA_256r1,
-            matter::Codex::CRYSTALS_Dilithium_Seed => matter::Codex::CRYSTALS_Dilithium,
+            matter::Codex::CRYSTALS_Dilithium3_Seed => matter::Codex::CRYSTALS_Dilithium3,
             _ => return err!(Error::UnexpectedCode(code.to_string())),
         },
         false => match code {
             matter::Codex::Ed25519_Seed => matter::Codex::Ed25519N,
             matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1N,
             matter::Codex::ECDSA_256r1_Seed => matter::Codex::ECDSA_256r1N,
-            matter::Codex::CRYSTALS_Dilithium_Seed => matter::Codex::CRYSTALS_DilithiumN,
+            matter::Codex::CRYSTALS_Dilithium3_Seed => matter::Codex::CRYSTALS_Dilithium3N,
             _ => return err!(Error::UnexpectedCode(code.to_string())),
         },
     };
@@ -151,7 +151,7 @@ impl Signer {
             matter::Codex::Ed25519_Seed => matter::Codex::Ed25519_Sig,
             matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1_Sig,
             matter::Codex::ECDSA_256r1_Seed => matter::Codex::ECDSA_256r1_Sig,
-            matter::Codex::CRYSTALS_Dilithium_Seed => matter::Codex::CRYSTALS_Dilithium_Sig,
+            matter::Codex::CRYSTALS_Dilithium3_Seed => matter::Codex::CRYSTALS_Dilithium3_Sig,
             _ => return err!(Error::UnexpectedCode(self.code())),
         };
 
@@ -173,7 +173,7 @@ impl Signer {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Crt,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Crt,
                     matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1_Crt,
-                    matter::Codex::CRYSTALS_Dilithium_Seed => indexer::Codex::CRYSTALS_Dilithium_Crt,
+                    matter::Codex::CRYSTALS_Dilithium3_Seed => indexer::Codex::CRYSTALS_Dilithium3_Crt,
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             } else {
@@ -181,7 +181,7 @@ impl Signer {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Big_Crt,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Big_Crt,
                     matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1_Big_Crt,
-                    matter::Codex::CRYSTALS_Dilithium_Seed => indexer::Codex::CRYSTALS_Dilithium_Big_Crt,
+                    matter::Codex::CRYSTALS_Dilithium3_Seed => indexer::Codex::CRYSTALS_Dilithium3_Big_Crt,
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             };
@@ -195,7 +195,7 @@ impl Signer {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1,
                     matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1,
-                    matter::Codex::CRYSTALS_Dilithium_Seed => indexer::Codex::CRYSTALS_Dilithium,
+                    matter::Codex::CRYSTALS_Dilithium3_Seed => indexer::Codex::CRYSTALS_Dilithium3,
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             } else {
@@ -203,7 +203,7 @@ impl Signer {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Big,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Big,
                     matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1_Big,
-                    matter::Codex::CRYSTALS_Dilithium_Seed => indexer::Codex::CRYSTALS_Dilithium_Big,
+                    matter::Codex::CRYSTALS_Dilithium3_Seed => indexer::Codex::CRYSTALS_Dilithium3_Big,
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             };
@@ -318,8 +318,8 @@ mod test {
         "1AAJA3cK_P2CDlh-_EMFPvyqTPI1POkw-dr14DANx5JEXDCZ"
     )]
     #[case(
-        matter::Codex::CRYSTALS_Dilithium_Seed,
-        matter::Codex::CRYSTALS_Dilithium,
+        matter::Codex::CRYSTALS_Dilithium3_Seed,
+        matter::Codex::CRYSTALS_Dilithium3,
         "TJ97qKeoQzmWJvqxmeuqIMQbRxHErlNBUsm9BJ2FKX6T",
         "SFXIJIfr7VJTb6AV6A-zZfinSBo7NlZkeffGOL2a4jbeuLU4SIqchhoT6PuAL1SP-Izi84lJDEP7wmU3L6iess2gvI6nGWn0QYGWoOh2fXC4ZXRqqbQcVlqfUL_VH0vGLpYxPQEljaHPtxtZO1vVUHyburUjmZ6d3YzGxJ2G3L1sGjveFiwGO_vV7tC12Fs4F_2Qtq2oybIn5FrCPPns-MrRXSKM3VgXSHzrUYbmAwmufLlW3IfQPsIWPMzfA0sFk5wuD6tBVIw5nGme2D0SjjY8kg5McYxScZX_Oe6tS6dXXAJ4ibk3xv0VeQRGOfTgViM_GANIJ5OTcWS-Rwe60_i95hYJG9F-fQ2jt8Y2bYqI-ELTQeozF5PnkcMm1Z3PCnRxdfgrVuAmxVxWR8to1yPMHVKw9Uzn-nK5P7y1Z_VYn1jdfdHq4YnrVNmZn_F9g4CyTNqEYY3j8HUXFP9Dax3-XhHYqMnL4tJ6pUMaDLmqQ7LVCr8V-VQN9WTRIIHuhF5ixnVI94LV8FeSinFv-UEPqnVQ3aTvCpRdQV4uhvXu7DA_hata6R_TYJB2iGJyij9PhZDBTs2gDR0EQ5qFGFXqtp_FE-YYVT8dx3PpINTvTSGoPBpj6KraGaFKuuamJHZN2PlRR9zV8eSGwzA0I-8TlAtC5YePGMWJEPsc3dOzGcktfuPQn3tMka3LuYxZ9NaoHc3iRWZnXN-KnhRf31JSuVQWxmhB4pCd5L46AdwXapL5SFiJhkvV9LKiqzsbOLThCocuRLdGOrLFDnrBkxnit6_sbpV7fRVJYshu2sZ2u4TDjAj4XgM4tR7tkgD9pNqhtdMaqeS9E3aKcTNldDe11vRlT5tEOlcD6w9VrAzRO2V0sqZdKopzeS_QWohUxZYlF3QKuJ6Vd30GuvOa2za9EQdwLhWVoJHYl5vU6yerDEloTnX_AZFGxzqQEK0Pc31R5rU9s9OjZrcRPn19XI0BmfphrCMxv_eTThHPtlLS5AE7wzQEfk1mhjPzXh1lbDA0L7l846fI8EvWfpyTsniOubBZLHGFzOheZoOlJsyjPcs-9eFEgRGdGvwELkA_qlqb16V7aBJ27MZ22aYl2dMGcBGqObnwdJS055ZYS_gG4Skl6Valse9w95npfNmfu5TgoqUqdC8FV86vV4wR-mwagHKsrahKMIpjpmH7pobNQm8G9hU_ZpTd_VhIwObaMfmNMwTEWufzgYB7ouUF_Z6gkm0xJkVZ0LXfmL2cpF4zljej2vcNcbNNlKqM4GgYvDpV67niDooXqycGOrF_VH_OQUnew0r1An8TvOPKH_HiiD6YJtHUTEa-5mdouVlN9SHBGPkwm3JSqHW_Cmtir1qrV_lNyYOPwaYzgME-alkizNrzY7mA1iTzl0sdUHcLXq92ej9Dy0RY7C4bmlNzO0LYlpFk8szpx5h3kAKjq-E7qg8pwyMs6Bg_G6qrbJyFMo4mzVq8OvdTYJToMi626S1SH5LQPMzUP9wF3sSlsulpFXXFFcOtlMgSSYv-g1JuqV6euFyqW7tNL5IboLtOrZkBQBCzJj4w1pkl5IUVfHpGXauv-WkrHsUbpMeZAPHNUJbRbki8U7Lh9mrXriiglFelQO89KO5CICLfve6sydk20szrNh7RQZWL1X9eE1VIhaiOIUkoKn9mPmcpZfNFXlj67f1Dhc9OLRGOmcEaWZNJ1rCMJET3_MZnintbsWycKVcrGRidqly8KmxN8DB27_N73Ei1ejSmE2LNJCtcAoD-LWtpu0UTrZ9exH3U_dsJwUZAcywqzJLvBDTZE53GRq-taP1pfGBB_1gaSkO_CAHz0xZtuJyZzS3T8C_ZXgGEL1wuSiYZJXMf7Vw2W-6drRXt63sdrz5nk2THiS9kmn9gQkIO7319fIXOToNpCO6cROOT_rQkv4ZClIdoAER-eWS-aP0wHvDcgSlroeZjRk_qApD34yWtNNBexWE6wyoL6HEI7kxHJbcQ_Zsxjnb8bOTdHJ-weZLMPAGHVzyTJSrDqYvxsBJuCGnjTE44Tw8FjKGM_rJaqOygJjTpHwTOjYQdo-bDjbDaNxwcQCpOUeic_QwxXbB2MP7PJahRU-NhGLYWCS3yh8aVslNcgmMto7juVCSKtrp3GCOwK-gB0Ay4_A0bly33LbadQTuw10QrkD_pIWigYAeD_FYcjixcmn382vRe6yWJBUtPaiwFjQ9fJ0icYZcrHCfZsDMa-lkyld3rRKZv7UFiTJdtUgRg-UCo7inQoK6lW-wFCwVD5lwjWpda1HHn-8uFje9or533XRlEezKEofEAGy6WTd9pttaVyxyq1buagnUGSEf7fxf6AObpFzzQt01WVl5bQCf1SdoUfw5yqKe7xKmsfqUmsIoX1AfMdM9Iyy4TGuz5y-uWWxv0hbrsVIzrPpnxc_h_IRksfxeuGCXFx-sSIb0lj7cqdPCs2PbJxp0opbw6qKCbafOXzKrqhnCTUbjfaYuwN4PNOnWYIhelI327jTNiDk3GoRn0lBjx75ACBGeGbE1qiI55bMCJjDhRwmfsDtpd83cN7isFJo6djOlN_WjytOVAm8b2m-QXp2kUlNDcwZcw"
     )]
@@ -425,7 +425,7 @@ mod test {
             matter::Codex::Ed25519_Seed,
             matter::Codex::ECDSA_256k1_Seed,
             matter::Codex::ECDSA_256r1_Seed,
-            matter::Codex::CRYSTALS_Dilithium_Seed,
+            matter::Codex::CRYSTALS_Dilithium3_Seed,
         )]
         code: &str,
     ) {
@@ -506,11 +506,11 @@ mod test {
         let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
 
         let signer =
-            Signer::new(Some(true), Some(matter::Codex::CRYSTALS_Dilithium_Seed), None, None, None, None)
+            Signer::new(Some(true), Some(matter::Codex::CRYSTALS_Dilithium3_Seed), None, None, None, None)
                 .unwrap();
 
         let cigar = signer.sign_unindexed(ser).unwrap();
-        assert_eq!(cigar.code(), matter::Codex::CRYSTALS_Dilithium_Sig);
+        assert_eq!(cigar.code(), matter::Codex::CRYSTALS_Dilithium3_Sig);
         assert!(signer.verfer().verify(&cigar.raw(), ser).unwrap());
         assert!(!signer.verfer().verify(&cigar.raw(), bad_ser).unwrap());
     }
@@ -624,15 +624,15 @@ mod test {
     }
 
     #[rstest]
-    #[case(false, 0, None, 0, indexer::Codex::CRYSTALS_Dilithium)]
-    #[case(false, 1, None, 1, indexer::Codex::CRYSTALS_Dilithium)]
-    #[case(false, 1, Some(3), 3, indexer::Codex::CRYSTALS_Dilithium_Big)]
-    #[case(false, 67, Some(3), 3, indexer::Codex::CRYSTALS_Dilithium_Big)]
-    #[case(false, 67, Some(67), 67, indexer::Codex::CRYSTALS_Dilithium_Big)]
-    #[case(true, 4, None, 0, indexer::Codex::CRYSTALS_Dilithium_Crt)]
-    #[case(true, 4, Some(6), 0, indexer::Codex::CRYSTALS_Dilithium_Crt)]
-    #[case(true, 65, None, 0, indexer::Codex::CRYSTALS_Dilithium_Big_Crt)]
-    #[case(true, 65, Some(67), 0, indexer::Codex::CRYSTALS_Dilithium_Big_Crt)]
+    #[case(false, 0, None, 0, indexer::Codex::CRYSTALS_Dilithium3)]
+    #[case(false, 1, None, 1, indexer::Codex::CRYSTALS_Dilithium3)]
+    #[case(false, 1, Some(3), 3, indexer::Codex::CRYSTALS_Dilithium3_Big)]
+    #[case(false, 67, Some(3), 3, indexer::Codex::CRYSTALS_Dilithium3_Big)]
+    #[case(false, 67, Some(67), 67, indexer::Codex::CRYSTALS_Dilithium3_Big)]
+    #[case(true, 4, None, 0, indexer::Codex::CRYSTALS_Dilithium3_Crt)]
+    #[case(true, 4, Some(6), 0, indexer::Codex::CRYSTALS_Dilithium3_Crt)]
+    #[case(true, 65, None, 0, indexer::Codex::CRYSTALS_Dilithium3_Big_Crt)]
+    #[case(true, 65, Some(67), 0, indexer::Codex::CRYSTALS_Dilithium3_Big_Crt)]
     fn sign_crystals_dilithium_indexed(
         #[case] only: bool,
         #[case] index: u32,
@@ -644,7 +644,7 @@ mod test {
         let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
 
         let signer =
-            Signer::new(Some(true), Some(matter::Codex::CRYSTALS_Dilithium_Seed), None, None, None, None)
+            Signer::new(Some(true), Some(matter::Codex::CRYSTALS_Dilithium3_Seed), None, None, None, None)
                 .unwrap();
 
         let siger = signer.sign_indexed(ser, only, index, input_ondex).unwrap();

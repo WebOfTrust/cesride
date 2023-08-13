@@ -26,7 +26,7 @@ fn validate_code(code: &str) -> Result<()> {
         matter::Codex::Ed25519_Sig,
         matter::Codex::ECDSA_256k1_Sig,
         matter::Codex::ECDSA_256r1_Sig,
-        matter::Codex::CRYSTALS_Dilithium_Sig,
+        matter::Codex::CRYSTALS_Dilithium3_Sig,
         // matter::Codex::Ed448_Sig,
     ];
 

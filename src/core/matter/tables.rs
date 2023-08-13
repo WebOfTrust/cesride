@@ -125,10 +125,10 @@ pub mod Codex {
     pub const X25519_Private: &str = "O"; // X25519 private decryption key converted from Ed25519
     pub const X25519_Cipher_Seed: &str = "P"; // X25519 124 char b64 Cipher of 44 char qb64 Seed
     pub const ECDSA_256r1_Seed: &str = "Q"; // ECDSA secp256r1 256 bit random Seed for private key
-    pub const CRYSTALS_DilithiumN: &str = "R"; // CRYSTALS Dilithium verficiation key, non-transferable.
-    pub const CRYSTALS_Dilithium: &str = "S"; // CRYSTALS Dilithium verficiation key.
-    pub const CRYSTALS_Dilithium_Seed: &str = "T"; // CRYSTALS Dilithium private key seed. This one is actually a seed.
-    pub const CRYSTALS_Dilithium_Sig: &str = "U"; // CRYSTALS Dilithium signature.
+    pub const CRYSTALS_Dilithium3N: &str = "R"; // CRYSTALS Dilithium verficiation key, non-transferable.
+    pub const CRYSTALS_Dilithium3: &str = "S"; // CRYSTALS Dilithium verficiation key.
+    pub const CRYSTALS_Dilithium3_Seed: &str = "T"; // CRYSTALS Dilithium private key seed. This one is actually a seed.
+    pub const CRYSTALS_Dilithium3_Sig: &str = "U"; // CRYSTALS Dilithium signature.
     pub const Salt_128: &str = "0A"; // 128 bit random salt or 128 bit number (see Huge)
     pub const Ed25519_Sig: &str = "0B"; // Ed25519 signature.
     pub const ECDSA_256k1_Sig: &str = "0C"; // ECDSA secp256k1 signature.
