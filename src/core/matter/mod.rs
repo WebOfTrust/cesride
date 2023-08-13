@@ -177,6 +177,7 @@ pub trait Matter: Default {
             tables::Codex::Ed448N,
             tables::Codex::ECDSA_256r1N,
             tables::Codex::CRYSTALS_Dilithium3N,
+            tables::Codex::CRYSTALS_Dilithium5N,
         ];
 
         !CODES.contains(&self.code().as_str())
@@ -824,12 +825,14 @@ mod test {
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::ECDSA_256k1, b"000000000000000000000000000000000").unwrap(), true)]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::ECDSA_256r1, b"000000000000000000000000000000000").unwrap(), true)]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::Ed448, &[0u8; 57]).unwrap(), true)]
-    #[case(TestMatter::new_with_code_and_raw(matter::Codex::CRYSTALS_Dilithium3, &[0u8; 4000]).unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::CRYSTALS_Dilithium3, &[0u8; 1952]).unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::CRYSTALS_Dilithium5, &[0u8; 2592]).unwrap(), true)]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::Ed25519N, b"00000000000000000000000000000000").unwrap(), false)]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::ECDSA_256k1N, b"000000000000000000000000000000000").unwrap(), false)]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::ECDSA_256r1N, b"000000000000000000000000000000000").unwrap(), false)]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::Ed448N, &[0u8; 57]).unwrap(), false)]
-    #[case(TestMatter::new_with_code_and_raw(matter::Codex::CRYSTALS_Dilithium3N, &[0u8; 4000]).unwrap(), false)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::CRYSTALS_Dilithium3N, &[0u8; 1952]).unwrap(), false)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::CRYSTALS_Dilithium5N, &[0u8; 2592]).unwrap(), false)]
     fn transferable(#[case] matter: TestMatter, #[case] result: bool) {
         assert_eq!(matter.transferable(), result);
     }
