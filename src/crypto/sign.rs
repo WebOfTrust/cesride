@@ -19,6 +19,10 @@ pub(crate) fn generate(code: &str) -> Result<Vec<u8>> {
         | matter::Codex::CRYSTALS_Dilithium3N
         | matter::Codex::CRYSTALS_Dilithium3_Seed
         | matter::Codex::CRYSTALS_Dilithium3_Sig => crystals_dilithium3::generate(),
+        matter::Codex::CRYSTALS_Dilithium5
+        | matter::Codex::CRYSTALS_Dilithium5N
+        | matter::Codex::CRYSTALS_Dilithium5_Seed
+        | matter::Codex::CRYSTALS_Dilithium5_Sig => crystals_dilithium5::generate(),
         _ => err!(Error::UnexpectedCode(code.to_string())),
     }
 }
@@ -41,6 +45,10 @@ pub(crate) fn public_key(code: &str, private_key: &[u8]) -> Result<Vec<u8>> {
         | matter::Codex::CRYSTALS_Dilithium3N
         | matter::Codex::CRYSTALS_Dilithium3_Seed
         | matter::Codex::CRYSTALS_Dilithium3_Sig => crystals_dilithium3::public_key(private_key),
+        matter::Codex::CRYSTALS_Dilithium5
+        | matter::Codex::CRYSTALS_Dilithium5N
+        | matter::Codex::CRYSTALS_Dilithium5_Seed
+        | matter::Codex::CRYSTALS_Dilithium5_Sig => crystals_dilithium5::public_key(private_key),
         _ => err!(Error::UnexpectedCode(code.to_string())),
     }
 }
@@ -63,6 +71,10 @@ pub(crate) fn sign(code: &str, private_key: &[u8], ser: &[u8]) -> Result<Vec<u8>
         | matter::Codex::CRYSTALS_Dilithium3N
         | matter::Codex::CRYSTALS_Dilithium3_Seed
         | matter::Codex::CRYSTALS_Dilithium3_Sig => crystals_dilithium3::sign(private_key, ser),
+        matter::Codex::CRYSTALS_Dilithium5
+        | matter::Codex::CRYSTALS_Dilithium5N
+        | matter::Codex::CRYSTALS_Dilithium5_Seed
+        | matter::Codex::CRYSTALS_Dilithium5_Sig => crystals_dilithium5::sign(private_key, ser),
         _ => err!(Error::UnexpectedCode(code.to_string())),
     }
 }
@@ -85,6 +97,10 @@ pub(crate) fn verify(code: &str, public_key: &[u8], sig: &[u8], ser: &[u8]) -> R
         | matter::Codex::CRYSTALS_Dilithium3N
         | matter::Codex::CRYSTALS_Dilithium3_Seed
         | matter::Codex::CRYSTALS_Dilithium3_Sig => crystals_dilithium3::verify(public_key, sig, ser),
+        matter::Codex::CRYSTALS_Dilithium5
+        | matter::Codex::CRYSTALS_Dilithium5N
+        | matter::Codex::CRYSTALS_Dilithium5_Seed
+        | matter::Codex::CRYSTALS_Dilithium5_Sig => crystals_dilithium5::verify(public_key, sig, ser),
         _ => err!(Error::UnexpectedCode(code.to_string())),
     }
 }
@@ -244,6 +260,42 @@ mod crystals_dilithium3 {
     }
 }
 
+mod crystals_dilithium5 {
+    use crystals_dilithium::dilithium5::{Keypair, PublicKey};
+    use zeroize::Zeroize;
+
+    use crate::crypto::csprng;
+    use crate::error::Result;
+
+    pub(crate) fn generate() -> Result<Vec<u8>> {
+        let mut bytes = [0u8; 32];
+        csprng::fill_bytes(&mut bytes);
+
+        let result = bytes.to_vec();
+        bytes.zeroize();
+
+        Ok(result)
+    }
+
+    pub(crate) fn public_key(seed: &[u8]) -> Result<Vec<u8>> {
+        let keypair = Keypair::generate(Some(seed));
+        Ok(keypair.public.to_bytes().to_vec())
+    }
+
+    pub(crate) fn sign(seed: &[u8], ser: &[u8]) -> Result<Vec<u8>> {
+        let keypair = Keypair::generate(Some(seed));
+        let mut signature = keypair.sign(ser);
+        let result = signature.to_vec();
+        signature.zeroize();
+        Ok(result)
+    }
+
+    pub(crate) fn verify(public_key: &[u8], sig: &[u8], ser: &[u8]) -> Result<bool> {
+        let public_key = PublicKey::from_bytes(public_key);
+        Ok(public_key.verify(ser, sig))
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::core::matter::tables as matter;
@@ -252,13 +304,13 @@ mod test {
 
     #[rstest]
     fn end_to_end(
-        #[values(matter::Codex::Ed25519, matter::Codex::ECDSA_256k1, matter::Codex::ECDSA_256r1, matter::Codex::CRYSTALS_Dilithium3)]
+        #[values(matter::Codex::Ed25519, matter::Codex::ECDSA_256k1, matter::Codex::ECDSA_256r1, matter::Codex::CRYSTALS_Dilithium3, matter::Codex::CRYSTALS_Dilithium5)]
         code: &str,
     ) {
         let ser = b"abcdefghijklmnopqrstuvwxyz";
-        let private_key = sign::generate(code).unwrap();
-        let signature = sign::sign(code, &private_key, ser).unwrap();
-        let public_key = sign::public_key(code, &private_key).unwrap();
+        let seed = sign::generate(code).unwrap();
+        let signature = sign::sign(code, &seed, ser).unwrap();
+        let public_key = sign::public_key(code, &seed).unwrap();
         assert!(sign::verify(code, &public_key, &signature, ser).unwrap());
     }
 
