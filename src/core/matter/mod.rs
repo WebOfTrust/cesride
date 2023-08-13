@@ -176,6 +176,7 @@ pub trait Matter: Default {
             tables::Codex::ECDSA_256k1N,
             tables::Codex::Ed448N,
             tables::Codex::ECDSA_256r1N,
+            tables::Codex::CRYSTALS_DilithiumN,
         ];
 
         !CODES.contains(&self.code().as_str())
@@ -822,9 +823,13 @@ mod test {
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::Ed25519, b"00000000000000000000000000000000").unwrap(), true)]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::ECDSA_256k1, b"000000000000000000000000000000000").unwrap(), true)]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::ECDSA_256r1, b"000000000000000000000000000000000").unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::Ed448, &[0u8; 57]).unwrap(), true)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::CRYSTALS_Dilithium, &[0u8; 4000]).unwrap(), true)]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::Ed25519N, b"00000000000000000000000000000000").unwrap(), false)]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::ECDSA_256k1N, b"000000000000000000000000000000000").unwrap(), false)]
     #[case(TestMatter::new_with_code_and_raw(matter::Codex::ECDSA_256r1N, b"000000000000000000000000000000000").unwrap(), false)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::Ed448N, &[0u8; 57]).unwrap(), false)]
+    #[case(TestMatter::new_with_code_and_raw(matter::Codex::CRYSTALS_DilithiumN, &[0u8; 4000]).unwrap(), false)]
     fn transferable(#[case] matter: TestMatter, #[case] result: bool) {
         assert_eq!(matter.transferable(), result);
     }

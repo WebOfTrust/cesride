@@ -15,6 +15,10 @@ pub(crate) fn generate(code: &str) -> Result<Vec<u8>> {
         | matter::Codex::ECDSA_256r1N
         | matter::Codex::ECDSA_256r1_Seed
         | matter::Codex::ECDSA_256r1_Sig => ecdsa_256r1::generate(),
+        matter::Codex::CRYSTALS_Dilithium
+        | matter::Codex::CRYSTALS_DilithiumN
+        | matter::Codex::CRYSTALS_Dilithium_Seed
+        | matter::Codex::CRYSTALS_Dilithium_Sig => crystals_dilithium_mod::generate(),
         _ => err!(Error::UnexpectedCode(code.to_string())),
     }
 }
@@ -33,6 +37,10 @@ pub(crate) fn public_key(code: &str, private_key: &[u8]) -> Result<Vec<u8>> {
         | matter::Codex::ECDSA_256r1N
         | matter::Codex::ECDSA_256r1_Seed
         | matter::Codex::ECDSA_256r1_Sig => ecdsa_256r1::public_key(private_key),
+        matter::Codex::CRYSTALS_Dilithium
+        | matter::Codex::CRYSTALS_DilithiumN
+        | matter::Codex::CRYSTALS_Dilithium_Seed
+        | matter::Codex::CRYSTALS_Dilithium_Sig => crystals_dilithium_mod::public_key(private_key),
         _ => err!(Error::UnexpectedCode(code.to_string())),
     }
 }
@@ -51,6 +59,10 @@ pub(crate) fn sign(code: &str, private_key: &[u8], ser: &[u8]) -> Result<Vec<u8>
         | matter::Codex::ECDSA_256r1N
         | matter::Codex::ECDSA_256r1_Seed
         | matter::Codex::ECDSA_256r1_Sig => ecdsa_256r1::sign(private_key, ser),
+        matter::Codex::CRYSTALS_Dilithium
+        | matter::Codex::CRYSTALS_DilithiumN
+        | matter::Codex::CRYSTALS_Dilithium_Seed
+        | matter::Codex::CRYSTALS_Dilithium_Sig => crystals_dilithium_mod::sign(private_key, ser),
         _ => err!(Error::UnexpectedCode(code.to_string())),
     }
 }
@@ -69,6 +81,10 @@ pub(crate) fn verify(code: &str, public_key: &[u8], sig: &[u8], ser: &[u8]) -> R
         | matter::Codex::ECDSA_256r1N
         | matter::Codex::ECDSA_256r1_Seed
         | matter::Codex::ECDSA_256r1_Sig => ecdsa_256r1::verify(public_key, sig, ser),
+        matter::Codex::CRYSTALS_Dilithium
+        | matter::Codex::CRYSTALS_DilithiumN
+        | matter::Codex::CRYSTALS_Dilithium_Seed
+        | matter::Codex::CRYSTALS_Dilithium_Sig => crystals_dilithium_mod::verify(public_key, sig, ser),
         _ => err!(Error::UnexpectedCode(code.to_string())),
     }
 }
@@ -192,6 +208,42 @@ mod ecdsa_256r1 {
     }
 }
 
+mod crystals_dilithium_mod {
+    use crystals_dilithium::dilithium3::{Keypair, PublicKey};
+    use zeroize::Zeroize;
+
+    use crate::crypto::csprng;
+    use crate::error::Result;
+
+    pub(crate) fn generate() -> Result<Vec<u8>> {
+        let mut bytes = [0u8; 32];
+        csprng::fill_bytes(&mut bytes);
+
+        let result = bytes.to_vec();
+        bytes.zeroize();
+
+        Ok(result)
+    }
+
+    pub(crate) fn public_key(seed: &[u8]) -> Result<Vec<u8>> {
+        let keypair = Keypair::generate(Some(seed));
+        Ok(keypair.public.to_bytes().to_vec())
+    }
+
+    pub(crate) fn sign(seed: &[u8], ser: &[u8]) -> Result<Vec<u8>> {
+        let keypair = Keypair::generate(Some(seed));
+        let mut signature = keypair.sign(ser);
+        let result = signature.to_vec();
+        signature.zeroize();
+        Ok(result)
+    }
+
+    pub(crate) fn verify(public_key: &[u8], sig: &[u8], ser: &[u8]) -> Result<bool> {
+        let public_key = PublicKey::from_bytes(public_key);
+        Ok(public_key.verify(ser, sig))
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::core::matter::tables as matter;
@@ -200,7 +252,7 @@ mod test {
 
     #[rstest]
     fn end_to_end(
-        #[values(matter::Codex::Ed25519, matter::Codex::ECDSA_256k1, matter::Codex::ECDSA_256r1)]
+        #[values(matter::Codex::Ed25519, matter::Codex::ECDSA_256k1, matter::Codex::ECDSA_256r1, matter::Codex::CRYSTALS_Dilithium)]
         code: &str,
     ) {
         let ser = b"abcdefghijklmnopqrstuvwxyz";

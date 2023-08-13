@@ -31,6 +31,8 @@ fn validate_code(code: &str) -> Result<()> {
         indexer::Codex::ECDSA_256k1_Crt,
         indexer::Codex::ECDSA_256r1,
         indexer::Codex::ECDSA_256r1_Crt,
+        indexer::Codex::CRYSTALS_Dilithium,
+        indexer::Codex::CRYSTALS_Dilithium_Crt,
         // indexer::Codex::Ed448,
         // indexer::Codex::Ed448_Crt,
         indexer::Codex::Ed25519_Big,
@@ -39,6 +41,8 @@ fn validate_code(code: &str) -> Result<()> {
         indexer::Codex::ECDSA_256k1_Big_Crt,
         indexer::Codex::ECDSA_256r1_Big,
         indexer::Codex::ECDSA_256r1_Big_Crt,
+        indexer::Codex::CRYSTALS_Dilithium_Big,
+        indexer::Codex::CRYSTALS_Dilithium_Big_Crt,
         // indexer::Codex::Ed448_Big,
         // indexer::Codex::Ed448_Big_Crt,
     ];
