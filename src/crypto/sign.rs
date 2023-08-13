@@ -96,11 +96,15 @@ pub(crate) fn verify(code: &str, public_key: &[u8], sig: &[u8], ser: &[u8]) -> R
         matter::Codex::CRYSTALS_Dilithium3
         | matter::Codex::CRYSTALS_Dilithium3N
         | matter::Codex::CRYSTALS_Dilithium3_Seed
-        | matter::Codex::CRYSTALS_Dilithium3_Sig => crystals_dilithium3::verify(public_key, sig, ser),
+        | matter::Codex::CRYSTALS_Dilithium3_Sig => {
+            crystals_dilithium3::verify(public_key, sig, ser)
+        }
         matter::Codex::CRYSTALS_Dilithium5
         | matter::Codex::CRYSTALS_Dilithium5N
         | matter::Codex::CRYSTALS_Dilithium5_Seed
-        | matter::Codex::CRYSTALS_Dilithium5_Sig => crystals_dilithium5::verify(public_key, sig, ser),
+        | matter::Codex::CRYSTALS_Dilithium5_Sig => {
+            crystals_dilithium5::verify(public_key, sig, ser)
+        }
         _ => err!(Error::UnexpectedCode(code.to_string())),
     }
 }
@@ -304,7 +308,13 @@ mod test {
 
     #[rstest]
     fn end_to_end(
-        #[values(matter::Codex::Ed25519, matter::Codex::ECDSA_256k1, matter::Codex::ECDSA_256r1, matter::Codex::CRYSTALS_Dilithium3, matter::Codex::CRYSTALS_Dilithium5)]
+        #[values(
+            matter::Codex::Ed25519,
+            matter::Codex::ECDSA_256k1,
+            matter::Codex::ECDSA_256r1,
+            matter::Codex::CRYSTALS_Dilithium3,
+            matter::Codex::CRYSTALS_Dilithium5
+        )]
         code: &str,
     ) {
         let ser = b"abcdefghijklmnopqrstuvwxyz";

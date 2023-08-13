@@ -177,8 +177,12 @@ impl Signer {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Crt,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Crt,
                     matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1_Crt,
-                    matter::Codex::CRYSTALS_Dilithium3_Seed => indexer::Codex::CRYSTALS_Dilithium3_Crt,
-                    matter::Codex::CRYSTALS_Dilithium5_Seed => indexer::Codex::CRYSTALS_Dilithium5_Crt,
+                    matter::Codex::CRYSTALS_Dilithium3_Seed => {
+                        indexer::Codex::CRYSTALS_Dilithium3_Crt
+                    }
+                    matter::Codex::CRYSTALS_Dilithium5_Seed => {
+                        indexer::Codex::CRYSTALS_Dilithium5_Crt
+                    }
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             } else {
@@ -186,8 +190,12 @@ impl Signer {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Big_Crt,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Big_Crt,
                     matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1_Big_Crt,
-                    matter::Codex::CRYSTALS_Dilithium3_Seed => indexer::Codex::CRYSTALS_Dilithium3_Big_Crt,
-                    matter::Codex::CRYSTALS_Dilithium5_Seed => indexer::Codex::CRYSTALS_Dilithium5_Big_Crt,
+                    matter::Codex::CRYSTALS_Dilithium3_Seed => {
+                        indexer::Codex::CRYSTALS_Dilithium3_Big_Crt
+                    }
+                    matter::Codex::CRYSTALS_Dilithium5_Seed => {
+                        indexer::Codex::CRYSTALS_Dilithium5_Big_Crt
+                    }
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             };
@@ -210,8 +218,12 @@ impl Signer {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Big,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Big,
                     matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1_Big,
-                    matter::Codex::CRYSTALS_Dilithium3_Seed => indexer::Codex::CRYSTALS_Dilithium3_Big,
-                    matter::Codex::CRYSTALS_Dilithium5_Seed => indexer::Codex::CRYSTALS_Dilithium5_Big,
+                    matter::Codex::CRYSTALS_Dilithium3_Seed => {
+                        indexer::Codex::CRYSTALS_Dilithium3_Big
+                    }
+                    matter::Codex::CRYSTALS_Dilithium5_Seed => {
+                        indexer::Codex::CRYSTALS_Dilithium5_Big
+                    }
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             };
@@ -440,7 +452,7 @@ mod test {
             matter::Codex::ECDSA_256k1_Seed,
             matter::Codex::ECDSA_256r1_Seed,
             matter::Codex::CRYSTALS_Dilithium3_Seed,
-            matter::Codex::CRYSTALS_Dilithium5_Seed,
+            matter::Codex::CRYSTALS_Dilithium5_Seed
         )]
         code: &str,
     ) {
@@ -520,9 +532,15 @@ mod test {
         let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
         let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
 
-        let signer =
-            Signer::new(Some(true), Some(matter::Codex::CRYSTALS_Dilithium3_Seed), None, None, None, None)
-                .unwrap();
+        let signer = Signer::new(
+            Some(true),
+            Some(matter::Codex::CRYSTALS_Dilithium3_Seed),
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
 
         let cigar = signer.sign_unindexed(ser).unwrap();
         assert_eq!(cigar.code(), matter::Codex::CRYSTALS_Dilithium3_Sig);
@@ -535,9 +553,15 @@ mod test {
         let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
         let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
 
-        let signer =
-            Signer::new(Some(true), Some(matter::Codex::CRYSTALS_Dilithium5_Seed), None, None, None, None)
-                .unwrap();
+        let signer = Signer::new(
+            Some(true),
+            Some(matter::Codex::CRYSTALS_Dilithium5_Seed),
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
 
         let cigar = signer.sign_unindexed(ser).unwrap();
         assert_eq!(cigar.code(), matter::Codex::CRYSTALS_Dilithium5_Sig);
@@ -673,9 +697,15 @@ mod test {
         let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
         let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
 
-        let signer =
-            Signer::new(Some(true), Some(matter::Codex::CRYSTALS_Dilithium3_Seed), None, None, None, None)
-                .unwrap();
+        let signer = Signer::new(
+            Some(true),
+            Some(matter::Codex::CRYSTALS_Dilithium3_Seed),
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
 
         let siger = signer.sign_indexed(ser, only, index, input_ondex).unwrap();
         assert_eq!(siger.code(), siger_code);
@@ -705,9 +735,15 @@ mod test {
         let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
         let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
 
-        let signer =
-            Signer::new(Some(true), Some(matter::Codex::CRYSTALS_Dilithium5_Seed), None, None, None, None)
-                .unwrap();
+        let signer = Signer::new(
+            Some(true),
+            Some(matter::Codex::CRYSTALS_Dilithium5_Seed),
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
 
         let siger = signer.sign_indexed(ser, only, index, input_ondex).unwrap();
         assert_eq!(siger.code(), siger_code);
