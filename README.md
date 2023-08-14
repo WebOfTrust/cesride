@@ -63,7 +63,7 @@ and terminology was carried along with the code. The basics:
 
 - `Diger` - a primitive that represents a **digest**. It has the ability to verify that an input hashes to its raw value.
 - `Verfer` - a primitive that represents a **public key**. It has the ability to verify signatures on data.
-- `Signer` - a primitive that represents a **private key**. It has the ability to create `Sigers` and `Cigars` (signatures).
+- `Signer` - a primitive that represents a **private key** seed (which in some cases is the private key itself). It has the ability to create `Sigers` and `Cigars` (signatures).
 - `Siger` - an **_indexed_ signature**. This is used within KERI when there are multiple current keys associated with an identifier.
 - `Cigar` - an **_unindexed_ signature**.
 - `Salter` - a primitive that represents a **seed**. It has the ability to generate new `Signers`.
@@ -224,13 +224,15 @@ Blake3 is recommended for most applications since it outperforms the other algor
 - Ed25519 ([ed25519-dalek](https://docs.rs/ed25519-dalek))
 - Secp256k1 ([k256](https://docs.rs/k256))
 - Secp256r1 ([p256](https://docs.rs/p256))
-
-We have planned support for Ed448.
+- CRYSTALS-Dilithium3/5 ([crystals-dilithium](https://docs.rs/crystals-dilithium))
 
 The ECDSA curves (Secp256k1 and Secp256r1) use randomized signatures. Ed25519 is always deterministic.
 This means that if you need to avoid correlation and want to use Ed25519, you'll need to salt your data
 for every use case that you do not want correlated. ACDC, for example, takes this into account, allowing for
 configurable use of Ed25519 by injecting salty nonces in the data to be signed where privacy is a concern.
+
+The `crystals-dilithium` implementation was chosen over `pqcrypto` due to superior documentation and
+the fact that it was stated to be a direct port of the C code.
 
 ## Community
 
