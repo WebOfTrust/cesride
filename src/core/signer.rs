@@ -61,6 +61,8 @@ fn validate_code(code: &str) -> Result<()> {
         matter::Codex::Ed25519_Seed,
         matter::Codex::ECDSA_256k1_Seed,
         matter::Codex::ECDSA_256r1_Seed,
+        matter::Codex::CRYSTALS_Dilithium3_Seed,
+        matter::Codex::CRYSTALS_Dilithium5_Seed,
         // matter::Codex::Ed448_Seed,
     ];
 
@@ -77,12 +79,16 @@ fn derive_verfer(code: &str, private_key: &[u8], transferable: bool) -> Result<V
             matter::Codex::Ed25519_Seed => matter::Codex::Ed25519,
             matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1,
             matter::Codex::ECDSA_256r1_Seed => matter::Codex::ECDSA_256r1,
+            matter::Codex::CRYSTALS_Dilithium3_Seed => matter::Codex::CRYSTALS_Dilithium3,
+            matter::Codex::CRYSTALS_Dilithium5_Seed => matter::Codex::CRYSTALS_Dilithium5,
             _ => return err!(Error::UnexpectedCode(code.to_string())),
         },
         false => match code {
             matter::Codex::Ed25519_Seed => matter::Codex::Ed25519N,
             matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1N,
             matter::Codex::ECDSA_256r1_Seed => matter::Codex::ECDSA_256r1N,
+            matter::Codex::CRYSTALS_Dilithium3_Seed => matter::Codex::CRYSTALS_Dilithium3N,
+            matter::Codex::CRYSTALS_Dilithium5_Seed => matter::Codex::CRYSTALS_Dilithium5N,
             _ => return err!(Error::UnexpectedCode(code.to_string())),
         },
     };
@@ -148,6 +154,8 @@ impl Signer {
             matter::Codex::Ed25519_Seed => matter::Codex::Ed25519_Sig,
             matter::Codex::ECDSA_256k1_Seed => matter::Codex::ECDSA_256k1_Sig,
             matter::Codex::ECDSA_256r1_Seed => matter::Codex::ECDSA_256r1_Sig,
+            matter::Codex::CRYSTALS_Dilithium3_Seed => matter::Codex::CRYSTALS_Dilithium3_Sig,
+            matter::Codex::CRYSTALS_Dilithium5_Seed => matter::Codex::CRYSTALS_Dilithium5_Sig,
             _ => return err!(Error::UnexpectedCode(self.code())),
         };
 
@@ -169,6 +177,12 @@ impl Signer {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Crt,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Crt,
                     matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1_Crt,
+                    matter::Codex::CRYSTALS_Dilithium3_Seed => {
+                        indexer::Codex::CRYSTALS_Dilithium3_Crt
+                    }
+                    matter::Codex::CRYSTALS_Dilithium5_Seed => {
+                        indexer::Codex::CRYSTALS_Dilithium5_Crt
+                    }
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             } else {
@@ -176,6 +190,12 @@ impl Signer {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Big_Crt,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Big_Crt,
                     matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1_Big_Crt,
+                    matter::Codex::CRYSTALS_Dilithium3_Seed => {
+                        indexer::Codex::CRYSTALS_Dilithium3_Big_Crt
+                    }
+                    matter::Codex::CRYSTALS_Dilithium5_Seed => {
+                        indexer::Codex::CRYSTALS_Dilithium5_Big_Crt
+                    }
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             };
@@ -189,6 +209,8 @@ impl Signer {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1,
                     matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1,
+                    matter::Codex::CRYSTALS_Dilithium3_Seed => indexer::Codex::CRYSTALS_Dilithium3,
+                    matter::Codex::CRYSTALS_Dilithium5_Seed => indexer::Codex::CRYSTALS_Dilithium5,
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             } else {
@@ -196,6 +218,12 @@ impl Signer {
                     matter::Codex::Ed25519_Seed => indexer::Codex::Ed25519_Big,
                     matter::Codex::ECDSA_256k1_Seed => indexer::Codex::ECDSA_256k1_Big,
                     matter::Codex::ECDSA_256r1_Seed => indexer::Codex::ECDSA_256r1_Big,
+                    matter::Codex::CRYSTALS_Dilithium3_Seed => {
+                        indexer::Codex::CRYSTALS_Dilithium3_Big
+                    }
+                    matter::Codex::CRYSTALS_Dilithium5_Seed => {
+                        indexer::Codex::CRYSTALS_Dilithium5_Big
+                    }
                     _ => return err!(Error::UnexpectedCode(self.code())),
                 }
             };
@@ -309,6 +337,18 @@ mod test {
         "QJ97qKeoQzmWJvqxmeuqIMQbRxHErlNBUsm9BJ2FKX6T",
         "1AAJA3cK_P2CDlh-_EMFPvyqTPI1POkw-dr14DANx5JEXDCZ"
     )]
+    #[case(
+        matter::Codex::CRYSTALS_Dilithium3_Seed,
+        matter::Codex::CRYSTALS_Dilithium3,
+        "TJ97qKeoQzmWJvqxmeuqIMQbRxHErlNBUsm9BJ2FKX6T",
+        "SFXIJIfr7VJTb6AV6A-zZfinSBo7NlZkeffGOL2a4jbeuLU4SIqchhoT6PuAL1SP-Izi84lJDEP7wmU3L6iess2gvI6nGWn0QYGWoOh2fXC4ZXRqqbQcVlqfUL_VH0vGLpYxPQEljaHPtxtZO1vVUHyburUjmZ6d3YzGxJ2G3L1sGjveFiwGO_vV7tC12Fs4F_2Qtq2oybIn5FrCPPns-MrRXSKM3VgXSHzrUYbmAwmufLlW3IfQPsIWPMzfA0sFk5wuD6tBVIw5nGme2D0SjjY8kg5McYxScZX_Oe6tS6dXXAJ4ibk3xv0VeQRGOfTgViM_GANIJ5OTcWS-Rwe60_i95hYJG9F-fQ2jt8Y2bYqI-ELTQeozF5PnkcMm1Z3PCnRxdfgrVuAmxVxWR8to1yPMHVKw9Uzn-nK5P7y1Z_VYn1jdfdHq4YnrVNmZn_F9g4CyTNqEYY3j8HUXFP9Dax3-XhHYqMnL4tJ6pUMaDLmqQ7LVCr8V-VQN9WTRIIHuhF5ixnVI94LV8FeSinFv-UEPqnVQ3aTvCpRdQV4uhvXu7DA_hata6R_TYJB2iGJyij9PhZDBTs2gDR0EQ5qFGFXqtp_FE-YYVT8dx3PpINTvTSGoPBpj6KraGaFKuuamJHZN2PlRR9zV8eSGwzA0I-8TlAtC5YePGMWJEPsc3dOzGcktfuPQn3tMka3LuYxZ9NaoHc3iRWZnXN-KnhRf31JSuVQWxmhB4pCd5L46AdwXapL5SFiJhkvV9LKiqzsbOLThCocuRLdGOrLFDnrBkxnit6_sbpV7fRVJYshu2sZ2u4TDjAj4XgM4tR7tkgD9pNqhtdMaqeS9E3aKcTNldDe11vRlT5tEOlcD6w9VrAzRO2V0sqZdKopzeS_QWohUxZYlF3QKuJ6Vd30GuvOa2za9EQdwLhWVoJHYl5vU6yerDEloTnX_AZFGxzqQEK0Pc31R5rU9s9OjZrcRPn19XI0BmfphrCMxv_eTThHPtlLS5AE7wzQEfk1mhjPzXh1lbDA0L7l846fI8EvWfpyTsniOubBZLHGFzOheZoOlJsyjPcs-9eFEgRGdGvwELkA_qlqb16V7aBJ27MZ22aYl2dMGcBGqObnwdJS055ZYS_gG4Skl6Valse9w95npfNmfu5TgoqUqdC8FV86vV4wR-mwagHKsrahKMIpjpmH7pobNQm8G9hU_ZpTd_VhIwObaMfmNMwTEWufzgYB7ouUF_Z6gkm0xJkVZ0LXfmL2cpF4zljej2vcNcbNNlKqM4GgYvDpV67niDooXqycGOrF_VH_OQUnew0r1An8TvOPKH_HiiD6YJtHUTEa-5mdouVlN9SHBGPkwm3JSqHW_Cmtir1qrV_lNyYOPwaYzgME-alkizNrzY7mA1iTzl0sdUHcLXq92ej9Dy0RY7C4bmlNzO0LYlpFk8szpx5h3kAKjq-E7qg8pwyMs6Bg_G6qrbJyFMo4mzVq8OvdTYJToMi626S1SH5LQPMzUP9wF3sSlsulpFXXFFcOtlMgSSYv-g1JuqV6euFyqW7tNL5IboLtOrZkBQBCzJj4w1pkl5IUVfHpGXauv-WkrHsUbpMeZAPHNUJbRbki8U7Lh9mrXriiglFelQO89KO5CICLfve6sydk20szrNh7RQZWL1X9eE1VIhaiOIUkoKn9mPmcpZfNFXlj67f1Dhc9OLRGOmcEaWZNJ1rCMJET3_MZnintbsWycKVcrGRidqly8KmxN8DB27_N73Ei1ejSmE2LNJCtcAoD-LWtpu0UTrZ9exH3U_dsJwUZAcywqzJLvBDTZE53GRq-taP1pfGBB_1gaSkO_CAHz0xZtuJyZzS3T8C_ZXgGEL1wuSiYZJXMf7Vw2W-6drRXt63sdrz5nk2THiS9kmn9gQkIO7319fIXOToNpCO6cROOT_rQkv4ZClIdoAER-eWS-aP0wHvDcgSlroeZjRk_qApD34yWtNNBexWE6wyoL6HEI7kxHJbcQ_Zsxjnb8bOTdHJ-weZLMPAGHVzyTJSrDqYvxsBJuCGnjTE44Tw8FjKGM_rJaqOygJjTpHwTOjYQdo-bDjbDaNxwcQCpOUeic_QwxXbB2MP7PJahRU-NhGLYWCS3yh8aVslNcgmMto7juVCSKtrp3GCOwK-gB0Ay4_A0bly33LbadQTuw10QrkD_pIWigYAeD_FYcjixcmn382vRe6yWJBUtPaiwFjQ9fJ0icYZcrHCfZsDMa-lkyld3rRKZv7UFiTJdtUgRg-UCo7inQoK6lW-wFCwVD5lwjWpda1HHn-8uFje9or533XRlEezKEofEAGy6WTd9pttaVyxyq1buagnUGSEf7fxf6AObpFzzQt01WVl5bQCf1SdoUfw5yqKe7xKmsfqUmsIoX1AfMdM9Iyy4TGuz5y-uWWxv0hbrsVIzrPpnxc_h_IRksfxeuGCXFx-sSIb0lj7cqdPCs2PbJxp0opbw6qKCbafOXzKrqhnCTUbjfaYuwN4PNOnWYIhelI327jTNiDk3GoRn0lBjx75ACBGeGbE1qiI55bMCJjDhRwmfsDtpd83cN7isFJo6djOlN_WjytOVAm8b2m-QXp2kUlNDcwZcw"
+    )]
+    #[case(
+        matter::Codex::CRYSTALS_Dilithium5_Seed,
+        matter::Codex::CRYSTALS_Dilithium5,
+        "VJ97qKeoQzmWJvqxmeuqIMQbRxHErlNBUsm9BJ2FKX6T",
+        "1AALVcgkh-vtUlNvoBXoD7Nl-KdIGjs2VmR598Y4vZriNt7g2O87ZrV3qe_3Rptf5a99SlayG6VYUBco1stFt-OCNizwaB4p5lJiwshSyvyUP64Wp1LwyEc2IJ2lLVwWVTycAWAUnawzszVUNOOOAGRWkfJCv5Wu1lph5sakb42EORBJ6ePoy3ZCwj2rGWIF75jkU6yMHsR0u8glhT8GnCrCALm93AYlk6bj_vUq105dM6fWFw-AvgO9MCh-5uZ9kVJ2XZzw7cVXIQ5b365GhZj9nRF1AeKYBk3nijvxcv73qX-YJCAH2Br__TnnpOXEPiAfFqVbPDZENf9vDo63b0rjWIPFXFMiR-_XPhcPAJ_z40abFOBc8eZxlM1eYImmoXJ4n_cyrB95Ajc-wqG5xLet0qVSAzhe447GumSHsfeRE6LZ7coFCuAEN5ihZ1gAvLj2HQ7IProBIcRE41FLCjB2AIKFyr4pWc9WUvmw-bqbV7LPPmWw3-g9hGO-5hX92GJHsUV3N_dkSP4iLomG98vaRcUKtKoo5i9nYtRN1arsIFzydHCabn3_yoYYtLw54HZn7-vZdC_dx5tFclySmtmYao2MOLMlt3aBDMSEjXirNzdYX1QZkTvDp8huWCi_rV2_K9HOpBkFPjentqM8bBTMs2MkMmRpJVKfUux4HlneJ4zFC7Pnq-a210ldfOnypjGrAdrbt42pGbaKtLlxrpEILouAIHWpiVideRboBH0HBdxknrwaGi3zrgPwv-yRDaO2qPtYIulr4xLW7m7BEf56mtjbGd3yAFPphT9x5igdXzG97G-b06WHKElDGe_VaxzDr43gSlky0ELH_JcMRZjZUwpMzjh9j99rRjn4vQzdlI-oTS7Kw7p4-PHHoeMlEzzJCOGzVhlgnebUD8FRV4Khg-M9n5t52AYR7GGeGOHu45_pcE0ud2ZbKAyaUs4f2XlwzxDLBHMtbSy0t-8EmwQvC7-AlOvw0iUbKrXrYKjzMdImvj3lDktb-WaHcsczOC2mnDs8qSYUE0J1dxsjdaHrDnAt6HksawSHzsK0svThdgxNhWo96trJEOcMJDgmMft1nboFUIW5vivqxn9TdXPrSjTSgcH6Yk4T5ZeoP_C7EDaj-_F62_Da5lAe0XuLk__Zq-AlaDdl7W1_Jxuex1w6La9wYIDg1yuCa6ZOaTPKFwKn9ygsraAhdTpK3vAJeLYZxx7LAAgL0q68pxh2Mprw-fxnjeSqXMCOwPf12fYeHK9Wyul96pXQGHh11ApRs26ocLb8s2P3wEbgkMoViiQVhsAkd3ySQJsZNnOAWMtA5GkCOw2zmc8bMTl3b0CBPeuhPRT_8W5W88xTPP5fP60Pm4Kd3pr6_GF1JC62hQkHrQv53jfUcqNA8FAFWP9Oxa1GgOWZiDuP0TtegKQqcmEtadkXju64iXMPa7R3RzKpyq-ExAPtoT6lr8GCNk55zgyKY97gt4Pxe8bnp8oI7bNdwX8QmwdF8EaQh_T2ABLUFlDmCi1gxB6urytf24YZ5sgyDme_u4goNWj6TBSoDyrhIxzNHq5GRxsB62pnDmoCRlEKfwoUTs4LKLD-sHHujOW-8xeHGmlDME6UNSwYq1W5zKp6uQbWcgkANeFYsE5zPavnUUpsFf7DZWHQaFzcvI6pgoO0mkHhKNXg2F43bK6CkREM7BdKb1GxtYEabt0BxfuP2A02ueES8TGl6MghKFkyt-Ju7oM6WDvUAYDJDWEfKPYELBiaOlT5ZN3XMpvcBFVcKzRD9WZODx2KUpV1_uMf7jSYkrwbHF3JP52ogaRaMqaPhYFS_R16D-KpBOWr5tccnOv-hAyHet5Fd-Yjjp2YFWHNgEf3iP709tjfxsfq3l1hRakSfYk1ImOtcuc8LdLm4xgIg0s1z1lp4tdd7CxlxBBqS_GmV8B-cl4bIiuQ6cG7EftegzaCnHiQgCGOa8wtrWoKXtY7aIhRb8lu2Od2bKm-4A8RTXyC9ScWZeb54VINZxV5eLpYywy9wg3hzjRuYnHsVJJx8Jm-PviPutyoSOvJc-f6xc9WwAkHVJQRmaLdrIX2u76CR_EzTsxlw0kz3ttwFNrql7z6UyXRBkxkmu9g3m8vpnafGKiqoH3yKZ4FBThHjWdALJUabWJFqO_0X1lJIixtEu8eESBazgPbYw0kEpfyoDvOSDaZ-xDRKTymRYV2qp3E708P5TvjPFS8heysGmqQbZkjAa5j69j1hK0dN4-sPHHPgMlqNqTuNWZMgh3LhISCf9DjIvJjt-xc1stDCvCfmU7gpmUfw8di5WbTuGGnGMPXSNjGnh1DnVSL88jPwp1yj1KqPiWx9QMLjR3Wq6XhZQuVuvzwtvusZJqyw0D-DfITzMFGYuXrUQU0KbO5jaPonMTn2B6i0kOi6gzmlBRT0oXjw1fp--Fcnppfzy9BBF6QiNQgG321Pq0M3NfPNw4VLoZvwcuh31RKDUhcuWOstXNGlKwNw1ShtxWx3ZgbYwSzGNUldwVAPMqlV5sn4c4wUCkGfFN55EQu5PTFFfSDIshBdieOMY1giriw61qd1bsQJ88hUGz0VQH0AdKgyXyd9xIfWHsP8dkLnU3wZGoD58nazCAO1RRNPMjmwEVAroxWQF7nGuYI8Ipmf5quxp_nGkhGuUiCVClpgFBUydDdSnukF6zuDdSLCIlLB3K5lzeo4jhhrT5uhVdbtFx5dNMDHemq1YiLntNH8affPhhFHk6SqAXsfBiZ84TRXmlL_kwfO4EfirlMalMmF1HzO1ZG6Mls2e8q5c13nIWzsayWsM8902X_o8XdMdN8OgjkG-OlA0BRweJ0m_whrAU7_zLSPmS0MPPB9vP7kS-CS4LdJKgScs9fqg41rdNfhzcDytmQ3rDT2bgb63xgxUuQaBQiuiUWSkrFSz3KXUUEWGtrKnYzH-q7lTyXPbSIperDy4Ap_I1P1yvG1IRF795j-ebXNE6hd_t6PzlPCO1xgzvubYtBd8MrEEBNwtUoPwHNc_9S35f4ia3O4ka34OGrkLOXuVvvre6hmpsZ_-JJMFkAP3DkKgFP6y2mkGcfBgy6IRL_-QPNh7ONKBAis4NWv3oQUQAVAuJn0nXUrU6uu9u4mwczbpAeP-IF29ebuMFwDBaQ6fZi43vx19TijkSxajrHpxEW4nifuuvsjsEeM6YfOU4OhF39CWCzNYLd0Y0KFCbiPe192nIbUGtVPUj3cbxdswfm0kzA0awVVYw5lP50ch9Ri2_lrh6n1gN-YaZyODQGV734Wge-OPzOmwW3f-9gUBxPPp8ZyMu8ZLFaYNkVVMDYOH3YDxokq90i_NMny2iqTvhWmD5mxs1h_eqiS8pXdFhnrCO3dR2W4yQW-soMn8-H4P1ls1SlwxJg_X1wJwalh6lV1Ocp1szSxltLuYIWSS9jQzhcNpO6pLSkKSOWZCHz6PgCnCJ4"
+    )]
     fn hardcoded(
         #[case] signer_code: &str,
         #[case] verfer_code: &str,
@@ -410,7 +450,9 @@ mod test {
         #[values(
             matter::Codex::Ed25519_Seed,
             matter::Codex::ECDSA_256k1_Seed,
-            matter::Codex::ECDSA_256r1_Seed
+            matter::Codex::ECDSA_256r1_Seed,
+            matter::Codex::CRYSTALS_Dilithium3_Seed,
+            matter::Codex::CRYSTALS_Dilithium5_Seed
         )]
         code: &str,
     ) {
@@ -481,6 +523,48 @@ mod test {
 
         let cigar = signer.sign_unindexed(ser).unwrap();
         assert_eq!(cigar.code(), matter::Codex::ECDSA_256r1_Sig);
+        assert!(signer.verfer().verify(&cigar.raw(), ser).unwrap());
+        assert!(!signer.verfer().verify(&cigar.raw(), bad_ser).unwrap());
+    }
+
+    #[test]
+    fn sign_crystals_dilithium3_unindexed() {
+        let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
+        let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
+
+        let signer = Signer::new(
+            Some(true),
+            Some(matter::Codex::CRYSTALS_Dilithium3_Seed),
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
+
+        let cigar = signer.sign_unindexed(ser).unwrap();
+        assert_eq!(cigar.code(), matter::Codex::CRYSTALS_Dilithium3_Sig);
+        assert!(signer.verfer().verify(&cigar.raw(), ser).unwrap());
+        assert!(!signer.verfer().verify(&cigar.raw(), bad_ser).unwrap());
+    }
+
+    #[test]
+    fn sign_crystals_dilithium5_unindexed() {
+        let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
+        let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
+
+        let signer = Signer::new(
+            Some(true),
+            Some(matter::Codex::CRYSTALS_Dilithium5_Seed),
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
+
+        let cigar = signer.sign_unindexed(ser).unwrap();
+        assert_eq!(cigar.code(), matter::Codex::CRYSTALS_Dilithium5_Sig);
         assert!(signer.verfer().verify(&cigar.raw(), ser).unwrap());
         assert!(!signer.verfer().verify(&cigar.raw(), bad_ser).unwrap());
     }
@@ -584,6 +668,82 @@ mod test {
         let signer =
             Signer::new(Some(true), Some(matter::Codex::ECDSA_256r1_Seed), None, None, None, None)
                 .unwrap();
+
+        let siger = signer.sign_indexed(ser, only, index, input_ondex).unwrap();
+        assert_eq!(siger.code(), siger_code);
+        assert_eq!(siger.index(), index);
+        assert_eq!(siger.ondex(), output_ondex);
+        assert!(signer.verfer().verify(&siger.raw(), ser).unwrap());
+        assert!(!signer.verfer().verify(&siger.raw(), bad_ser).unwrap());
+    }
+
+    #[rstest]
+    #[case(false, 0, None, 0, indexer::Codex::CRYSTALS_Dilithium3)]
+    #[case(false, 1, None, 1, indexer::Codex::CRYSTALS_Dilithium3)]
+    #[case(false, 1, Some(3), 3, indexer::Codex::CRYSTALS_Dilithium3_Big)]
+    #[case(false, 67, Some(3), 3, indexer::Codex::CRYSTALS_Dilithium3_Big)]
+    #[case(false, 67, Some(67), 67, indexer::Codex::CRYSTALS_Dilithium3_Big)]
+    #[case(true, 4, None, 0, indexer::Codex::CRYSTALS_Dilithium3_Crt)]
+    #[case(true, 4, Some(6), 0, indexer::Codex::CRYSTALS_Dilithium3_Crt)]
+    #[case(true, 65, None, 0, indexer::Codex::CRYSTALS_Dilithium3_Big_Crt)]
+    #[case(true, 65, Some(67), 0, indexer::Codex::CRYSTALS_Dilithium3_Big_Crt)]
+    fn sign_crystals_dilithium3_indexed(
+        #[case] only: bool,
+        #[case] index: u32,
+        #[case] input_ondex: Option<u32>,
+        #[case] output_ondex: u32,
+        #[case] siger_code: &str,
+    ) {
+        let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
+        let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
+
+        let signer = Signer::new(
+            Some(true),
+            Some(matter::Codex::CRYSTALS_Dilithium3_Seed),
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
+
+        let siger = signer.sign_indexed(ser, only, index, input_ondex).unwrap();
+        assert_eq!(siger.code(), siger_code);
+        assert_eq!(siger.index(), index);
+        assert_eq!(siger.ondex(), output_ondex);
+        assert!(signer.verfer().verify(&siger.raw(), ser).unwrap());
+        assert!(!signer.verfer().verify(&siger.raw(), bad_ser).unwrap());
+    }
+
+    #[rstest]
+    #[case(false, 0, None, 0, indexer::Codex::CRYSTALS_Dilithium5)]
+    #[case(false, 1, None, 1, indexer::Codex::CRYSTALS_Dilithium5)]
+    #[case(false, 1, Some(3), 3, indexer::Codex::CRYSTALS_Dilithium5_Big)]
+    #[case(false, 67, Some(3), 3, indexer::Codex::CRYSTALS_Dilithium5_Big)]
+    #[case(false, 67, Some(67), 67, indexer::Codex::CRYSTALS_Dilithium5_Big)]
+    #[case(true, 4, None, 0, indexer::Codex::CRYSTALS_Dilithium5_Crt)]
+    #[case(true, 4, Some(6), 0, indexer::Codex::CRYSTALS_Dilithium5_Crt)]
+    #[case(true, 65, None, 0, indexer::Codex::CRYSTALS_Dilithium5_Big_Crt)]
+    #[case(true, 65, Some(67), 0, indexer::Codex::CRYSTALS_Dilithium5_Big_Crt)]
+    fn sign_crystals_dilithium5_indexed(
+        #[case] only: bool,
+        #[case] index: u32,
+        #[case] input_ondex: Option<u32>,
+        #[case] output_ondex: u32,
+        #[case] siger_code: &str,
+    ) {
+        let ser = b"abcdefghijklmnopqrstuvwxyz0123456789";
+        let bad_ser = b"abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG";
+
+        let signer = Signer::new(
+            Some(true),
+            Some(matter::Codex::CRYSTALS_Dilithium5_Seed),
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
 
         let siger = signer.sign_indexed(ser, only, index, input_ondex).unwrap();
         assert_eq!(siger.code(), siger_code);

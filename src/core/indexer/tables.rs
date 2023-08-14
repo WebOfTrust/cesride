@@ -28,6 +28,10 @@ pub mod Codex {
     pub const ECDSA_256k1_Crt: &str = "D"; // ECDSA secp256k1 sig appears in current list.
     pub const ECDSA_256r1: &str = "E"; // ECDSA secp256r1 sig appears same in both lists if any.
     pub const ECDSA_256r1_Crt: &str = "F"; // ECDSA secp256r1 sig appears in current list.
+    pub const CRYSTALS_Dilithium3_Big: &str = "G"; // CRYSTALS Dilithium sig appears in both lists.
+    pub const CRYSTALS_Dilithium3_Big_Crt: &str = "H"; // CRYSTALS Dilithium sig appears in current list only.
+    pub const CRYSTALS_Dilithium5_Big: &str = "I"; // CRYSTALS Dilithium sig appears in both lists.
+    pub const CRYSTALS_Dilithium5_Big_Crt: &str = "J"; // CRYSTALS Dilithium sig appears in current list only.
     pub const Ed448: &str = "0A"; // Ed448 signature appears in both lists.
     pub const Ed448_Crt: &str = "0B"; // Ed448 signature appears in current list only.
     pub const Ed25519_Big: &str = "2A"; // Ed25519 sig appears in both lists.
@@ -41,6 +45,10 @@ pub mod Codex {
     pub const TBD0: &str = "0z"; // Test of Var len label L=N*4 <= 4095 char quadlets includes code
     pub const TBD1: &str = "1z"; // Test of index sig lead 1
     pub const TBD4: &str = "4z"; // Test of index sig lead 1 big
+    pub const CRYSTALS_Dilithium3: &str = "5AAA"; // CRYSTALS Dilithium sig appears same in both lists if any.
+    pub const CRYSTALS_Dilithium3_Crt: &str = "5AAB"; // CRYSTALS Dilithium sig appears in current list.
+    pub const CRYSTALS_Dilithium5: &str = "5AAC"; // CRYSTALS Dilithium sig appears same in both lists if any.
+    pub const CRYSTALS_Dilithium5_Crt: &str = "5AAD"; // CRYSTALS Dilithium sig appears in current list.
 }
 
 /// SigCodex is all indexed signature derivation codes
@@ -53,6 +61,10 @@ pub mod SigCodex {
     pub const ECDSA_256k1_Crt: &str = "D"; // ECDSA secp256k1 sig appears in current list.
     pub const ECDSA_256r1: &str = "E"; // ECDSA secp256r1 sig appears same in both lists if any.
     pub const ECDSA_256r1_Crt: &str = "F"; // ECDSA secp256r1 sig appears in current list.
+    pub const CRYSTALS_Dilithium3_Big: &str = "G"; // CRYSTALS Dilithium sig appears in both lists.
+    pub const CRYSTALS_Dilithium3_Big_Crt: &str = "H"; // CRYSTALS Dilithium sig appears in current list only.
+    pub const CRYSTALS_Dilithium5_Big: &str = "I"; // CRYSTALS Dilithium sig appears in both lists.
+    pub const CRYSTALS_Dilithium5_Big_Crt: &str = "J"; // CRYSTALS Dilithium sig appears in current list only.
     pub const Ed448: &str = "0A"; // Ed448 signature appears in both lists.
     pub const Ed448_Crt: &str = "0B"; // Ed448 signature appears in current list only.
     pub const Ed25519_Big: &str = "2A"; // Ed25519 sig appears in both lists.
@@ -63,6 +75,10 @@ pub mod SigCodex {
     pub const ECDSA_256r1_Big_Crt: &str = "2F"; // ECDSA secp256r1 sig appears in current list only.
     pub const Ed448_Big: &str = "3A"; // Ed448 signature appears in both lists.
     pub const Ed448_Big_Crt: &str = "3B"; // Ed448 signature appears in current list only.
+    pub const CRYSTALS_Dilithium3: &str = "5AAA"; // CRYSTALS Dilithium sig appears same in both lists if any.
+    pub const CRYSTALS_Dilithium3_Crt: &str = "5AAB"; // CRYSTALS Dilithium sig appears in current list.
+    pub const CRYSTALS_Dilithium5: &str = "5AAC"; // CRYSTALS Dilithium sig appears same in both lists if any.
+    pub const CRYSTALS_Dilithium5_Crt: &str = "5AAD"; // CRYSTALS Dilithium sig appears in current list.
 }
 
 /// CurrentSigCodex is codex indexed signature codes for current list.
@@ -72,22 +88,30 @@ pub mod CurrentSigCodex {
     pub const Ed25519_Crt: &str = "B"; // Ed25519 sig appears in current list only.
     pub const ECDSA_256k1_Crt: &str = "D"; // ECDSA secp256k1 sig appears in current list only.
     pub const ECDSA_256r1_Crt: &str = "F"; // ECDSA secp256r1 sig appears in current list.
+    pub const CRYSTALS_Dilithium3_Big_Crt: &str = "H"; // CRYSTALS Dilithium sig appears in current list only.
+    pub const CRYSTALS_Dilithium5_Big_Crt: &str = "J"; // CRYSTALS Dilithium sig appears in current list only.
     pub const Ed448_Crt: &str = "0B"; // Ed448 signature appears in current list only.
     pub const Ed25519_Big_Crt: &str = "2B"; // Ed25519 sig appears in current list only.
     pub const ECDSA_256k1_Big_Crt: &str = "2D"; // ECDSA secp256k1 sig appears in current list only.
     pub const ECDSA_256r1_Big_Crt: &str = "2F"; // ECDSA secp256r1 sig appears in current list only.
     pub const Ed448_Big_Crt: &str = "3B"; // Ed448 signature appears in current list only.
+    pub const CRYSTALS_Dilithium3_Crt: &str = "5AAB"; // CRYSTALS Dilithium sig appears in current list.
+    pub const CRYSTALS_Dilithium5_Crt: &str = "5AAD"; // CRYSTALS Dilithium sig appears in current list.
 
     pub(crate) fn has_code(code: &str) -> bool {
         const CODES: &[&str] = &[
             Ed25519_Crt,
             ECDSA_256k1_Crt,
             ECDSA_256r1_Crt,
+            CRYSTALS_Dilithium3_Crt,
+            CRYSTALS_Dilithium5_Crt,
             Ed448_Crt,
             Ed25519_Big_Crt,
             ECDSA_256k1_Big_Crt,
             ECDSA_256r1_Big_Crt,
             Ed448_Big_Crt,
+            CRYSTALS_Dilithium3_Big_Crt,
+            CRYSTALS_Dilithium5_Big_Crt,
         ];
 
         CODES.contains(&code)
@@ -100,21 +124,29 @@ pub mod BothSigCodex {
     pub const Ed25519: &str = "A"; // Ed25519 sig appears same in both lists if any.
     pub const ECDSA_256k1: &str = "C"; // ECDSA secp256k1 sig appears same in both lists if any.
     pub const ECDSA_256r1: &str = "E"; // ECDSA secp256r1 sig appears same in both lists if any.
+    pub const CRYSTALS_Dilithium3_Big: &str = "G"; // CRYSTALS Dilithium sig appears in both lists.
+    pub const CRYSTALS_Dilithium5_Big: &str = "I"; // CRYSTALS Dilithium sig appears in both lists.
     pub const Ed448: &str = "0A"; // Ed448 signature appears in both lists.
     pub const Ed25519_Big: &str = "2A"; // Ed25519 sig appears in both lists.
     pub const ECDSA_256k1_Big: &str = "2C"; // ECDSA secp256k1 sig appears in both lists.
     pub const ECDSA_256r1_Big: &str = "2E"; // ECDSA secp256r1 sig appears in both lists.
     pub const Ed448_Big: &str = "3A"; // Ed448 signature appears in both lists.
+    pub const CRYSTALS_Dilithium3: &str = "5AAA"; // CRYSTALS Dilithium sig appears same in both lists if any.
+    pub const CRYSTALS_Dilithium5: &str = "5AAC"; // CRYSTALS Dilithium sig appears same in both lists if any.
 
     pub(crate) fn has_code(code: &str) -> bool {
         const CODES: &[&str] = &[
             Ed25519,
             ECDSA_256k1,
             ECDSA_256r1,
+            CRYSTALS_Dilithium3,
+            CRYSTALS_Dilithium5,
             Ed448,
             Ed25519_Big,
             ECDSA_256k1_Big,
             ECDSA_256r1_Big,
+            CRYSTALS_Dilithium3_Big,
+            CRYSTALS_Dilithium5_Big,
             Ed448_Big,
         ];
 
@@ -144,6 +176,10 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "D" => Sizage { hs: 1, ss: 1, os: 0, fs: 88, ls: 0 },
         "E" => Sizage { hs: 1, ss: 1, os: 0, fs: 88, ls: 0 },
         "F" => Sizage { hs: 1, ss: 1, os: 0, fs: 88, ls: 0 },
+        "G" => Sizage { hs: 1, ss: 4, os: 2, fs: 4396, ls: 0 },
+        "H" => Sizage { hs: 1, ss: 4, os: 2, fs: 4396, ls: 0 },
+        "I" => Sizage { hs: 1, ss: 4, os: 2, fs: 6132, ls: 0 },
+        "J" => Sizage { hs: 1, ss: 4, os: 2, fs: 6132, ls: 0 },
         "0A" => Sizage { hs: 2, ss: 2, os: 1, fs: 156, ls: 0 },
         "0B" => Sizage { hs: 2, ss: 2, os: 1, fs: 156, ls: 0 },
         "2A" => Sizage { hs: 2, ss: 4, os: 2, fs: 92, ls: 0 },
@@ -157,6 +193,10 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "0z" => Sizage { hs: 2, ss: 2, os: 0, fs: u32::MAX, ls: 0 },
         "1z" => Sizage { hs: 2, ss: 2, os: 1, fs: 76, ls: 1 },
         "4z" => Sizage { hs: 2, ss: 6, os: 3, fs: 80, ls: 1 },
+        "5AAA" => Sizage { hs: 4, ss: 1, os: 0, fs: 4396, ls: 0 },
+        "5AAB" => Sizage { hs: 4, ss: 1, os: 0, fs: 4396, ls: 0 },
+        "5AAC" => Sizage { hs: 4, ss: 1, os: 0, fs: 6132, ls: 0 },
+        "5AAD" => Sizage { hs: 4, ss: 1, os: 0, fs: 6132, ls: 0 },
         _ => return err!(Error::UnknownSizage(s.to_string())),
     })
 }
@@ -165,6 +205,7 @@ pub(crate) fn hardage(c: char) -> Result<u32> {
     match c {
         'A'..='Z' | 'a'..='z' => Ok(1),
         '0'..='4' => Ok(2),
+        '5' => Ok(4),
         '-' => err!(Error::UnexpectedCode("count code start".to_owned())),
         '_' => err!(Error::UnexpectedCode("op code start".to_owned())),
         _ => err!(Error::UnknownHardage(c.to_string())),
@@ -175,6 +216,7 @@ pub(crate) fn bardage(b: u8) -> Result<u32> {
     match b {
         b'\x00'..=b'\x33' => Ok(1),
         b'\x34'..=b'\x38' => Ok(2),
+        b'\x39' => Ok(4),
         b'\x3e' => err!(Error::UnexpectedCode("count code start".to_owned())),
         b'\x3f' => err!(Error::UnexpectedCode("op code start".to_owned())),
         _ => err!(Error::UnknownBardage(b.to_string())),
@@ -387,6 +429,7 @@ mod test {
     #[case(0x36, 2)]
     #[case(0x37, 2)]
     #[case(0x38, 2)]
+    #[case(0x39, 4)]
     fn bardage(#[case] code: u8, #[case] bdg: u32) {
         assert_eq!(indexer::bardage(code).unwrap(), bdg);
     }
@@ -403,6 +446,6 @@ mod test {
 
     #[test]
     fn unknown_bardage() {
-        assert!(indexer::bardage(0x39).is_err());
+        assert!(indexer::bardage(0x40).is_err());
     }
 }

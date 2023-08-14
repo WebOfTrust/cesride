@@ -29,10 +29,14 @@ fn validate_code(code: &str) -> Result<()> {
         matter::Codex::Ed25519N,
         matter::Codex::ECDSA_256k1N,
         matter::Codex::ECDSA_256r1N,
+        matter::Codex::CRYSTALS_Dilithium3N,
+        matter::Codex::CRYSTALS_Dilithium5N,
         // transferable
         matter::Codex::Ed25519,
         matter::Codex::ECDSA_256k1,
         matter::Codex::ECDSA_256r1,
+        matter::Codex::CRYSTALS_Dilithium3,
+        matter::Codex::CRYSTALS_Dilithium5,
         // digests
         matter::Codex::Blake3_256,
         matter::Codex::Blake3_512,
