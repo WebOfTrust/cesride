@@ -235,9 +235,8 @@ configurable use of Ed25519 by injecting salty nonces in the data to be signed w
 ## Community
 
 ### Bi-weekly Meeting
-- [Zoom Link](https://us06web.zoom.us/j/88102305873?pwd=Wm01TEJKUWc0aE51a0QzZ2hNbTV2Zz09)
-- [Agenda and Minutes Link](https://hackmd.io/UQaEI0w8Thy_xRF7oYX03Q?view)
+[Information here](https://github.com/WebOfTrust/keri#meetings)
 
-### Slack
-- [Slack Invite](https://join.slack.com/t/keriworld/shared_invite/zt-14326yxue-p7P~GEmAZ65luGSZvbgFAQ)
+### Discord
+- [Discord Invite](https://discord.gg/edGDD632tP)https://discord.gg/edGDD632tP)
     - `#cesr` channel.
