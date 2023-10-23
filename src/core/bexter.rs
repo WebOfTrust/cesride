@@ -311,4 +311,17 @@ mod test {
         assert_eq!(bexter.qb2().unwrap(), qb2);
         assert_eq!(bexter.bext().unwrap(), bext);
     }
+
+    #[rstest]
+    fn unhappy() {
+        assert!(Bexter::new(
+            None,
+            None,
+            None,
+            None,
+            Some("DKxy2sgzfplyr-tgwIxS19f2OchFHtLwPWD3v4oYimBx"),
+            None
+        )
+        .is_err());
+    }
 }
