@@ -4,15 +4,18 @@
     "serve": "webpack serve"
   },
   "dependencies": {
-    "cesride-wasm": "file:../../pkg"
+    "cesride-wasm": "file:../../pkg",
+    "npm": "^10.2.4",
+    "yarn": "^1.22.21"
   },
   "devDependencies": {
     "@wasm-tool/wasm-pack-plugin": "^1.7.0",
+    "copy-webpack-plugin": "^5.1.1",
     "html-webpack-plugin": "^5.5.3",
     "text-encoding": "^0.7.0",
     "webpack": "^5.89.0",
+    "webpack-bundle-analyzer": "^4.10.1",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^4.15.1",
-    "copy-webpack-plugin": "^5.1.1"
+    "webpack-dev-server": "^4.15.1"
   }
 }
