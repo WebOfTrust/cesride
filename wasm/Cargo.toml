@@ -1,9 +1,11 @@
 [package]
 name = "cesride-wasm"
 description = "Cryptographic primitives for use with Composable Event Streaming Representation (CESR)"
+license = "Apache-2.0"
 version = "0.1.0"
 authors = ['Dmitry Kuzmenko <dmitry.kuzmenko@dsr-corporation.com>']
 edition = "2021"
+repository = "git@github.com:WebOfTrust/cesride.git"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -27,5 +29,6 @@ package = "cesride"
 [dev-dependencies]
 wasm-bindgen-test = "0.3.38"
 
-[profile.release]
-opt_level = "s"
+# wasm-opt is used instead
+#[profile.release]
+#opt_level = "s"
