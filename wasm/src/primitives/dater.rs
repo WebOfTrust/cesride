@@ -1,7 +1,6 @@
 use std::ops::Deref;
 
 use crate::{error::*, Wrap};
-use js_sys::Object;
 use wasm_bindgen::prelude::*;
 
 use cesride_core::{Dater, Matter};
