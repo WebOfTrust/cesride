@@ -1,5 +1,4 @@
-// TODO: remove before 1.0.0
-#![allow(dead_code)]
+#![deny(warnings)]
 
 #[macro_use]
 pub mod data;

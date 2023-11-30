@@ -102,26 +102,6 @@ pub mod Ids {
 const REVER_STRING: &str = "(?P<ident>[A-Z]{4})(?P<major>[0-9a-f])(?P<minor>[0-9a-f])(?P<kind>[A-Z]{4})(?P<size>[0-9a-f]{6})_";
 const IDENTS: &[&str] = &[Identage::ACDC, Identage::KERI];
 const SERIALS: &[&str] = &[Serialage::JSON];
-const ILKS: &[&str] = &[
-    Ilkage::icp,
-    Ilkage::rot,
-    Ilkage::ixn,
-    Ilkage::dip,
-    Ilkage::drt,
-    Ilkage::rct,
-    Ilkage::ksn,
-    Ilkage::qry,
-    Ilkage::rpy,
-    Ilkage::exn,
-    Ilkage::pro,
-    Ilkage::bar,
-    Ilkage::vcp,
-    Ilkage::vrt,
-    Ilkage::iss,
-    Ilkage::rev,
-    Ilkage::bis,
-    Ilkage::brv,
-];
 
 pub(crate) const DUMMY: u8 = b'#';
 

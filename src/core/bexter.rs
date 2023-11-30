@@ -312,6 +312,7 @@ mod test {
         assert_eq!(bexter.bext().unwrap(), bext);
     }
 
+    #[rstest]
     fn unhappy() {
         assert!(Bexter::new(
             None,
