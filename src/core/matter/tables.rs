@@ -32,6 +32,14 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "O" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
         "P" => Sizage { hs: 1, ss: 0, fs: 124, ls: 0 },
         "Q" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
+        "R" => Sizage { hs: 1, ss: 0, fs: 4, ls: 0 },
+        "S" => Sizage { hs: 1, ss: 0, fs: 8, ls: 0 },
+        "T" => Sizage { hs: 1, ss: 0, fs: 16, ls: 0 },
+        "U" => Sizage { hs: 1, ss: 0, fs: 20, ls: 0 },
+        "V" => Sizage { hs: 1, ss: 0, fs: 24, ls: 0 },
+        "W" => Sizage { hs: 1, ss: 0, fs: 4, ls: 1 },
+        "X" => Sizage { hs: 1, ss: 0, fs: 4, ls: 0 },
+		"Y" => Sizage { hs: 1, ss: 0, fs: 8, ls: 0 },
         "0A" => Sizage { hs: 2, ss: 0, fs: 24, ls: 0 },
         "0B" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
         "0C" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
@@ -41,6 +49,8 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "0G" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
         "0H" => Sizage { hs: 2, ss: 0, fs: 8, ls: 0 },
         "0I" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
+        "0J" => Sizage { hs: 2, ss: 0, fs: 4, ls: 0 },
+        "0K" => Sizage { hs: 2, ss: 0, fs: 8, ls: 0 },
         "1AAA" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
         "1AAB" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
         "1AAC" => Sizage { hs: 4, ss: 0, fs: 80, ls: 0 },
@@ -51,6 +61,7 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "1AAH" => Sizage { hs: 4, ss: 0, fs: 100, ls: 0 },
         "1AAI" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
         "1AAJ" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
+		"1AAK" => Sizage { hs: 4, ss: 0, fs: 4, ls: 0 },
         "2AAA" => Sizage { hs: 4, ss: 0, fs: 8, ls: 1 },
         "3AAA" => Sizage { hs: 4, ss: 0, fs: 8, ls: 2 },
         "4A" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 0 },
@@ -65,6 +76,12 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "7AAB" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 0 },
         "8AAB" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 1 },
         "9AAB" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 2 },
+        "4C" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 0 },
+        "5C" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 1 },
+        "6C" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 2 },
+        "7AAC" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 0 },
+        "8AAC" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 1 },
+        "9AAC" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 2 },
         _ => return err!(Error::UnknownSizage(s.to_string())),
     })
 }
@@ -119,8 +136,16 @@ pub mod Codex {
     pub const Short: &str = "M"; // Short 2 byte b2 number
     pub const Big: &str = "N"; // Big 8 byte b2 number
     pub const X25519_Private: &str = "O"; // X25519 private decryption key converted from Ed25519
-    pub const X25519_Cipher_Seed: &str = "P"; // X25519 124 char b64 Cipher of 44 char qb64 Seed
+    pub const X25519_Cipher_Seed: &str = "P"; // X25519 sealed box 124 char b64 Cipher of 44 char qb64 Seed
     pub const ECDSA_256r1_Seed: &str = "Q"; // ECDSA secp256r1 256 bit random Seed for private key
+    pub const Bext3: &str = "R"; // Bext3 3 B64 encoded chars for Packet Type, SemVer, Trait like 'DND'
+    pub const Large: &str = "S"; // Large 5 byte b2 number
+    pub const Tall: &str = "T"; // Tall 11 byte b2 number
+    pub const Great: &str = "U"; // Great 14 byte b2 number
+    pub const Vast: &str = "V"; // Vast 17 byte b2 number
+    pub const Tag1: &str = "W"; // Tag1 as one char (bytes) field map label lead size 1
+    pub const Tag2: &str = "X"; // Tag2 as two char (bytes) field map label lead size 0
+    pub const Bext7: &str = "Y"; // Bext7 7 B64 encoded chars for packet kind and version KERIVVV
     pub const Salt_128: &str = "0A"; // 128 bit random salt or 128 bit number (see Huge)
     pub const Ed25519_Sig: &str = "0B"; // Ed25519 signature.
     pub const ECDSA_256k1_Sig: &str = "0C"; // ECDSA secp256k1 signature.
@@ -130,6 +155,8 @@ pub mod Codex {
     pub const SHA2_512: &str = "0G"; // SHA2 512 bit digest self-addressing derivation.
     pub const Long: &str = "0H"; // Long 4 byte b2 number
     pub const ECDSA_256r1_Sig: &str = "0I"; // ECDSA secp256r1 signature.
+    pub const Bext2: &str = "0J"; // Bext2 2 B64 encoded chars for trait like 'EO' CESR native msg protocol version
+    pub const Bext6: &str = "0K"; // Bext6 6 B64 encoded chars for protocol kind version like KERIVV (KERI 1.1) or KKKVVV (KERI 1.1.0)
     pub const ECDSA_256k1N: &str = "1AAA"; // ECDSA secp256k1 verification key non-transferable, basic derivation.
     pub const ECDSA_256k1: &str = "1AAB"; // ECDSA secp256k1 verification or encryption key, basic derivation
     pub const Ed448N: &str = "1AAC"; // Ed448 non-transferable prefix public signing verification key. Basic derivation.
@@ -140,6 +167,7 @@ pub mod Codex {
     pub const X25519_Cipher_Salt: &str = "1AAH"; // X25519 100 char b64 Cipher of 24 char qb64 Salt
     pub const ECDSA_256r1N: &str = "1AAI"; // ECDSA secp256r1 verification key non-transferable, basic derivation.
     pub const ECDSA_256r1: &str = "1AAJ"; // ECDSA secp256r1 verification or encryption key, basic derivation
+    pub const Null: &str = "1AAK"; // Null None or empty value
     pub const TBD1: &str = "2AAA"; // Testing purposes only fixed with lead size 1
     pub const TBD2: &str = "3AAA"; // Testing purposes only of fixed with lead size 2
     pub const StrB64_L0: &str = "4A"; // String Base64 Only Lead Size 0 (4095 * 3 | 4)
@@ -154,6 +182,12 @@ pub mod Codex {
     pub const Bytes_Big_L0: &str = "7AAB"; // Byte String Big Leader Size 0
     pub const Bytes_Big_L1: &str = "8AAB"; // Byte String Big Leader Size 1
     pub const Bytes_Big_L2: &str = "9AAB"; // Byte String Big Leader Size 2
+    pub const X25519_Cipher_L0: &str = "4C"; // X25519 sealed box cipher byte string lead size 0
+    pub const X25519_Cipher_L1: &str = "5C"; // X25519 sealed box cipher byte string lead size 1
+    pub const X25519_Cipher_L2: &str = "6C"; // X25519 sealed box cipher byte string lead size 2
+    pub const X25519_Cipher_Big_L0: &str = "7AAC"; // X25519 sealed box cipher byte string big lead size 0
+    pub const X25519_Cipher_Big_L1: &str =  "8AAC"; // X25519 sealed box cipher byte string big lead size 1
+    pub const X25519_Cipher_Big_L2: &str =  "9AAC"; // X25519 sealed box cipher byte string big lead size 2
 }
 
 #[cfg(test)]
