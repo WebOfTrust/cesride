@@ -32,14 +32,14 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "O" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
         "P" => Sizage { hs: 1, ss: 0, fs: 124, ls: 0 },
         "Q" => Sizage { hs: 1, ss: 0, fs: 44, ls: 0 },
-        "R" => Sizage { hs: 1, ss: 0, fs: 4, ls: 0 },
-        "S" => Sizage { hs: 1, ss: 0, fs: 8, ls: 0 },
-        "T" => Sizage { hs: 1, ss: 0, fs: 16, ls: 0 },
-        "U" => Sizage { hs: 1, ss: 0, fs: 20, ls: 0 },
-        "V" => Sizage { hs: 1, ss: 0, fs: 24, ls: 0 },
-        "W" => Sizage { hs: 1, ss: 0, fs: 4, ls: 1 },
+        "R" => Sizage { hs: 1, ss: 0, fs: 8, ls: 0 },
+        "S" => Sizage { hs: 1, ss: 0, fs: 16, ls: 0 },
+        "T" => Sizage { hs: 1, ss: 0, fs: 20, ls: 0 },
+        "U" => Sizage { hs: 1, ss: 0, fs: 24, ls: 0 },
+        "V" => Sizage { hs: 1, ss: 0, fs: 4, ls: 1 },
+        "W" => Sizage { hs: 1, ss: 0, fs: 4, ls: 0 },
         "X" => Sizage { hs: 1, ss: 0, fs: 4, ls: 0 },
-		"Y" => Sizage { hs: 1, ss: 0, fs: 8, ls: 0 },
+        "Y" => Sizage { hs: 1, ss: 0, fs: 8, ls: 0 },
         "0A" => Sizage { hs: 2, ss: 0, fs: 24, ls: 0 },
         "0B" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
         "0C" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
@@ -50,7 +50,9 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "0H" => Sizage { hs: 2, ss: 0, fs: 8, ls: 0 },
         "0I" => Sizage { hs: 2, ss: 0, fs: 88, ls: 0 },
         "0J" => Sizage { hs: 2, ss: 0, fs: 4, ls: 0 },
-        "0K" => Sizage { hs: 2, ss: 0, fs: 8, ls: 0 },
+        "0K" => Sizage { hs: 2, ss: 0, fs: 4, ls: 0 },
+        "0L" => Sizage { hs: 2, ss: 0, fs: 8, ls: 0 },
+        "0M" => Sizage { hs: 2, ss: 0, fs: 8, ls: 0 },
         "1AAA" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
         "1AAB" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
         "1AAC" => Sizage { hs: 4, ss: 0, fs: 80, ls: 0 },
@@ -61,7 +63,8 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "1AAH" => Sizage { hs: 4, ss: 0, fs: 100, ls: 0 },
         "1AAI" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
         "1AAJ" => Sizage { hs: 4, ss: 0, fs: 48, ls: 0 },
-		"1AAK" => Sizage { hs: 4, ss: 0, fs: 4, ls: 0 },
+        "1AAK" => Sizage { hs: 4, ss: 0, fs: 4, ls: 0 },
+        "1AAL" => Sizage { hs: 4, ss: 0, fs: 8, ls: 0 },
         "2AAA" => Sizage { hs: 4, ss: 0, fs: 8, ls: 1 },
         "3AAA" => Sizage { hs: 4, ss: 0, fs: 8, ls: 2 },
         "4A" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 0 },
@@ -82,6 +85,18 @@ pub(crate) fn sizage(s: &str) -> Result<Sizage> {
         "7AAC" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 0 },
         "8AAC" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 1 },
         "9AAC" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 2 },
+        "4D" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 0 },
+        "5D" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 1 },
+        "6D" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 2 },
+        "7AAD" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 0 },
+        "8AAD" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 1 },
+        "9AAD" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 2 },
+        "4E" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 0 },
+        "5E" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 1 },
+        "6E" => Sizage { hs: 2, ss: 2, fs: u32::MAX, ls: 2 },
+        "7AAE" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 0 },
+        "8AAE" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 1 },
+        "9AAE" => Sizage { hs: 4, ss: 4, fs: u32::MAX, ls: 2 },
         _ => return err!(Error::UnknownSizage(s.to_string())),
     })
 }
@@ -113,7 +128,6 @@ pub(crate) fn raw_size(code: &str) -> Result<u32> {
     if szg.fs == u32::MAX {
         return err!(Error::UnexpectedCode(format!("cannot determine raw size for code={code}")));
     }
-
     let cs = szg.hs + szg.ss;
     Ok((szg.fs - cs) * 3 / 4 - szg.ls)
 }
@@ -121,73 +135,88 @@ pub(crate) fn raw_size(code: &str) -> Result<u32> {
 #[allow(non_snake_case)]
 #[allow(non_upper_case_globals)]
 pub mod Codex {
-    pub const Ed25519_Seed: &str = "A"; // Ed25519 256 bit random seed for private key
-    pub const Ed25519N: &str = "B"; // Ed25519 verification key non-transferable, basic derivation.
-    pub const X25519: &str = "C"; // X25519 public encryption key, converted from Ed25519 or Ed25519N.
-    pub const Ed25519: &str = "D"; // Ed25519 verification key basic derivation
-    pub const Blake3_256: &str = "E"; // Blake3 256 bit digest self-addressing derivation.
-    pub const Blake2b_256: &str = "F"; // Blake2b 256 bit digest self-addressing derivation.
-    pub const Blake2s_256: &str = "G"; // Blake2s 256 bit digest self-addressing derivation.
-    pub const SHA3_256: &str = "H"; // SHA3 256 bit digest self-addressing derivation.
-    pub const SHA2_256: &str = "I"; // SHA2 256 bit digest self-addressing derivation.
-    pub const ECDSA_256k1_Seed: &str = "J"; // ECDSA secp256k1 256 bit random Seed for private key
-    pub const Ed448_Seed: &str = "K"; // Ed448 448 bit random Seed for private key
-    pub const X448: &str = "L"; // X448 public encryption key, converted from Ed448
-    pub const Short: &str = "M"; // Short 2 byte b2 number
-    pub const Big: &str = "N"; // Big 8 byte b2 number
-    pub const X25519_Private: &str = "O"; // X25519 private decryption key converted from Ed25519
-    pub const X25519_Cipher_Seed: &str = "P"; // X25519 sealed box 124 char b64 Cipher of 44 char qb64 Seed
+    pub const Ed25519_Seed: &str = "A"; //Ed25519 256 bit random seed for private key
+    pub const Ed25519N: &str = "B"; //Ed25519 verification key non-transferable, basic derivation.
+    pub const X25519: &str = "C"; //X25519 public encryption key, converted from Ed25519 or Ed25519N.
+    pub const Ed25519: &str = "D"; //Ed25519 verification key basic derivation
+    pub const Blake3_256: &str = "E"; //Blake3 256 bit digest self-addressing derivation.
+    pub const Blake2b_256: &str = "F"; //Blake2b 256 bit digest self-addressing derivation.
+    pub const Blake2s_256: &str = "G"; //Blake2s 256 bit digest self-addressing derivation.
+    pub const SHA3_256: &str = "H"; //SHA3 256 bit digest self-addressing derivation.
+    pub const SHA2_256: &str = "I"; //SHA2 256 bit digest self-addressing derivation.
+    pub const ECDSA_256k1_Seed: &str = "J"; //ECDSA secp256k1 256 bit random Seed for private key
+    pub const Ed448_Seed: &str = "K"; //Ed448 448 bit random Seed for private key
+    pub const X448: &str = "L"; //X448 public encryption key, converted from Ed448
+    pub const Short: &str = "M"; //Short 2 byte b2 number
+    pub const Big: &str = "N"; //Big 8 byte b2 number
+    pub const X25519_Private: &str = "O"; //X25519 private decryption key converted from Ed25519
+    pub const X25519_Cipher_Seed: &str = "P"; //X25519 sealed box 124 char qb64 Cipher of 44 char qb64 Seed
     pub const ECDSA_256r1_Seed: &str = "Q"; // ECDSA secp256r1 256 bit random Seed for private key
-    pub const Bext3: &str = "R"; // Bext3 3 B64 encoded chars for Packet Type, SemVer, Trait like 'DND'
-    pub const Large: &str = "S"; // Large 5 byte b2 number
-    pub const Tall: &str = "T"; // Tall 11 byte b2 number
-    pub const Great: &str = "U"; // Great 14 byte b2 number
-    pub const Vast: &str = "V"; // Vast 17 byte b2 number
-    pub const Tag1: &str = "W"; // Tag1 as one char (bytes) field map label lead size 1
-    pub const Tag2: &str = "X"; // Tag2 as two char (bytes) field map label lead size 0
-    pub const Bext7: &str = "Y"; // Bext7 7 B64 encoded chars for packet kind and version KERIVVV
-    pub const Salt_128: &str = "0A"; // 128 bit random salt or 128 bit number (see Huge)
-    pub const Ed25519_Sig: &str = "0B"; // Ed25519 signature.
-    pub const ECDSA_256k1_Sig: &str = "0C"; // ECDSA secp256k1 signature.
-    pub const Blake3_512: &str = "0D"; // Blake3 512 bit digest self-addressing derivation.
-    pub const Blake2b_512: &str = "0E"; // Blake2b 512 bit digest self-addressing derivation.
-    pub const SHA3_512: &str = "0F"; // SHA3 512 bit digest self-addressing derivation.
-    pub const SHA2_512: &str = "0G"; // SHA2 512 bit digest self-addressing derivation.
-    pub const Long: &str = "0H"; // Long 4 byte b2 number
-    pub const ECDSA_256r1_Sig: &str = "0I"; // ECDSA secp256r1 signature.
-    pub const Bext2: &str = "0J"; // Bext2 2 B64 encoded chars for trait like 'EO' CESR native msg protocol version
-    pub const Bext6: &str = "0K"; // Bext6 6 B64 encoded chars for protocol kind version like KERIVV (KERI 1.1) or KKKVVV (KERI 1.1.0)
-    pub const ECDSA_256k1N: &str = "1AAA"; // ECDSA secp256k1 verification key non-transferable, basic derivation.
-    pub const ECDSA_256k1: &str = "1AAB"; // ECDSA secp256k1 verification or encryption key, basic derivation
-    pub const Ed448N: &str = "1AAC"; // Ed448 non-transferable prefix public signing verification key. Basic derivation.
-    pub const Ed448: &str = "1AAD"; // Ed448 public signing verification key. Basic derivation.
-    pub const Ed448_Sig: &str = "1AAE"; // Ed448 signature. Self-signing derivation.
-    pub const Tern: &str = "1AAF"; // 3 byte b2 number or 4 char B64 str.
-    pub const DateTime: &str = "1AAG"; // Base64 custom encoded 32 char ISO-8601 DateTime
-    pub const X25519_Cipher_Salt: &str = "1AAH"; // X25519 100 char b64 Cipher of 24 char qb64 Salt
-    pub const ECDSA_256r1N: &str = "1AAI"; // ECDSA secp256r1 verification key non-transferable, basic derivation.
-    pub const ECDSA_256r1: &str = "1AAJ"; // ECDSA secp256r1 verification or encryption key, basic derivation
-    pub const Null: &str = "1AAK"; // Null None or empty value
-    pub const TBD1: &str = "2AAA"; // Testing purposes only fixed with lead size 1
-    pub const TBD2: &str = "3AAA"; // Testing purposes only of fixed with lead size 2
-    pub const StrB64_L0: &str = "4A"; // String Base64 Only Lead Size 0 (4095 * 3 | 4)
-    pub const StrB64_L1: &str = "5A"; // String Base64 Only Lead Size 1
-    pub const StrB64_L2: &str = "6A"; // String Base64 Only Lead Size 2
-    pub const StrB64_Big_L0: &str = "7AAA"; // String Base64 Only Big Lead Size 0 (16777215 * 3 | 4)
-    pub const StrB64_Big_L1: &str = "8AAA"; // String Base64 Only Big Lead Size 1
-    pub const StrB64_Big_L2: &str = "9AAA"; // String Base64 Only Big Lead Size 2
-    pub const Bytes_L0: &str = "4B"; // Byte String Leader Size 0
-    pub const Bytes_L1: &str = "5B"; // Byte String Leader Size 1
-    pub const Bytes_L2: &str = "6B"; // Byte String Leader Size 2
-    pub const Bytes_Big_L0: &str = "7AAB"; // Byte String Big Leader Size 0
-    pub const Bytes_Big_L1: &str = "8AAB"; // Byte String Big Leader Size 1
-    pub const Bytes_Big_L2: &str = "9AAB"; // Byte String Big Leader Size 2
-    pub const X25519_Cipher_L0: &str = "4C"; // X25519 sealed box cipher byte string lead size 0
-    pub const X25519_Cipher_L1: &str = "5C"; // X25519 sealed box cipher byte string lead size 1
-    pub const X25519_Cipher_L2: &str = "6C"; // X25519 sealed box cipher byte string lead size 2
-    pub const X25519_Cipher_Big_L0: &str = "7AAC"; // X25519 sealed box cipher byte string big lead size 0
-    pub const X25519_Cipher_Big_L1: &str =  "8AAC"; // X25519 sealed box cipher byte string big lead size 1
-    pub const X25519_Cipher_Big_L2: &str =  "9AAC"; // X25519 sealed box cipher byte string big lead size 2
+    pub const Tall: &str = "R"; //Tall 5 byte b2 number
+    pub const Large: &str = "S"; //Large 11 byte b2 number
+    pub const Great: &str = "T"; //Great 14 byte b2 number
+    pub const Vast: &str = "U"; //Vast 17 byte b2 number
+    pub const Label1: &str = "V"; //Label1 as one char (bytes) field map label lead size 1
+    pub const Label2: &str = "W"; //Label2 as two char (bytes) field map label lead size 0
+    pub const Tag3: &str = "X"; //Tag3 3 B64 encoded chars for field tag or packet type, semver, trait like 'DND'
+    pub const Tag7: &str = "Y"; //Tag7 7 B64 encoded chars for field tag or packet kind and version KERIVVV
+    pub const Salt_128: &str = "0A"; //128 bit random salt or 128 bit number (see Huge)
+    pub const Ed25519_Sig: &str = "0B"; //Ed25519 signature.
+    pub const ECDSA_256k1_Sig: &str = "0C"; //ECDSA secp256k1 signature.
+    pub const Blake3_512: &str = "0D"; //Blake3 512 bit digest self-addressing derivation.
+    pub const Blake2b_512: &str = "0E"; //Blake2b 512 bit digest self-addressing derivation.
+    pub const SHA3_512: &str = "0F"; //SHA3 512 bit digest self-addressing derivation.
+    pub const SHA2_512: &str = "0G"; //SHA2 512 bit digest self-addressing derivation.
+    pub const Long: &str = "0H"; //Long 4 byte b2 number
+    pub const ECDSA_256r1_Sig: &str = "0I"; //ECDSA secp256r1 signature.
+    pub const Tag1: &str = "0J"; //Tag1 1 B64 encoded char with pre pad for field tag
+    pub const Tag2: &str = "0K"; //Tag2 2 B64 encoded chars for field tag or version VV or trait like 'EO'
+    pub const Tag5: &str = "0L"; //Tag5 5 B64 encoded chars with pre pad for field tag
+    pub const Tag6: &str = "0M"; //Tag6 6 B64 encoded chars for field tag or protocol kind version like KERIVV (KERI 1.1) or KKKVVV
+    pub const ECDSA_256k1N: &str = "1AAA"; //ECDSA secp256k1 verification key non-transferable, basic derivation.
+    pub const ECDSA_256k1: &str = "1AAB"; //ECDSA public verification or encryption key, basic derivation
+    pub const Ed448N: &str = "1AAC"; //Ed448 non-transferable prefix public signing verification key. Basic derivation.
+    pub const Ed448: &str = "1AAD"; //Ed448 public signing verification key. Basic derivation.
+    pub const Ed448_Sig: &str = "1AAE"; //Ed448 signature. Self-signing derivation.
+    pub const Tern: &str = "1AAF"; //Tern 3 byte b2 number
+    pub const DateTime: &str = "1AAG"; //Base64 custom encoded 32 char ISO-8601 DateTime
+    pub const X25519_Cipher_Salt: &str = "1AAH"; //X25519 sealed box 100 char qb64 Cipher of 24 char qb64 Salt
+    pub const ECDSA_256r1N: &str = "1AAI"; //ECDSA secp256r1 verification key non-transferable, basic derivation.
+    pub const ECDSA_256r1: &str = "1AAJ"; //ECDSA secp256r1 verification or encryption key, basic derivation
+    pub const Null: &str = "1AAK"; //Null None or empty value
+    pub const Tag4: &str = "1AAL"; //Tag4 4 B64 encoded chars for field tag or message kind
+    pub const TBD1: &str = "2AAA"; //Testing purposes only fixed with lead size 1
+    pub const TBD2: &str = "3AAA"; //Testing purposes only of fixed with lead size 2
+    pub const StrB64_L0: &str = "4A"; //String Base64 only lead size 0
+    pub const StrB64_L1: &str = "5A"; //String Base64 only lead size 1
+    pub const StrB64_L2: &str = "6A"; //String Base64 only lead size 2
+    pub const StrB64_Big_L0: &str = "7AAA"; //String Base64 only big lead size 0
+    pub const StrB64_Big_L1: &str = "8AAA"; //String Base64 only big lead size 1
+    pub const StrB64_Big_L2: &str = "9AAA"; //String Base64 only big lead size 2
+    pub const Bytes_L0: &str = "4B"; //Byte String lead size 0
+    pub const Bytes_L1: &str = "5B"; //Byte String lead size 1
+    pub const Bytes_L2: &str = "6B"; //Byte String lead size 2
+    pub const Bytes_Big_L0: &str = "7AAB"; //Byte String big lead size 0
+    pub const Bytes_Big_L1: &str = "8AAB"; //Byte String big lead size 1
+    pub const Bytes_Big_L2: &str = "9AAB"; //Byte String big lead size 2
+    pub const X25519_Cipher_L0: &str = "4C"; //X25519 sealed box cipher bytes of sniffable plaintext lead size 0
+    pub const X25519_Cipher_L1: &str = "5C"; //X25519 sealed box cipher bytes of sniffable plaintext lead size 1
+    pub const X25519_Cipher_L2: &str = "6C"; //X25519 sealed box cipher bytes of sniffable plaintext lead size 2
+    pub const X25519_Cipher_Big_L0: &str = "7AAC"; //X25519 sealed box cipher bytes of sniffable plaintext big lead size 0
+    pub const X25519_Cipher_Big_L1: &str = "8AAC"; //X25519 sealed box cipher bytes of sniffable plaintext big lead size 1
+    pub const X25519_Cipher_Big_L2: &str = "9AAC"; //X25519 sealed box cipher bytes of sniffable plaintext big lead size 2
+    pub const X25519_Cipher_QB64_L0: &str = "4D"; //X25519 sealed box cipher bytes of QB64 plaintext lead size 0
+    pub const X25519_Cipher_QB64_L1: &str = "5D"; //X25519 sealed box cipher bytes of QB64 plaintext lead size 1
+    pub const X25519_Cipher_QB64_L2: &str = "6D"; //X25519 sealed box cipher bytes of QB64 plaintext lead size 2
+    pub const X25519_Cipher_QB64_Big_L0: &str = "7AAD"; //X25519 sealed box cipher bytes of QB64 plaintext big lead size 0
+    pub const X25519_Cipher_QB64_Big_L1: &str = "8AAD"; //X25519 sealed box cipher bytes of QB64 plaintext big lead size 1
+    pub const X25519_Cipher_QB64_Big_L2: &str = "9AAD"; //X25519 sealed box cipher bytes of QB64 plaintext big lead size 2
+    pub const X25519_Cipher_QB2_L0: &str = "4D"; //X25519 sealed box cipher bytes of QB2 plaintext lead size 0
+    pub const X25519_Cipher_QB2_L1: &str = "5D"; //X25519 sealed box cipher bytes of QB2 plaintext lead size 1
+    pub const X25519_Cipher_QB2_L2: &str = "6D"; //X25519 sealed box cipher bytes of QB2 plaintext lead size 2
+    pub const X25519_Cipher_QB2_Big_L0: &str = "7AAD"; //X25519 sealed box cipher bytes of QB2 plaintext big lead size 0
+    pub const X25519_Cipher_QB2_Big_L1: &str = "8AAD"; //X25519 sealed box cipher bytes of QB2 plaintext big lead size 1
+    pub const X25519_Cipher_QB2_Big_L2: &str = "9AAD"; //X25519 sealed box cipher bytes of QB2 plaintext big lead size 2
 }
 
 #[cfg(test)]
@@ -213,6 +242,14 @@ mod test {
     #[case("O", 1, 0, 44, 0)]
     #[case("P", 1, 0, 124, 0)]
     #[case("Q", 1, 0, 44, 0)]
+    #[case("R", 1, 0, 8, 0)]
+    #[case("S", 1, 0, 16, 0)]
+    #[case("T", 1, 0, 20, 0)]
+    #[case("U", 1, 0, 24, 0)]
+    #[case("V", 1, 0, 4, 1)]
+    #[case("W", 1, 0, 4, 0)]
+    #[case("X", 1, 0, 4, 0)]
+    #[case("Y", 1, 0, 8, 0)]
     #[case("0A", 2, 0, 24, 0)]
     #[case("0B", 2, 0, 88, 0)]
     #[case("0C", 2, 0, 88, 0)]
@@ -222,6 +259,10 @@ mod test {
     #[case("0G", 2, 0, 88, 0)]
     #[case("0H", 2, 0, 8, 0)]
     #[case("0I", 2, 0, 88, 0)]
+    #[case("0J", 2, 0, 4, 0)]
+    #[case("0K", 2, 0, 4, 0)]
+    #[case("0L", 2, 0, 8, 0)]
+    #[case("0M", 2, 0, 8, 0)]
     #[case("1AAA", 4, 0, 48, 0)]
     #[case("1AAB", 4, 0, 48, 0)]
     #[case("1AAC", 4, 0, 80, 0)]
@@ -232,6 +273,8 @@ mod test {
     #[case("1AAH", 4, 0, 100, 0)]
     #[case("1AAI", 4, 0, 48, 0)]
     #[case("1AAJ", 4, 0, 48, 0)]
+    #[case("1AAK", 4, 0, 4, 0)]
+    #[case("1AAL", 4, 0, 8, 0)]
     #[case("2AAA", 4, 0, 8, 1)]
     #[case("3AAA", 4, 0, 8, 2)]
     #[case("4A", 2, 2, u32::MAX, 0)]
@@ -246,6 +289,24 @@ mod test {
     #[case("7AAB", 4, 4, u32::MAX, 0)]
     #[case("8AAB", 4, 4, u32::MAX, 1)]
     #[case("9AAB", 4, 4, u32::MAX, 2)]
+    #[case("4C", 2, 2, u32::MAX, 0)]
+    #[case("5C", 2, 2, u32::MAX, 1)]
+    #[case("6C", 2, 2, u32::MAX, 2)]
+    #[case("7AAC", 4, 4, u32::MAX, 0)]
+    #[case("8AAC", 4, 4, u32::MAX, 1)]
+    #[case("9AAC", 4, 4, u32::MAX, 2)]
+    #[case("4D", 2, 2, u32::MAX, 0)]
+    #[case("5D", 2, 2, u32::MAX, 1)]
+    #[case("6D", 2, 2, u32::MAX, 2)]
+    #[case("7AAD", 4, 4, u32::MAX, 0)]
+    #[case("8AAD", 4, 4, u32::MAX, 1)]
+    #[case("9AAD", 4, 4, u32::MAX, 2)]
+    #[case("4E", 2, 2, u32::MAX, 0)]
+    #[case("5E", 2, 2, u32::MAX, 1)]
+    #[case("6E", 2, 2, u32::MAX, 2)]
+    #[case("7AAE", 4, 4, u32::MAX, 0)]
+    #[case("8AAE", 4, 4, u32::MAX, 1)]
+    #[case("9AAE", 4, 4, u32::MAX, 2)]
     fn sizage(
         #[case] code: &str,
         #[case] hs: u32,
@@ -258,6 +319,12 @@ mod test {
         assert_eq!(s.ss, ss);
         assert_eq!(s.fs, fs);
         assert_eq!(s.ls, ls);
+    }
+
+    #[test]
+    fn test_unknown_code() {
+        let result = matter::sizage("ZZZZ"); //unknown error code
+        assert!(result.is_err());
     }
 
     #[rstest]
