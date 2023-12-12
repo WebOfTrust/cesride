@@ -1,6 +1,6 @@
 [package]
 name = "cesride"
-version = "0.6.2"
+version = "0.6.3"
 edition = "2021"
 description = "Cryptographic primitives for use with Composable Event Streaming Representation (CESR)"
 license = "Apache-2.0"

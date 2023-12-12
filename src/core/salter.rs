@@ -281,12 +281,6 @@ mod test {
     }
 
     impl Seal {
-        pub fn new(i: &str, s: &str, d: &str, last: Option<bool>) -> Self {
-            let last = last.unwrap_or(false);
-
-            Self { i: i.to_string(), s: s.to_string(), d: d.to_string(), last }
-        }
-
         pub fn i(&self) -> String {
             self.i.clone()
         }
@@ -369,14 +363,6 @@ mod test {
             println!("{im}{rm}", im = inception_message, rm = receipt_message);
 
             Ok(Vault { current, next })
-        }
-
-        pub fn current(&self) -> Vec<Signer> {
-            self.current.clone()
-        }
-
-        pub fn next(&self) -> Vec<Signer> {
-            self.next.clone()
         }
     }
 

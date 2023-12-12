@@ -568,16 +568,6 @@ pub(crate) mod test {
         assert!(Serder::new(None, None, None, Some(&ked), None).is_err());
     }
 
-    pub(crate) mod traiter {
-        #[allow(non_upper_case_globals)]
-        #[allow(non_snake_case)]
-        mod Codex {
-            const EstOnly: &str = "EO";
-            const DoNotDelegate: &str = "DND";
-            const NoBackeds: &str = "NB";
-        }
-    }
-
     // what follows is a simple inception function. it is used above to verify serder functionality.
 
     // this function uses convenience methods unlike most test code. it is likely that it will

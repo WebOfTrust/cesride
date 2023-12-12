@@ -448,10 +448,6 @@ mod test {
         assert!(result);
     }
 
-    fn build_verfer(code: &str, raw: &[u8]) -> Verfer {
-        Verfer::new(Some(code), Some(raw), None, None, None).unwrap()
-    }
-
     #[rstest]
     #[case(
         None,
