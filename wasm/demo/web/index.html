@@ -48,17 +48,17 @@
 		let dater = Dater.new_with_dts(dts);
 		document.write("<p>Date:</p>");
 		document.write("<code>")
-		document.write("dts: " + dater.dts() + "<br/>");
-		document.write("dtsb: " + dater.dtsb() + "<br/>");
-		document.write("code: " + dater.code() + "<br/>");
-		document.write("size: " + dater.size() + "<br/>");
-		document.write("raw: " + dater.raw() + "<br/>");
-		document.write("qb64: " + dater.qb64() + "<br/>");
-		document.write("qb64b: " + dater.qb64b() + "<br/>");
-		document.write("qb2: " + dater.qb2() + "<br/>");
+		document.write("dts: " + dater.dts + "<br/>");
+		document.write("dtsb: " + dater.dtsb + "<br/>");
+		document.write("code: " + dater.code + "<br/>");
+		document.write("size: " + dater.size + "<br/>");
+		document.write("raw: " + dater.raw + "<br/>");
+		document.write("qb64: " + dater.qb64 + "<br/>");
+		document.write("qb64b: " + dater.qb64b + "<br/>");
+		document.write("qb2: " + dater.qb2 + "<br/>");
 		try {
 		  dater = Dater.new_with_dts(dts = "asdf");
-		  document.write("Wrong dater: " + dater.dts() + "<br/>");
+		  document.write("Wrong dater: " + dater.dts + "<br/>");
 		} catch (error) {
 		  document.write("Error: " + error + "<br/>");
 		  document.write("Error name: " + error.name + "<br/>");
