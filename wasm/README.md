@@ -33,7 +33,7 @@ python -m http.server # or another web server of choice serving index.html which
 ### ESM demo (--target=bundler)
 ```
 wasm-pack build # Will output modules best-suited to be bundled with webpack (Ecmascript modules, ESM)
-cd demo/web
+cd demo/webpack
 yarn install
 yarn serve
 # and then visit http://localhost:8080 in a browser should run the example!
