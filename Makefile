@@ -3,6 +3,7 @@ setup:
 
 clean:
 	cargo clean
+	rm wasm/pkg/*
 
 fix:
 	cargo fix
@@ -11,7 +12,11 @@ fix:
 clippy:
 	cargo clippy --all-targets -- -D warnings
 
-preflight:
+wasm: .
+	cd wasm && wasm-pack build && wasm-pack build --target=nodejs # sanity builds
+	cd wasm && wasm-pack test --node # Node tests (only ones that signify-ts uses right now)
+
+base-cesride-crate: 
 	cargo generate-lockfile
 	cargo fmt --check
 	cargo outdated -R --exit-code 1
@@ -21,4 +26,6 @@ preflight:
 	cargo build --release
 	cargo test --release
 	cargo tarpaulin
-	cd wasm && wasm-pack build && wasm-pack build --target=nodejs
+
+preflight: base-cesride-crate wasm
+	printf "Preflight check complete"
