@@ -13,7 +13,7 @@ document.write(`
 `)
 
 let dts = "2020-08-22T17:50:09.988921+00:00";
-let dater = cesride.Dater.new_with_dts(dts);
+let dater = new cesride.Dater(dts, undefined, undefined, undefined, undefined, undefined);
 
 const icp = {
   "v": "KERI10JSON00015a_",
@@ -51,7 +51,7 @@ document.write("qb64: " + dater.qb64() + "<br/>");
 document.write("qb64b: " + dater.qb64b() + "<br/>");
 document.write("qb2: " + dater.qb2() + "<br/>");
 try {
-  dater = cesride.Dater.new_with_dts(dts = "asdf");
+  dater = new cesride.Dater("asdf", undefined, undefined, undefined, undefined, undefined);
   document.write("Wrong dater: " + dater.dts() + "<br/>");
 } catch (error) {
   document.write("Error: " + error + "<br/>");

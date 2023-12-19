@@ -31,31 +31,6 @@ impl DaterWrapper {
         Ok(DaterWrapper(dater))
     }
 
-    pub fn new_with_dts(dts: &str, code: Option<String>) -> Result<DaterWrapper> {
-        let dater = Dater::new_with_dts(dts, code.as_deref()).as_js()?;
-        Ok(DaterWrapper(dater))
-    }
-
-    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<DaterWrapper> {
-        let dater = Dater::new_with_raw(raw, code.as_deref()).as_js()?;
-        Ok(DaterWrapper(dater))
-    }
-
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<DaterWrapper> {
-        let dater = Dater::new_with_qb64b(qb64b).as_js()?;
-        Ok(DaterWrapper(dater))
-    }
-
-    pub fn new_with_qb64(qb64: &str) -> Result<DaterWrapper> {
-        let dater = Dater::new_with_qb64(qb64).as_js()?;
-        Ok(DaterWrapper(dater))
-    }
-
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<DaterWrapper> {
-        let dater = Dater::new_with_qb2(qb2).as_js()?;
-        Ok(DaterWrapper(dater))
-    }
-
     #[wasm_bindgen(getter)]
     pub fn dts(&self) -> Result<String> {
         self.0.dts().as_js().map_err(JsValue::from)

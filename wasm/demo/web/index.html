@@ -45,7 +45,7 @@
         await init();
 
 		let dts = "2020-08-22T17:50:09.988921+00:00";
-		let dater = Dater.new_with_dts(dts);
+		let dater = new Dater(dts, undefined, undefined, undefined, undefined, undefined);
 		document.write("<p>Date:</p>");
 		document.write("<code>")
 		document.write("dts: " + dater.dts + "<br/>");
@@ -57,7 +57,7 @@
 		document.write("qb64b: " + dater.qb64b + "<br/>");
 		document.write("qb2: " + dater.qb2 + "<br/>");
 		try {
-		  dater = Dater.new_with_dts(dts = "asdf");
+		  dater = new Dater("asdf", undefined, undefined, undefined, undefined, undefined);
 		  document.write("Wrong dater: " + dater.dts + "<br/>");
 		} catch (error) {
 		  document.write("Error: " + error + "<br/>");

@@ -1,7 +1,7 @@
 import { Dater } from "cesride-wasm";
 
 function main() {
-    const date = Dater.new_with_dts("2020-08-22T17:50:09.988921+00:00");
+    const date = new Dater("2020-08-22T17:50:09.988921+00:00", undefined, undefined, undefined, undefined, undefined);
     console.log("<p>Date:</p>");
     console.log("dts: " + date.dts + "<br/>");
     console.log("dtsb: " + date.dtsb + "<br/>");
