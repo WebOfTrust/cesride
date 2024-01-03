@@ -1,5 +1,6 @@
 use wasm_bindgen_test::*;
 
+use cesride_wasm::BexterWrapper;
 use cesride_wasm::DaterWrapper;
 use cesride_wasm::CesrideMatterCodex;
 
@@ -37,4 +38,17 @@ fn test_dater_dts1_construction() {
     assert_eq!(dater.qb64().unwrap(), dt1qb64);
     assert_eq!(dater.qb64b().unwrap(), dt1qb64b);
     assert_eq!(dater.qb2().unwrap(), dt1qb2);
+}
+
+#[wasm_bindgen_test]
+fn test_bexter_bext_string_simple_arg() {
+    let first_bexter = BexterWrapper::new(Some("A".to_string()), None, None, None, None, None).unwrap();
+    let second_bexter = BexterWrapper::new(Some("A".to_string()), None, None, None, None, None).unwrap();
+    assert_eq!(first_bexter.bext(), second_bexter.bext());
+    assert_eq!(first_bexter.code(), second_bexter.code());
+    assert_eq!(first_bexter.size(), second_bexter.size());
+    assert_eq!(first_bexter.raw(), second_bexter.raw());
+    assert_eq!(first_bexter.qb64(), second_bexter.qb64());
+    assert_eq!(first_bexter.qb64b(), second_bexter.qb64b());
+    assert_eq!(first_bexter.qb2(), second_bexter.qb2());
 }
