@@ -1,10 +1,12 @@
-use crate::{error::*, Wrap};
-use cesride_core::{Matter, Verfer};
 use std::ops::Deref;
+
 use wasm_bindgen::prelude::*;
 
+use crate::{error::*, Wrap};
+use cesride_core::{Matter, Verfer};
+
 #[wasm_bindgen(js_name = Verfer)]
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct VerferWrapper(pub(crate) Verfer);
 
 #[wasm_bindgen(js_class = Verfer)]
@@ -25,26 +27,6 @@ impl VerferWrapper {
             qb2.as_deref(),
         )
         .as_js()?;
-        Ok(VerferWrapper(verfer))
-    }
-
-    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<VerferWrapper> {
-        let verfer = Verfer::new_with_raw(raw, code.as_deref()).as_js()?;
-        Ok(VerferWrapper(verfer))
-    }
-
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<VerferWrapper> {
-        let verfer = Verfer::new_with_qb64b(qb64b).as_js()?;
-        Ok(VerferWrapper(verfer))
-    }
-
-    pub fn new_with_qb64(qb64: &str) -> Result<VerferWrapper> {
-        let verfer = Verfer::new_with_qb64(qb64).as_js()?;
-        Ok(VerferWrapper(verfer))
-    }
-
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<VerferWrapper> {
-        let verfer = Verfer::new_with_qb2(qb2).as_js()?;
         Ok(VerferWrapper(verfer))
     }
 
@@ -74,6 +56,13 @@ impl VerferWrapper {
 
     pub fn qb2(&self) -> Result<Vec<u8>> {
         self.0.qb2().as_js().map_err(JsValue::from)
+    }
+}
+
+/// A default Verfer for our VerferWrapper
+impl Default for VerferWrapper {
+    fn default() -> Self {
+        VerferWrapper{ 0: Verfer::default() }
     }
 }
 

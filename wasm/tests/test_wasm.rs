@@ -1,8 +1,13 @@
+use hex_literal::hex;
 use wasm_bindgen_test::*;
 
+use cesride_core::matter::Codex;
+
 use cesride_wasm::BexterWrapper;
-use cesride_wasm::DaterWrapper;
 use cesride_wasm::CesrideMatterCodex;
+use cesride_wasm::CigarWrapper;
+use cesride_wasm::DaterWrapper;
+use cesride_wasm::VerferWrapper;
 
 /* 
 These dater tests are transcriptions from the first two test_dater tests in
@@ -51,4 +56,35 @@ fn test_bexter_bext_string_simple_arg() {
     assert_eq!(first_bexter.qb64(), second_bexter.qb64());
     assert_eq!(first_bexter.qb64b(), second_bexter.qb64b());
     assert_eq!(first_bexter.qb2(), second_bexter.qb2());
+}
+
+#[wasm_bindgen_test]
+fn test_cigar_convenience() {
+    let verf_default = VerferWrapper::default();
+    let code = Codex::Ed25519_Sig;
+    let raw = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ[]";
+
+    let first_cigar = CigarWrapper::new(Some(verf_default.clone()), Some(code.to_string()), Some(raw.to_vec()), None, None, None).unwrap();
+    let second_cigar = CigarWrapper::new(Some(verf_default), Some(code.to_string()), Some(raw.to_vec()), None, None, None).unwrap();
+    assert_eq!(first_cigar.verfer(), second_cigar.verfer());
+    assert_eq!(first_cigar.code(), second_cigar.code());
+    assert_eq!(first_cigar.size(), second_cigar.size());
+    assert_eq!(first_cigar.raw(), second_cigar.raw());
+    assert_eq!(first_cigar.qb64(), second_cigar.qb64());
+    assert_eq!(first_cigar.qb64b(), second_cigar.qb64b());
+    assert_eq!(first_cigar.qb2(), second_cigar.qb2());
+}
+
+#[wasm_bindgen_test]
+fn test_verfer_convenience() {
+    let raw = &hex!("0123456789abcdef00001111222233334444555566667777888899990000aaaa");
+    let code = Codex::Ed25519N;
+    let verf_wrapper = VerferWrapper::new(Some(code.to_string()), Some(raw.to_vec()), None, None, None).unwrap();
+    let verf_wrapper_2 = verf_wrapper.clone();
+    assert_eq!(verf_wrapper.code(), verf_wrapper_2.code());
+    assert_eq!(verf_wrapper.size(), verf_wrapper_2.size());
+    assert_eq!(verf_wrapper.raw(), verf_wrapper_2.raw());
+    assert_eq!(verf_wrapper.qb64(), verf_wrapper_2.qb64());
+    assert_eq!(verf_wrapper.qb64b(), verf_wrapper_2.qb64b());
+    assert_eq!(verf_wrapper.qb2(), verf_wrapper_2.qb2());
 }

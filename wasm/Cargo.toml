@@ -28,6 +28,7 @@ package = "cesride"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.39"
+hex-literal = "~0.4"
 
 # wasm-opt is used instead
 #[profile.release]

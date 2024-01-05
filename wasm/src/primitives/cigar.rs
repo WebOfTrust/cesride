@@ -1,10 +1,12 @@
 use std::ops::Deref;
 
-use crate::{error::*, VerferWrapper, Wrap};
-use cesride_core::{Cigar, Matter};
 use wasm_bindgen::prelude::*;
 
+use crate::{error::*, VerferWrapper, Wrap};
+use cesride_core::{Cigar, Matter};
+
 #[wasm_bindgen(js_name = Cigar)]
+#[derive(Debug)]
 pub struct CigarWrapper(pub(crate) Cigar);
 
 #[wasm_bindgen(js_class = Cigar)]
@@ -27,30 +29,6 @@ impl CigarWrapper {
             qb2.as_deref(),
         )
         .as_js()?;
-        Ok(CigarWrapper(cigar))
-    }
-
-    pub fn new_with_raw(
-        raw: &[u8],
-        verfer: Option<VerferWrapper>,
-        code: Option<String>,
-    ) -> Result<CigarWrapper> {
-        let cigar = Cigar::new_with_raw(raw, verfer.as_deref(), code.as_deref()).as_js()?;
-        Ok(CigarWrapper(cigar))
-    }
-
-    pub fn new_with_qb64b(qb64b: &[u8], verfer: Option<VerferWrapper>) -> Result<CigarWrapper> {
-        let cigar = Cigar::new_with_qb64b(qb64b, verfer.as_deref()).as_js()?;
-        Ok(CigarWrapper(cigar))
-    }
-
-    pub fn new_with_qb64(qb64: &str, verfer: Option<VerferWrapper>) -> Result<CigarWrapper> {
-        let cigar = Cigar::new_with_qb64(qb64, verfer.as_deref()).as_js()?;
-        Ok(CigarWrapper(cigar))
-    }
-
-    pub fn new_with_qb2(qb2: &[u8], verfer: Option<VerferWrapper>) -> Result<CigarWrapper> {
-        let cigar = Cigar::new_with_qb2(qb2, verfer.as_deref()).as_js()?;
         Ok(CigarWrapper(cigar))
     }
 
