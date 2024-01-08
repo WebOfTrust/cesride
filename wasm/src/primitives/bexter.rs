@@ -30,31 +30,6 @@ impl BexterWrapper {
         Ok(BexterWrapper(bexter))
     }
 
-    pub fn new_with_bext(bext: &str) -> Result<BexterWrapper> {
-        let bexter = Bexter::new_with_bext(bext).as_js()?;
-        Ok(BexterWrapper(bexter))
-    }
-
-    pub fn new_with_raw(raw: &[u8], code: Option<String>) -> Result<BexterWrapper> {
-        let bexter = Bexter::new_with_raw(raw, code.as_deref()).as_js()?;
-        Ok(BexterWrapper(bexter))
-    }
-
-    pub fn new_with_qb64b(qb64b: &[u8]) -> Result<BexterWrapper> {
-        let bexter = Bexter::new_with_qb64b(qb64b).as_js()?;
-        Ok(BexterWrapper(bexter))
-    }
-
-    pub fn new_with_qb64(qb64: &str) -> Result<BexterWrapper> {
-        let bexter = Bexter::new_with_qb64(qb64).as_js()?;
-        Ok(BexterWrapper(bexter))
-    }
-
-    pub fn new_with_qb2(qb2: &[u8]) -> Result<BexterWrapper> {
-        let bexter = Bexter::new_with_qb2(qb2).as_js()?;
-        Ok(BexterWrapper(bexter))
-    }
-
     pub fn bext(&self) -> Result<String> {
         self.0.bext().as_js().map_err(JsValue::from)
     }

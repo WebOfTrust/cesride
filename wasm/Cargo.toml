@@ -1,15 +1,22 @@
 [package]
 name = "cesride-wasm"
 description = "Cryptographic primitives for use with Composable Event Streaming Representation (CESR)"
+license = "Apache-2.0"
 version = "0.1.0"
 authors = ['Dmitry Kuzmenko <dmitry.kuzmenko@dsr-corporation.com>']
 edition = "2021"
+repository = "git@github.com:WebOfTrust/cesride.git"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
 [features]
 tmp_dev = []
+
+[dependencies]
+wasm-bindgen = "0.2"
+js-sys = '0.3'
+serde_json = "1.0"
 
 [dependencies.getrandom]
 version = '0.2'
@@ -19,7 +26,10 @@ features = ['js']
 path = '..'
 package = "cesride"
 
-[dependencies]
-wasm-bindgen = "0.2.84"
-js-sys = '0.3'
-serde_json = "1.0"
+[dev-dependencies]
+wasm-bindgen-test = "0.3.39"
+hex-literal = "~0.4"
+
+# wasm-opt is used instead
+#[profile.release]
+#opt_level = "s"

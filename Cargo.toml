@@ -14,7 +14,7 @@ argon2 = "~0.5"
 base64 = "~0.21"
 blake2 = "~0.10"
 blake3 = "~1"
-chrono = { version = "~0.4", default-features = false, features = ["clock"] }
+chrono = { version = "~0.4", default-features = false, features = ["clock", "serde", "wasmbind"] }
 ed25519-dalek = { version = "2.0.0", features = ["rand_core"] }
 indexmap = "~2"
 k256 = "~0.13"
