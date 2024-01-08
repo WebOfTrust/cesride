@@ -7,7 +7,9 @@ use cesride_wasm::BexterWrapper;
 use cesride_wasm::CesrideMatterCodex;
 use cesride_wasm::CigarWrapper;
 use cesride_wasm::DaterWrapper;
+use cesride_wasm::SaiderWrapper;
 use cesride_wasm::VerferWrapper;
+use cesride_wasm::ValueWrapper;
 
 /* 
 These dater tests are transcriptions from the first two test_dater tests in
@@ -87,4 +89,17 @@ fn test_verfer_convenience() {
     assert_eq!(verf_wrapper.qb64(), verf_wrapper_2.qb64());
     assert_eq!(verf_wrapper.qb64b(), verf_wrapper_2.qb64b());
     assert_eq!(verf_wrapper.qb2(), verf_wrapper_2.qb2());
+}
+
+#[wasm_bindgen_test]
+fn test_serder_convenience() {
+    // TODO implement
+}
+
+#[wasm_bindgen_test]
+fn test_saider_convenience() {
+    let sad = r#"{"d":""}"#;
+    let wrapper = SaiderWrapper::new(Some(ValueWrapper::new(&sad)),
+        None, None, None, None, None, None, None, None).unwrap();
+    assert_eq!(wrapper.code(), wrapper.code());
 }
