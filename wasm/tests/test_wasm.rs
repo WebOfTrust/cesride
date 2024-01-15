@@ -8,6 +8,7 @@ use cesride_wasm::CesrideMatterCodex;
 use cesride_wasm::CigarWrapper;
 use cesride_wasm::DaterWrapper;
 use cesride_wasm::SaiderWrapper;
+use cesride_wasm::SerderWrapper;
 use cesride_wasm::VerferWrapper;
 use cesride_wasm::ValueWrapper;
 
@@ -93,7 +94,20 @@ fn test_verfer_convenience() {
 
 #[wasm_bindgen_test]
 fn test_serder_convenience() {
-    // TODO implement
+    let e1 = r#"{
+        "v": "KERI10JSON000000_",
+        "d": "",
+        "i": "ABCDEFG",
+        "s": "0001",
+        "t": "rot"
+    }"#;
+    let saidify_returned = SaiderWrapper::saidify(ValueWrapper::new(&e1), None, None, None, None).unwrap();
+    let e1 = saidify_returned.value();
+
+    let serder = SerderWrapper::new(None, None, None, Some(ValueWrapper::new(e1.as_str())), None).unwrap();
+    let serder2 = SerderWrapper::new(None, Some(serder.raw()), None, None, None).unwrap();
+
+    assert_eq!(serder.pre().unwrap(), serder2.pre().unwrap());
 }
 
 #[wasm_bindgen_test]

@@ -15,10 +15,11 @@ use cesride_core::{
 };
 
 #[wasm_bindgen(js_name = Saider)]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SaiderWrapper(pub(crate) Saider);
 
 #[wasm_bindgen]
+#[derive(Debug)]
 pub struct SaidifyRet {
     saider: SaiderWrapper,
     value: String,
@@ -85,12 +86,15 @@ impl SaiderWrapper {
             kind.as_deref(),
             label.as_deref(),
             ignore,
-        )
-        .as_js()?;
-        Ok(SaidifyRet {
-            saider: SaiderWrapper(ret.0),
-            value: ret.1.to_string().expect("unable unwrap value"),
-        })
+        ).as_js();
+
+        match ret {
+            Ok(ret) => Ok(SaidifyRet {
+                saider: SaiderWrapper(ret.0),
+                value: ret.1.to_json().expect("unable unwrap value"),
+            }),
+            Err(err_ret) => Err(err_ret.into()),
+        }
     }
 
     pub fn verify(

@@ -1,12 +1,25 @@
 use std::ops::Deref;
 
-use crate::{
-    error::*, DigerWrapper, NumberWrapper, SaiderWrapper, TholderWrapper, U128Wrapper,
-    ValueWrapper, VerferWrapper, VersionWrapper, Wrap,
-};
-use cesride_core::{data::Value, Sadder, Serder};
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
+
+use cesride_core::{
+    Sadder,
+    Serder,
+    data::Value,
+};
+use crate::{
+    error::*,
+    DigerWrapper,
+    NumberWrapper,
+    SaiderWrapper,
+    TholderWrapper,
+    U128Wrapper,
+    ValueWrapper,
+    VerferWrapper,
+    VersionWrapper,
+    Wrap,
+};
 
 #[wasm_bindgen(js_name = Serder)]
 pub struct SerderWrapper(pub(crate) Serder);
@@ -29,23 +42,6 @@ impl SerderWrapper {
             sad.as_deref(),
         )
         .as_js()?;
-        Ok(SerderWrapper(serder))
-    }
-
-    pub fn new_with_ked(
-        ked: ValueWrapper,
-        code: Option<String>,
-        kind: Option<String>,
-    ) -> Result<SerderWrapper> {
-        let serder =
-            Serder::new_with_ked(&Value::from(ked), code.as_deref(), kind.as_deref()).as_js()?;
-        Ok(SerderWrapper(serder))
-    }
-
-    pub fn new_with_raw(
-        raw: &[u8]
-    ) -> Result<SerderWrapper> {
-        let serder = Serder::new_with_raw(raw).as_js()?;
         Ok(SerderWrapper(serder))
     }
 
