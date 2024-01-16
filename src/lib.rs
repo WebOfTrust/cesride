@@ -12,7 +12,6 @@ pub use crate::{
         cigar::Cigar,
         common,
         counter::{tables as counter, Counter}, // This seems like it shoudl be an abstract class
-        creder::Creder,
         dater::Dater,
         diger::Diger,
         indexer::{tables as indexer, Indexer},
@@ -25,6 +24,7 @@ pub use crate::{
         salter::Salter,
         seqner::Seqner,
         serder::Serder,
+        serder_acdc::SerderACDC,
         siger::Siger,
         signer::Signer,
         tholder::Tholder,

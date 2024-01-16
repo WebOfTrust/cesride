@@ -7,8 +7,12 @@ use crate::{
     error::{err, Error, Result},
 };
 
+/// SerderACDC is a serder subclass with Labels for ACDC packet types (ilks) and properties for
+/// exposing field values of ACDC messages.
+///
+/// See Docs for Serder.
 #[derive(Clone, Debug, PartialEq)]
-pub struct Creder {
+pub struct SerderACDC {
     code: String,
     raw: Vec<u8>,
     ked: Value,
@@ -21,13 +25,13 @@ pub struct Creder {
 
 fn validate_ident(ident: &str) -> Result<()> {
     if ident != Identage::ACDC {
-        return err!(Error::Value("creder must be an ACDC".to_string()));
+        return err!(Error::Value("SerderACDC must be an ACDC".to_string()));
     }
 
     Ok(())
 }
 
-impl Creder {
+impl SerderACDC {
     pub fn new(
         code: Option<&str>,
         raw: Option<&[u8]>,
@@ -36,10 +40,10 @@ impl Creder {
         sad: Option<&Self>,
     ) -> Result<Self> {
         let code = code.unwrap_or(matter::Codex::Blake3_256);
-        let creder = Sadder::new(Some(code), raw, kind, ked, sad)?;
-        validate_ident(&creder.ident())?;
+        let serder_acdc = Sadder::new(Some(code), raw, kind, ked, sad)?;
+        validate_ident(&serder_acdc.ident())?;
 
-        Ok(creder)
+        Ok(serder_acdc)
     }
 
     pub fn new_with_ked(ked: &Value, code: Option<&str>, kind: Option<&str>) -> Result<Self> {
@@ -87,9 +91,9 @@ impl Creder {
     }
 }
 
-impl Default for Creder {
+impl Default for SerderACDC {
     fn default() -> Self {
-        Creder {
+        SerderACDC {
             code: matter::Codex::Blake3_256.to_string(),
             raw: vec![],
             ked: dat!({}),
@@ -102,7 +106,7 @@ impl Default for Creder {
     }
 }
 
-impl Sadder for Creder {
+impl Sadder for SerderACDC {
     fn code(&self) -> String {
         self.code.clone()
     }
@@ -175,7 +179,7 @@ mod test {
         Saider,
     };
 
-    use super::{Creder, Sadder};
+    use super::{Sadder, SerderACDC};
 
     #[test]
     fn sanity() {
@@ -228,13 +232,13 @@ mod test {
         let acdc_json = acdc_value.to_json().unwrap();
         let acdc_message = acdc_json.as_bytes();
 
-        assert!(Creder::new_with_raw(keri_message).is_err());
-        let result = Creder::new(None, Some(acdc_message), None, None, None);
+        assert!(SerderACDC::new_with_raw(keri_message).is_err());
+        let result = SerderACDC::new(None, Some(acdc_message), None, None, None);
         assert!(result.is_ok());
-        let creder = result.unwrap();
-        assert!(Creder::new_with_ked(&creder.crd(), None, None).is_ok());
+        let serder_acdc = result.unwrap();
+        assert!(SerderACDC::new_with_ked(&serder_acdc.crd(), None, None).is_ok());
         assert_eq!(
-            creder.chains().unwrap().to_json().unwrap(),
+            serder_acdc.chains().unwrap().to_json().unwrap(),
             dat!({
                 "d": "ECuynR9pRY6A6dWRlc2DTSF7AWY2a-w-6qhx7vd-pWT-",
                 "acceptedBlock": {
@@ -246,9 +250,9 @@ mod test {
             .to_json()
             .unwrap()
         );
-        assert_eq!(creder.issuer().unwrap(), "ENayINhHQnx6525EpcTmkvo6ZixiJyiskwkVNbMPohYa");
+        assert_eq!(serder_acdc.issuer().unwrap(), "ENayINhHQnx6525EpcTmkvo6ZixiJyiskwkVNbMPohYa");
         assert_eq!(
-            creder.subject().to_json().unwrap(),
+            serder_acdc.subject().to_json().unwrap(),
             dat!({
                 "d": "EOsCUbK6Ve7qb-h15ljNyvVhLz2rq6iaCcA86AAoeZyX",
                 "dt": "2023-04-30T00:34:11.853572+00:00"
@@ -256,9 +260,9 @@ mod test {
             .to_json()
             .unwrap()
         );
-        assert_eq!(creder.schema().unwrap(), "EE5uDJTq5cc6AEdqbyMpvARUjsK_chNdInf3xyRoCBcT");
+        assert_eq!(serder_acdc.schema().unwrap(), "EE5uDJTq5cc6AEdqbyMpvARUjsK_chNdInf3xyRoCBcT");
         assert_eq!(
-            creder.status().unwrap().unwrap(),
+            serder_acdc.status().unwrap().unwrap(),
             "EINZnO3Z30Q7y2oV1sDCQphieRH244-XJFRAbzuFbU7n"
         );
 
@@ -284,13 +288,13 @@ mod test {
         let acdc_json = acdc_value.to_json().unwrap();
         let acdc_message = acdc_json.as_bytes();
 
-        let creder = Creder::new_with_raw(acdc_message).unwrap();
+        let serder_acdc = SerderACDC::new_with_raw(acdc_message).unwrap();
 
-        assert_eq!(creder.status().unwrap(), None);
-        assert_eq!(creder.chains().unwrap(), dat!({}));
-        assert_eq!(creder.raw(), acdc_message);
-        assert_eq!(creder.kind(), Serialage::JSON);
-        assert_eq!(creder.size(), acdc_message.len() as u32);
-        assert_eq!(creder.version(), *CURRENT_VERSION);
+        assert_eq!(serder_acdc.status().unwrap(), None);
+        assert_eq!(serder_acdc.chains().unwrap(), dat!({}));
+        assert_eq!(serder_acdc.raw(), acdc_message);
+        assert_eq!(serder_acdc.kind(), Serialage::JSON);
+        assert_eq!(serder_acdc.size(), acdc_message.len() as u32);
+        assert_eq!(serder_acdc.version(), *CURRENT_VERSION);
     }
 }
