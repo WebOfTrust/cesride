@@ -599,7 +599,7 @@ mod test {
         let prefixer = Prefixer::new(Some(&ked), None, Some(code), None, None, None, None).unwrap();
 
         let mut map = ked.to_map().unwrap();
-        map.remove("k");
+        map.swap_remove("k");
         ked = dat!(&map);
 
         assert!(!prefixer.verify(&ked, None).unwrap());

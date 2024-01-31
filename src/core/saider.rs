@@ -76,7 +76,7 @@ fn derive(
     let mut map = sad.to_map()?;
     for key in ignore.unwrap_or(&[]) {
         if map.contains_key(*key) {
-            map.remove(*key);
+            map.swap_remove(*key);
         }
     }
     let ser = dat!(&map);
