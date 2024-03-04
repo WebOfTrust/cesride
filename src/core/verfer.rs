@@ -198,7 +198,7 @@ mod test {
         let bad_ser = hex!("e1be4d7a8ab5560aa4199eea339849ba8e293d55ca0a81006726d184519e647f"
                                      "5b49b82f805a538c68915c1ae8035c900fd1d4b13902920fd05e1450822f36df");
 
-        let mut csprng = rand_core::OsRng::default();
+        let mut csprng = rand_core::OsRng;
         let keypair = ed25519_dalek::SigningKey::generate(&mut csprng);
 
         let sig = keypair.sign(&ser).to_bytes();

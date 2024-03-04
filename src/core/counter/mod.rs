@@ -102,7 +102,7 @@ impl Counter {
     }
 
     pub fn sem_ver_to_b64(major: u8, minor: u8, patch: u8) -> Result<String> {
-        let parts = &vec![major, minor, patch];
+        let parts = &[major, minor, patch];
         Counter::sem_ver_parts_to_b64(parts)
     }
 
