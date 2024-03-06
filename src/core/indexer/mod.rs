@@ -708,7 +708,7 @@ mod test {
         assert!(TestIndexer::new(None, None, None, Some(&[]), None, None, None).is_err());
 
         let code = indexer::Codex::TBD0;
-        let raw = &vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
+        let raw = &[0, 1, 2, 3, 4, 5, 6, 7, 8];
         let indexer =
             TestIndexer::new(None, None, Some(code), Some(raw), None, None, None).unwrap();
         let qb64 = &indexer.qb64().unwrap();
@@ -1027,7 +1027,7 @@ mod test {
     #[case(indexer::Codex::Ed25519_Big, 92)]
     #[case(indexer::Codex::Ed448_Big, 160)]
     fn raw_size(#[case] code: &str, #[case] full_size: usize) {
-        let raw = (0..full_size as usize - code.len()).map(|_| "A").collect::<String>();
+        let raw = (0..full_size - code.len()).map(|_| "A").collect::<String>();
         let qb64 = [code, &raw].join("");
         let indexer = TestIndexer::new(None, None, None, None, None, Some(&qb64), None).unwrap();
         assert_eq!(indexer.full_size().unwrap(), full_size);

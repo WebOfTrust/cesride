@@ -1,6 +1,6 @@
 [package]
 name = "cesride"
-version = "0.6.3"
+version = "0.6.4"
 edition = "2021"
 description = "Cryptographic primitives for use with Composable Event Streaming Representation (CESR)"
 license = "Apache-2.0"
@@ -11,7 +11,7 @@ keywords = ["cesr", "keri", "acdc"]
 [dependencies]
 anyhow = "~1"
 argon2 = "~0.5"
-base64 = "~0.21"
+base64 = "~0.22"
 blake2 = "~0.10"
 blake3 = "~1"
 chrono = { version = "~0.4", default-features = false, features = ["clock"] }
