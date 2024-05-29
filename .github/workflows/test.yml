@@ -57,6 +57,11 @@ jobs:
           cargo install wasm-pack
           wasm-pack build
 
+      - name: Test WASM
+        run: |
+          cd wasm
+          wasm-pack test --node
+
       - name: Upload to codecov.io
         uses: codecov/codecov-action@v3
         with:
