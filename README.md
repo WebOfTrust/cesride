@@ -47,7 +47,8 @@ Change some code and then fix it automatically:
 make fix
 ```
 
-Commit your changes locally, and run these automated tests:
+Commit your changes locally, and run these automated tests (requires `brew install wasm-pack`):
+
 ```shell
 make clean preflight
 ```
