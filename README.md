@@ -8,7 +8,7 @@ Cryptographic primitives for use with Composable Event Streaming Representation 
 This library is **currently under construction**. If you want to help build, see [contributing](#contributing) below.
 
 ## Important Reference Material
-- WebOfTrust/[ietf-cesr](https://github.com/WebOfTrust/ietf-cesr) repository - IETF draft specification for CESR
+- trustoverip/[tswg-cesr-specification](https://github.com/trustoverip/tswg-cesr-specification) repository - [ToIP draft specification](https://trustoverip.github.io/tswg-cesr-specification/) for CESR
 - Design Assumptions, Use Cases, and ToDo list - [HackMD link](https://hackmd.io/W2Z39cuSSTmD2TovVLvAPg?view)
 - Introductory articles:
     - [#1 CESR Proof Signatures](https://medium.com/happy-blockchains/cesr-proof-signatures-are-the-segwit-of-authentic-data-in-keri-e891c83e070a)
