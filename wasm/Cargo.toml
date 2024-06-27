@@ -20,6 +20,12 @@ path = '..'
 package = "cesride"
 
 [dependencies]
-wasm-bindgen = "0.2.84"
+wasm-bindgen = "0.2.88"
 js-sys = '0.3'
 serde_json = "1.0"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.38"
+
+[profile.release]
+opt_level = "s"

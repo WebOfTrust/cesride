@@ -42,6 +42,13 @@ impl SerderWrapper {
         Ok(SerderWrapper(serder))
     }
 
+    pub fn new_with_raw(
+        raw: &[u8]
+    ) -> Result<SerderWrapper> {
+        let serder = Serder::new_with_raw(raw).as_js()?;
+        Ok(SerderWrapper(serder))
+    }
+
     pub fn verfers(&self) -> Result<Array> {
         let verfers = self.0.verfers().as_js()?;
         let arr = Array::new_with_length(verfers.len() as u32);
